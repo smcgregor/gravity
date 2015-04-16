@@ -154,7 +154,7 @@ class FireGirlPolicyOptimizer:
         
         return obj_fn_val
 
-    def FP_prob(self, pw, ign):
+    def _fire_policy_probability(self, pw, ign):
         #return the probability that the current policy predicts for a specific ignition of a specific pathway
        
         #NOTE: the individual pathways have already had their policies updated
@@ -256,7 +256,7 @@ class FireGirlPolicyOptimizer:
                 for ign in range(self.pathway_set[pw].getIgnitionCount()):
 
                     #compute both the current policy's probability at this ignition
-                    prob = self.FP_prob(pw, ign)
+                    prob = self._fire_policy_probability(pw, ign)
 
                     delta_prob = self.FP_delta_prob(beta, pw, ign, prob)
 
