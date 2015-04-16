@@ -30,9 +30,9 @@ if False:
     print( " " )
 
 
-#calcpathwayWeights()
-print("Testing calcPathwayWeights")
-myOptim.calcPathwayWeights()
+#calculate_pathway_weights()
+print("Testing calculate_pathway_weights")
+myOptim.calculate_pathway_weights()
 print(" pathway weights:")
 for w in range(len(myOptim.pathway_weights)):
     print(" ls " + str(w) + ": " + str(myOptim.pathway_weights[w]))

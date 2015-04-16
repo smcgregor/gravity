@@ -61,7 +61,7 @@ class FireGirlPolicyOptimizer:
     # Optimization Functions #
     ##########################
 
-    def calcPathwayWeights(self, USE_SELF_POLICY=True):
+    def calculate_pathway_weights(self, USE_SELF_POLICY=True):
         #This function looks through each fire of a given pathway and applies the current
         #  policy to the features of each one. The resulting 'probability' from the policy 
         #  function is either multiplied or 'log-summed' be the others to produce the final 
@@ -118,13 +118,13 @@ class FireGirlPolicyOptimizer:
         if not b == None:
             self.Policy.setParams(b)
 
-        #Note: self.calcPathwayWeights will assign this policy to each pathway
+        #Note: self.calculate_pathway_weights will assign this policy to each pathway
 
         # Calculate the weights... these will use the current Policy
         #    rather than whatever policy the pathways used during simulation
         #    Typically, this will be the multiplied total of the inidividual probabilities
         #    associated with following or not-following the policy
-        self.calcPathwayWeights()
+        self.calculate_pathway_weights()
 
         #Note: self.pathway_net_values is being assigned either in:
         #   1) createFireGirlPathways() when those pathways are first made
@@ -158,7 +158,7 @@ class FireGirlPolicyOptimizer:
         #return the probability that the current policy predicts for a specific ignition of a specific pathway
        
         #NOTE: the individual pathways have already had their policies updated
-        #  to the current one in self.calcPathwayWeights()
+        #  to the current one in self.calculate_pathway_weights()
 
         #get the suppression choice of this pathway at this ignition
         choice = self.pathway_set[pw].getChoice(ign)
@@ -238,7 +238,7 @@ class FireGirlPolicyOptimizer:
             
         #get the weight (total or ave) for each pathway decision sequence using the 
         #   current policy (which is possibly being varied by l_bfgs, etc...)
-        self.calcPathwayWeights()
+        self.calculate_pathway_weights()
         
         #iterate over each beta and evaluate the gradient along it
         for beta in range(len(b)):

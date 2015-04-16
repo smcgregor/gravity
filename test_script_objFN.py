@@ -64,7 +64,7 @@ print(FGPO.pathway_set[2].calcTotalProb())
 print("ls3   "),
 print(FGPO.pathway_set[3].calcTotalProb())
 print("  and the resulting pathway_weights are:")
-FGPO.calcPathwayWeights()
+FGPO.calculate_pathway_weights()
 print(FGPO.pathway_weights)
 
 #testing pathway.calcTotalProb()
@@ -81,7 +81,7 @@ print(FGPO.pathway_set[2].calcTotalProb())
 print("ls3   "),
 print(FGPO.pathway_set[3].calcTotalProb())
 print("  and the resulting pathway_weights are:")
-FGPO.calcPathwayWeights()
+FGPO.calculate_pathway_weights()
 print(FGPO.pathway_weights)
 
 #testing pathway.calcTotalProb()
@@ -98,7 +98,7 @@ print(FGPO.pathway_set[2].calcTotalProb())
 print("ls3   "),
 print(FGPO.pathway_set[3].calcTotalProb())
 print("  and the resulting pathway_weights are:")
-FGPO.calcPathwayWeights()
+FGPO.calculate_pathway_weights()
 print(FGPO.pathway_weights)
 
 
