@@ -51,7 +51,7 @@ opt = FireGirlPolicyOptimizer()
 opt.pathway_set = pathways
 
 #Printing values with Total Prob
-objfn1 = opt.calcObjFn()
+objfn1 = opt.calculate_objective_function()
 fprm1 = opt.calcObjFPrime()
 
 #Printing initial values
@@ -61,7 +61,7 @@ print("Fprime: " + str(fprm1))
 
 #Printing values with Ave Prob
 opt.USE_AVE_PROB = True
-objfn1 = opt.calcObjFn()
+objfn1 = opt.calculate_objective_function()
 fprm1 = opt.calcObjFPrime()
 
 #Printing initial values

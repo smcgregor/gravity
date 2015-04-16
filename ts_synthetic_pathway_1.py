@@ -80,7 +80,7 @@ opt.pathway_set.append(ls1)
 opt.pathway_set.append(ls2)
 opt.pathway_set.append(ls3)
 
-objfn1 = opt.calcObjFn()
+objfn1 = opt.calculate_objective_function()
 fprm1 = opt.calcObjFPrime()
 
 #Printing initial values
@@ -94,7 +94,7 @@ print(" ")
 print(" ")
 print("Trying new calculations with my best policy")
 opt.Policy.b = [0,1,-1,0,0,0,0,0,0,0,0]
-objfn2 = opt.calcObjFn()
+objfn2 = opt.calculate_objective_function()
 fprm2 = opt.calcObjFPrime()
 
 #Printing initial values
@@ -109,7 +109,7 @@ print(" ")
 print(" ")
 print("Trying new calculations with a bad policy")
 opt.Policy.b = [0,-1,1,0,0,0,0,0,0,0,0]
-objfn2 = opt.calcObjFn()
+objfn2 = opt.calculate_objective_function()
 fprm2 = opt.calcObjFPrime()
 
 #Printing initial values

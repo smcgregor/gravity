@@ -98,7 +98,7 @@ class FireGirlPolicyOptimizer:
             
             self.pathway_weights.append(p)
 
-    def calcObjFn(self, b=None):
+    def calculate_objective_function(self, b=None):
         #This function contains the optimization objective function. It operates
         #  on the current list of pathways. If any values for 'b' are passed in,
         #  (most likely by scipy.optimize.fmin_l_bfgs_b(), then they are assigned
@@ -312,7 +312,7 @@ class FireGirlPolicyOptimizer:
         
         #record the first 'optimization value' which is really just a placeholder 
         #  to keep indices even
-        obj_vals.append(self.calcObjFn())
+        obj_vals.append(self.calculate_objective_function())
         #record the first parameter set
         param_sets.append(self.Policy.b)
         
@@ -344,7 +344,7 @@ class FireGirlPolicyOptimizer:
 
 
             #               arg names:    func            x0  fprime,               args, approx_grad, bounds       ,  m, factr
-            output_policy = fmin_l_bfgs_b(self.calcObjFn, x0, self.calcObjFPrime,   [],   False,       self.b_bounds,  10, 1)
+            output_policy = fmin_l_bfgs_b(self.calculate_objective_function, x0, self.calcObjFPrime,   [],   False,       self.b_bounds,  10, 1)
             
             #the output of fmin_l_bfgs_b() has the following structure: [x, f, d], where:
             #   x : array_like

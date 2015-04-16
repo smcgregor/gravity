@@ -50,7 +50,7 @@ for ls in pathways:
 opt = FireGirlPolicyOptimizer()
 opt.pathway_set = pathways
 
-objfn1 = opt.calcObjFn()
+objfn1 = opt.calculate_objective_function()
 fprm1 = opt.calcObjFPrime()
 
 #Printing initial values

@@ -98,9 +98,9 @@ for p in pert_pols:
     
     #calculate and save the objective function values of these pathways
     FGPO.USE_AVE_PROB = False
-    pert_pathways_objfn_total.append(FGPO.calcObjFn())
+    pert_pathways_objfn_total.append(FGPO.calculate_objective_function())
     FGPO.USE_AVE_PROB = True
-    pert_pathways_objfn_ave.append(FGPO.calcObjFn())
+    pert_pathways_objfn_ave.append(FGPO.calculate_objective_function())
 
     
 ### STEP 5 ######################################################
@@ -115,9 +115,9 @@ FGPO.createFireGirlPathways(pathway_count,ignition_count)
 
 #record the objective function values
 FGPO.USE_AVE_PROB = False
-opt_pathway_objfn_total = FGPO.calcObjFn()
+opt_pathway_objfn_total = FGPO.calculate_objective_function()
 FGPO.USE_AVE_PROB = True
-opt_pathway_objfn_ave = FGPO.calcObjFn()
+opt_pathway_objfn_ave = FGPO.calculate_objective_function()
 
 
 ### STEP 6 ######################################################

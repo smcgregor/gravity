@@ -42,7 +42,7 @@ class FireGirlPolicyOptimizer
 
     #Functions intended to be Private
     function calcLandscapeWeights()
-    function calcObjFn(b=None)
+    function calculate_objective_function(b=None)
     function calcObjFPrime(b=None)
 
 

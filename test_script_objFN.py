@@ -158,22 +158,22 @@ if False:
 
 
 
-#Testing calcObjFn() with different policies
+#Testing calculate_objective_function() with different policies
 print(" ")
 print(" ")
-print("Testing calcObjFn() and calcObjFPrime() with a let-burn policy")
+print("Testing calculate_objective_function() and calcObjFPrime() with a let-burn policy")
 FGPO.Policy = pol0
-print("calcObjFn() returns: " + str(FGPO.calcObjFn()))
+print("calculate_objective_function() returns: " + str(FGPO.calculate_objective_function()))
 print("calcObjFPrime() returns: " + str(FGPO.calcObjFPrime()))
 
 print(" ")
-print("Testing calcObjFn() and calcObjFPrime() with a coin-toss policy")
+print("Testing calculate_objective_function() and calcObjFPrime() with a coin-toss policy")
 FGPO.Policy = pol1
-print("calcObjFn() returns: " + str(FGPO.calcObjFn()))
+print("calculate_objective_function() returns: " + str(FGPO.calculate_objective_function()))
 print("calcObjFPrime() returns: " + str(FGPO.calcObjFPrime()))
 
 print(" ")
-print("Testing calcObjFn() and calcObjFPrime() with a suppress-all policy")
+print("Testing calculate_objective_function() and calcObjFPrime() with a suppress-all policy")
 FGPO.Policy = pol7
-print("calcObjFn() returns: " + str(FGPO.calcObjFn()))
+print("calculate_objective_function() returns: " + str(FGPO.calculate_objective_function()))
 print("calcObjFPrime() returns: " + str(FGPO.calcObjFPrime()))

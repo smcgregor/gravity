@@ -29,9 +29,9 @@ for i in range(1000):
     
     #calculate both objective functions
     FGPO.USE_AVE_PROB = False
-    obj_fns_total.append(FGPO.calcObjFn())
+    obj_fns_total.append(FGPO.calculate_objective_function())
     FGPO.USE_AVE_PROB = True
-    obj_fns_ave.append(FGPO.calcObjFn())
+    obj_fns_ave.append(FGPO.calculate_objective_function())
     
     #perturb the optimal policy
     for j in range(11):
@@ -39,9 +39,9 @@ for i in range(1000):
     
     #recalculate the objective functions
     FGPO.USE_AVE_PROB = False
-    obj_fns_total_pert.append(FGPO.calcObjFn())
+    obj_fns_total_pert.append(FGPO.calculate_objective_function())
     FGPO.USE_AVE_PROB = True
-    obj_fns_ave_pert.append(FGPO.calcObjFn())    
+    obj_fns_ave_pert.append(FGPO.calculate_objective_function())    
 
     
 #print the results to a file
