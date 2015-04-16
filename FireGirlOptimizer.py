@@ -179,7 +179,7 @@ class FireGirlPolicyOptimizer:
 
         return prob
         
-    def FP_delta_prob(self, beta, pw, ign, prob):
+    def _fire_policy_delta_probability(self, beta, pw, ign, prob):
         #this function calculates the inner "delta_prob" value for each calculation of the derivitive.
         # caclObjFPrime() loops over it repeatedly, and passes in which parameter (beta), pathway (pw) and
         # ignition (ign) to calculate value, which is then summed in caclObjFPrime()
@@ -258,7 +258,7 @@ class FireGirlPolicyOptimizer:
                     #compute both the current policy's probability at this ignition
                     prob = self._fire_policy_probability(pw, ign)
 
-                    delta_prob = self.FP_delta_prob(beta, pw, ign, prob)
+                    delta_prob = self._fire_policy_delta_probability(beta, pw, ign, prob)
 
                     
                     if self.USE_AVE_PROB:
