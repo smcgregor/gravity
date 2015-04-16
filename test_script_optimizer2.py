@@ -10,7 +10,7 @@ FGPO.createFireGirlPathways(10,50)
 
 
 #print("objfn: " + str(FGPO.calculate_objective_function()))
-#print("fprme: " + str(FGPO.calcObjFPrime()))
+#print("fprme: " + str(FGPO.calculate_objective_function_gradient()))
 #print("weights: " + str(FGPO.pathway_weights))
 #print("net values: " + str(FGPO.pathway_net_values))
 
@@ -21,7 +21,7 @@ FGPO.setPolicy(pol)
 print(" ")
 #print("Under Wind/Temp Policy: ")
 #print("objfn: " + str(FGPO.calculate_objective_function()))
-#print("fprme: " + str(FGPO.calcObjFPrime()))
+#print("fprme: " + str(FGPO.calculate_objective_function_gradient()))
 #print("weights: " + str(FGPO.pathway_weights))
 #print("net values: " + str(FGPO.pathway_net_values))
 

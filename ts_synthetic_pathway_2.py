@@ -51,7 +51,7 @@ opt = FireGirlPolicyOptimizer()
 opt.pathway_set = pathways
 
 objfn1 = opt.calculate_objective_function()
-fprm1 = opt.calcObjFPrime()
+fprm1 = opt.calculate_objective_function_gradient()
 
 #Printing initial values
 print("Initial Values")

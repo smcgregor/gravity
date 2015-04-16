@@ -204,7 +204,7 @@ class FireGirlPolicyOptimizer:
         return delta_prob
 
         
-    def calcObjFPrime(self, betas=None):
+    def calculate_objective_function_gradient(self, betas=None):
         #This function returns the gradient of the objective function
 
         #The scipy documentation describes the fprime arguement as:
@@ -344,7 +344,7 @@ class FireGirlPolicyOptimizer:
 
 
             #               arg names:    func            x0  fprime,               args, approx_grad, bounds       ,  m, factr
-            output_policy = fmin_l_bfgs_b(self.calculate_objective_function, x0, self.calcObjFPrime,   [],   False,       self.b_bounds,  10, 1)
+            output_policy = fmin_l_bfgs_b(self.calculate_objective_function, x0, self.calculate_objective_function_gradient,   [],   False,       self.b_bounds,  10, 1)
             
             #the output of fmin_l_bfgs_b() has the following structure: [x, f, d], where:
             #   x : array_like

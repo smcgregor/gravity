@@ -161,19 +161,19 @@ if False:
 #Testing calculate_objective_function() with different policies
 print(" ")
 print(" ")
-print("Testing calculate_objective_function() and calcObjFPrime() with a let-burn policy")
+print("Testing calculate_objective_function() and calculate_objective_function_gradient() with a let-burn policy")
 FGPO.Policy = pol0
 print("calculate_objective_function() returns: " + str(FGPO.calculate_objective_function()))
-print("calcObjFPrime() returns: " + str(FGPO.calcObjFPrime()))
+print("calculate_objective_function_gradient() returns: " + str(FGPO.calculate_objective_function_gradient()))
 
 print(" ")
-print("Testing calculate_objective_function() and calcObjFPrime() with a coin-toss policy")
+print("Testing calculate_objective_function() and calculate_objective_function_gradient() with a coin-toss policy")
 FGPO.Policy = pol1
 print("calculate_objective_function() returns: " + str(FGPO.calculate_objective_function()))
-print("calcObjFPrime() returns: " + str(FGPO.calcObjFPrime()))
+print("calculate_objective_function_gradient() returns: " + str(FGPO.calculate_objective_function_gradient()))
 
 print(" ")
-print("Testing calculate_objective_function() and calcObjFPrime() with a suppress-all policy")
+print("Testing calculate_objective_function() and calculate_objective_function_gradient() with a suppress-all policy")
 FGPO.Policy = pol7
 print("calculate_objective_function() returns: " + str(FGPO.calculate_objective_function()))
-print("calcObjFPrime() returns: " + str(FGPO.calcObjFPrime()))
+print("calculate_objective_function_gradient() returns: " + str(FGPO.calculate_objective_function_gradient()))

@@ -81,7 +81,7 @@ opt.pathway_set.append(ls2)
 opt.pathway_set.append(ls3)
 
 objfn1 = opt.calculate_objective_function()
-fprm1 = opt.calcObjFPrime()
+fprm1 = opt.calculate_objective_function_gradient()
 
 #Printing initial values
 print("Obj Fn: " + str(objfn1))
@@ -95,7 +95,7 @@ print(" ")
 print("Trying new calculations with my best policy")
 opt.Policy.b = [0,1,-1,0,0,0,0,0,0,0,0]
 objfn2 = opt.calculate_objective_function()
-fprm2 = opt.calcObjFPrime()
+fprm2 = opt.calculate_objective_function_gradient()
 
 #Printing initial values
 print("Obj Fn: " + str(objfn2))
@@ -110,7 +110,7 @@ print(" ")
 print("Trying new calculations with a bad policy")
 opt.Policy.b = [0,-1,1,0,0,0,0,0,0,0,0]
 objfn2 = opt.calculate_objective_function()
-fprm2 = opt.calcObjFPrime()
+fprm2 = opt.calculate_objective_function_gradient()
 
 #Printing initial values
 print("Obj Fn: " + str(objfn2))

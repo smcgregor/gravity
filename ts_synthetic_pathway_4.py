@@ -52,7 +52,7 @@ opt.pathway_set = pathways
 
 #Printing values with Total Prob
 objfn1 = opt.calculate_objective_function()
-fprm1 = opt.calcObjFPrime()
+fprm1 = opt.calculate_objective_function_gradient()
 
 #Printing initial values
 print("Initial Values with Total Prob")
@@ -62,7 +62,7 @@ print("Fprime: " + str(fprm1))
 #Printing values with Ave Prob
 opt.USE_AVE_PROB = True
 objfn1 = opt.calculate_objective_function()
-fprm1 = opt.calcObjFPrime()
+fprm1 = opt.calculate_objective_function_gradient()
 
 #Printing initial values
 print(" ")
