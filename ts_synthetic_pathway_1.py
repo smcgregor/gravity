@@ -126,6 +126,6 @@ if True:
     print(" ")
     print("Optimizing Policy, beginning with a coin-toss policy ")
     opt.Policy.b = [0,0,0,0,0,0,0,0,0,0,0]
-    output = opt.optimizePolicy(2)
+    output = opt.optimize_policy(2)
     print("Outputs")
     print(str(output))

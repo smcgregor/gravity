@@ -79,7 +79,7 @@ if True:
     print("Optimizing Policy using total-prob calculations")
     opt.USE_AVE_PROB = False
     opt.Policy.b = [0,0,0,0,0,0,0,0,0,0,0]
-    output = opt.optimizePolicy(1)
+    output = opt.optimize_policy(1)
     opt.printOptOutput(output)
     
 #Optimizing with average prob
@@ -90,5 +90,5 @@ if True:
     print("Optimizing Policy using average-prob calculations")
     opt.USE_AVE_PROB = True
     opt.Policy.b = [0,0,0,0,0,0,0,0,0,0,0]
-    output = opt.optimizePolicy(1)
+    output = opt.optimize_policy(1)
     opt.printOptOutput(output)

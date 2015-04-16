@@ -295,7 +295,7 @@ class FireGirlPolicyOptimizer:
         return scipy.array(d_obj_d_bk)
 
        
-    def optimizePolicy(self, iterations=1, acceptance_threshold=None):
+    def optimize_policy(self, iterations=1, acceptance_threshold=None):
         #This function will work through the given number of gradient descent 
         #  iterations using the current set of pathways for its data set.
         #It returns a list containing two elements

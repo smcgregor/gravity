@@ -67,7 +67,7 @@ if True:
     print(" ")
     print("Optimizing Policy, beginning with a coin-toss policy ")
     opt.Policy.b = [0,0,0,0,0,0,0,0,0,0,0]
-    output = opt.optimizePolicy(1)
+    output = opt.optimize_policy(1)
     print("Outputs")
     opt.printOptOutput(output)
     
@@ -77,7 +77,7 @@ if False:
     print(" ")
     print("Optimizing Policy, beginning with a nudged policy ")
     opt.Policy.b = [0,0.2,0.2,-0.2,-0.2,0,0,0,0,0,0]
-    output = opt.optimizePolicy(1)
+    output = opt.optimize_policy(1)
     print("Outputs")
     opt.printOptOutput(output)
     #print("raw outputs")

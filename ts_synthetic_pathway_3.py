@@ -68,7 +68,7 @@ if True:
     print(" ")
     print("Optimizing Policy on paramter 1 only, beginning with a coin-toss policy ")
     opt.Policy.b = [0,0,0,0,0,0,0,0,0,0,0]
-    output = opt.optimizePolicy(1)
+    output = opt.optimize_policy(1)
     print("Outputs")
     opt.printOptOutput(output)
 #optimize on all else
@@ -83,7 +83,7 @@ if True:
     print("Optimizing Policy on all but parameter 1")
     opt.Policy.b = new_pol
     opt.setPolicy(opt.Policy)
-    output = opt.optimizePolicy(1)
+    output = opt.optimize_policy(1)
     print("Outputs")
     opt.printOptOutput(output)
 #optimize on param 1 again
@@ -101,7 +101,7 @@ if True:
     print("Optimizing Policy on just param 1 again")
     opt.Policy.b = new_pol
     opt.setPolicy(opt.Policy)
-    output = opt.optimizePolicy(1)
+    output = opt.optimize_policy(1)
     print("Outputs")
     opt.printOptOutput(output)
 
@@ -114,7 +114,7 @@ if True:
     opt.Policy.b = [0,0,0,0,0,0,0,0,0,0,0]
     opt.b_bounds = [[-10,10],[-10,10],[-10,10],[-10,10],[-10,10],[-10,10],[-10,10],[-10,10],[-10,10],[-10,10],[-10,10]]
     opt.setPolicy(opt.Policy)
-    output = opt.optimizePolicy(1)
+    output = opt.optimize_policy(1)
     print("Outputs")
     opt.printOptOutput(output)
 

@@ -25,7 +25,7 @@ print(" ")
 ###To Optimize, uncomment the following
 print("Beginning Optimization Routine 1")
 FGPO.USE_AVE_PROB = True
-output=FGPO.optimizePolicy()
+output=FGPO.optimize_policy()
 FGPO.printOptOutput(output)
 
 
@@ -44,7 +44,7 @@ FGPO.createFireGirlPathways(pathway_count,iginition_count,0,FGPO.Policy)
 print(" ")
 
 print("Beginning Optimization Routine 2")
-output2=FGPO.optimizePolicy()
+output2=FGPO.optimize_policy()
 FGPO.printOptOutput(output2)
 #print("Second iteration policy parameters are: ")
 #print(str(FGPO.Policy.b))
@@ -65,7 +65,7 @@ FGPO.createFireGirlPathways(pathway_count,iginition_count,0,FGPO.Policy)
 print(" ")
 
 print("Beginning Optimization Routine 3")
-output3=FGPO.optimizePolicy()
+output3=FGPO.optimize_policy()
 FGPO.printOptOutput(output3)
 #print("Third iteration policy parameters are: ")
 #print(str(FGPO.Policy.b))

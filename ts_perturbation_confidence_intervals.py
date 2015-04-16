@@ -40,7 +40,7 @@ FGPO.createFireGirlPathways(pathway_count,ignition_count)
 #   Calculate the optimal policy using my surrogate obj fn (though if I could, both would be far better)
 
 FGPO.USE_AVE_PROB = True
-results = FGPO.optimizePolicy()
+results = FGPO.optimize_policy()
 
 
 ### STEP 3 ######################################################
