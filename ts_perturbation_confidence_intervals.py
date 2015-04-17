@@ -25,9 +25,9 @@ import random, math
 from FireGirlOptimizer import *
 FGPO = FireGirlPolicyOptimizer()
 
-pathway_count = 50
-ignition_count = 50
-perturb_magnitude = 0.5
+pathway_count = 100
+ignition_count = 100
+perturb_magnitude = 0.25
 
 ### STEP 1 ######################################################
 #	Generate a set of pathways (100s) using a coin-toss policy
@@ -39,9 +39,11 @@ FGPO.createFireGirlPathways(pathway_count,ignition_count)
 ### STEP 2 ######################################################
 #   Calculate the optimal policy using my surrogate obj fn (though if I could, both would be far better)
 
+print("Beginning Policy Optimzation")
 FGPO.USE_AVE_PROB = True
 results = FGPO.optimizePolicy()
-
+print("Policy Optimization Complete: Parameters are:")
+print(str(FGPO.Policy.b))
 
 ### STEP 3 ######################################################
 #	Create a large set of perturbations of that optimal policy

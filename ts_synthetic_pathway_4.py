@@ -10,13 +10,13 @@ for l in range(100):
 
 
 #create ignitions
-for ls in pathways:
+for pw in pathways:
     for i in range(200):
         ign = FireGirlIgnitionRecord()
-        f1 = random.randint(-100,100)
-        f2 = random.randint(-100,100)
-        f3 = random.randint(-100,100)
-        f4 = random.randint(-100,100)
+        f1 = random.randint(-5,5)
+        f2 = random.randint(-5,5)
+        f3 = random.randint(-5,5)
+        f4 = random.randint(-5,5)
         ign.features = [1,f1,f2,f3,f4,0,0,0,0,0,0]
         
         danger = (1.5)*f1 + (0.5)*f2 - (0.5)*f3 - (1.0)*f4
@@ -24,7 +24,7 @@ for ls in pathways:
         choice = bool(random.randint(0,1))
         ign.policy_choice = choice
         
-        ls.ignitions.append(ign)
+        pw.ignitions.append(ign)
         
         #note that the if danger statement is not necessary at the moment, but will be if
         # future scripts (based on this one) need non-symmetrical behavior between suppression
@@ -33,17 +33,17 @@ for ls in pathways:
             #this fire should be suppressed. If suppressed, add the value (which is positive)
             #  as a reward. If let-burned, subtract the value
             if choice == True:
-                ls.net_value += danger
+                pw.net_value += danger
             else:
-                ls.net_value -= danger
+                pw.net_value -= danger
         else:
             #this fire should be allowed to burn. If suppressed, add the value (which is negative)
             #  as a penalty for suppressing a good fire.  If allowed to burn, subtract the value,
             #  again, which is negative, as a reward for choosing correctly
             if choice == True:
-                ls.net_value += danger
+                pw.net_value += danger
             else:
-                ls.net_value -= danger
+                pw.net_value -= danger
 
                 
 #create optimizer

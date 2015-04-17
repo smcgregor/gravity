@@ -395,10 +395,10 @@ class FireGirlPolicyOptimizer:
                 print("before: "),
             else:
                 print("after:  "),
-            print(str(round(obj_vals[v],2)) + "  "),
+            print(str(round(obj_vals[v],10)) + "  "),
             
             for p in range(len(params[v])):
-                print(" " + str(round(params[v][p],3))),
+                print(" " + str(round(params[v][p],5))),
             
             print("") #to end the line
                 
