@@ -3,6 +3,8 @@ FGPO = FireGirlPolicyOptimizer()
 
 ###To create, uncomment the following two lines:
 FGPO.createFireGirlPathways(10,50)
+FGPO.normalizeAllFeatures()
+
 #FGPO.saveFireGirlPathways("FG_pathways_20x50.fgl")
 
 ###To load (already created data), uncomment the following line
@@ -51,6 +53,18 @@ print("Beginning Optimization Routine J1.1a")
 #FGPO.resetPolicy()
 output=FGPO.optimizePolicy()
 FGPO.printOptOutput(output)
+#for reference, printing the J1.0 obj fn value
+FGPO.NORMALIZED_WEIGHTS_OBJ_FN = False
+FGPO.NORMALIZED_WEIGHTS_F_PRIME = False
+FGPO.AVERAGED_WEIGHTS_OBJ_FN = False
+FGPO.AVERAGED_WEIGHTS_F_PRIME = False
+print("obj fn under J1.0: " + str(FGPO.calcObjFn()))
+#for reference, printing the J2 obj fn value
+FGPO.NORMALIZED_WEIGHTS_OBJ_FN = False
+FGPO.NORMALIZED_WEIGHTS_F_PRIME = False
+FGPO.AVERAGED_WEIGHTS_OBJ_FN = True
+FGPO.AVERAGED_WEIGHTS_F_PRIME = True
+print("obj fn under J2: " + str(FGPO.calcObjFn()))
 
 #Setting Flags for J1.1b (derivative only)
 FGPO.NORMALIZED_WEIGHTS_OBJ_FN = False
@@ -81,6 +95,17 @@ print("Beginning Optimization Routine J2")
 #FGPO.resetPolicy()
 output=FGPO.optimizePolicy()
 FGPO.printOptOutput(output)
-
+#for reference, printing the J1.0 obj fn value
+FGPO.NORMALIZED_WEIGHTS_OBJ_FN = False
+FGPO.NORMALIZED_WEIGHTS_F_PRIME = False
+FGPO.AVERAGED_WEIGHTS_OBJ_FN = False
+FGPO.AVERAGED_WEIGHTS_F_PRIME = False
+print("obj fn under J1.0: " + str(FGPO.calcObjFn()))
+#for reference, printing the J1.1a obj fn value
+FGPO.NORMALIZED_WEIGHTS_OBJ_FN = True
+FGPO.NORMALIZED_WEIGHTS_F_PRIME = True
+FGPO.AVERAGED_WEIGHTS_OBJ_FN = False
+FGPO.AVERAGED_WEIGHTS_F_PRIME = False
+print("obj fn under J1.1a: " + str(FGPO.calcObjFn()))
 
 

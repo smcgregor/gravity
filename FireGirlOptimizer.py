@@ -70,6 +70,90 @@ class FireGirlPolicyOptimizer:
     # Optimization Functions #
     ##########################
 
+    def normalizeAllFeatures(self, rng=5.0):
+        #This function normalizes each feature of each ignition in each pathway to fall
+        #  between its rng and -rng arguments. It will also store each ignition's 
+        #  original features in the ignition.features_raw[] array.
+
+        #arrays to hold the max and min of each feature over ALL ignitions in ALL pathways
+        feature_max = []
+        feature_min = []
+
+        #fill the max and min lists with placeholder values
+        for i in range(len(self.pathway_set[0].ignitions[0].features)):
+            feature_max.append( -999999999.9 )
+            feature_min.append(  999999999.9 )
+
+        #re-initialize ignition.feature_raw arrays
+        for pw in self.pathway_set:
+            for ig in pw.ignitions:
+                ig.features_raw = []
+
+
+        #look in every pathway
+        for pw in self.pathway_set:
+            #look in every ignition in this pathway
+            for ig in pw.ignitions:
+                #look at each feature in this ignition
+                for f in range(len(ig.features)):
+
+                    #if this feature is higher than the previously found max, remember it
+                    if ig.features[f] > feature_max[f]:
+                        feature_max[f] = ig.features[f]
+                    #if this feature is lower than the previously found min, remember it
+                    if ig.features[f] < feature_min[f]:
+                        feature_min[f] = ig.features[f]
+
+        #calculate means
+        feature_mean = []
+        for f in range(len(feature_max)):
+            feature_mean.append(   (feature_max[f] + feature_min[f]) / 2.0   )
+
+        #calculate normalization magnitude
+        #this is the value that we'll divide each feature by, once its been recentered around
+        # a mean of zero
+        feature_norm_mag = []
+        for f in range(len(feature_max)):
+            feature_norm_mag.append(  (feature_max[f] - feature_mean[f]) / rng )
+        print(str(feature_norm_mag))
+
+        #now normalize each feature value to fall between "max" and "min"
+        #in every pathway
+        for pw in self.pathway_set:
+            #in every ignition in this pathway
+            for ig in pw.ignitions:
+                #look at each feature in this ignition
+                for f in range(len(ig.features)):
+                    #we forced a re-initialization of of the ignition.features_raw lists, so 
+                    # we have to append new items to it for each feature to save them
+                    ig.features_raw.append(ig.features[f])
+
+                    #normalize step 1: shift the mean to zero
+                    ig.features[f] -= feature_mean[f]
+
+                    #normalize step 2: change magnitude to be within +/- rng
+                    #but check for 0's:  Any feature that is absolutely constant (like the constant) will 
+                    # have a feature_norm_mag value of zero. When that's the case, just set the feature
+                    # to one (rather than zero, because a one will allow the constant parameter to actually
+                    #     do something)
+                    if feature_norm_mag[f] == 0:
+                        ig.features[f] = 1.0
+                    else:
+                        ig.features[f] = ig.features[f] / feature_norm_mag[f]
+
+        #if desired, print the max, min, mean, and norm values
+        if True:
+            print("Feature Descriptions before normalization")
+            print("Max values:")
+            print(str(feature_max))
+            print("Ave values:")
+            print(str(feature_mean))
+            print("Min values:")
+            print(str(feature_min))
+            print("Normalization Magnitude:")
+            print(str(feature_norm_mag))
+
+
     def calcPathwayWeights(self, USE_SELF_POLICY=True):
         #This function looks through each fire of a given pathway and applies the current
         #  policy to the features of each one. The resulting 'probability' from the policy 

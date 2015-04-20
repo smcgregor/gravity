@@ -22,6 +22,8 @@ class FireGirlIgnitionRecord:
 
     def __init__(self):
         self.features = []
+        self.features_raw = []  #this is a storage array for the orginal feature values when
+        #                         an outside function does a normalization routine
         self.policy_prob = 1
         self.policy_choice = False
         self.outcomes = []
