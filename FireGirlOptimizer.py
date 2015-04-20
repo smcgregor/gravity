@@ -16,6 +16,7 @@ class FireGirlPolicyOptimizer:
         self.pathway_weights = []               #J1 weights
         self.pathway_weights_normalized = []    #J1.1 weights
         self.pathway_weights_averaged = []      #J2 weights
+        self.new_weights = []
         
         #Boundaries for what the parameters can be set to during scipy's optimization routine:
         self.b_bounds = []
@@ -81,6 +82,7 @@ class FireGirlPolicyOptimizer:
         self.pathway_weights = []               #J1 weights
         self.pathway_weights_normalized = []    #J1.1 weights
         self.pathway_weights_averaged = []      #J2 weights
+        self.new_weights = []
 
         #iterating over each pathway and appending each new weigh to the list
         for pw in self.pathway_set:
@@ -102,7 +104,8 @@ class FireGirlPolicyOptimizer:
             p1_1 = p1 / pw.calcSumOfProbs()     #J1.1 weights - normalized probabilities
             p2 = pw.calcAveProb()               #J2 weights - averaged probabilities
             
-            
+                
+                
             # # pw.DEBUG = True
             # p = 0.0
             # if self.USE_AVE_PROB:
@@ -120,6 +123,19 @@ class FireGirlPolicyOptimizer:
             self.pathway_weights.append(p1)                  #J1 weights
             self.pathway_weights_normalized.append(p1_1)     #J1.1 weights
             self.pathway_weights_averaged.append(p2)         #J2 weights
+        
+                    
+        #testing... calculate sum of ALL weights
+        weight_sum = 0.0
+        for w in self.pathway_weights:
+            weight_sum += w
+        
+        #computing normalization of each pathway weight over the sum of ALL pathway weights
+        new_weights = []
+        for w in self.pathway_weights:
+            self.new_weights.append( w / weight_sum )  #J1 weights???
+            
+            
 
     def calcObjFn(self, b=None):
         #This function contains the optimization objective function. It operates
@@ -170,7 +186,8 @@ class FireGirlPolicyOptimizer:
             #Normalization supercedes averaging
             if self.NORMALIZED_WEIGHTS_OBJ_FN:
                 #using normalized weights
-                total_value += self.pathway_net_values[pw] * self.pathway_weights_normalized[pw]
+                total_value += self.pathway_net_values[pw] * self.new_weights[pw]
+                #total_value += self.pathway_net_values[pw] * self.pathway_weights_normalized[pw]
             else:
                 #using "un-normalized" weights... check averaging...
                 if self.AVERAGED_WEIGHTS_OBJ_FN:
@@ -317,7 +334,12 @@ class FireGirlPolicyOptimizer:
                 else:
                     if self.NORMALIZED_WEIGHTS_F_PRIME:
                         #using normalized weights inside the derivative calculation (J1.1)
-                        d_obj_d_bk[beta] += self.pathway_net_values[pw] * self.pathway_weights_normalized[pw] * sum_delta_prob
+                        #d_obj_d_bk[beta] += self.pathway_net_values[pw] * self.pathway_weights_normalized[pw] * sum_delta_prob
+                        
+                     
+                        #now computing d_obj_d_bk(beta) with the new weights
+                        d_obj_d_bk[beta] += self.pathway_net_values[pw] * self.new_weights[pw] * sum_delta_prob
+                            
                     else:
                         #using standard derivative math (J1)
                         d_obj_d_bk[beta] += self.pathway_net_values[pw] * self.pathway_weights[pw]            * sum_delta_prob
