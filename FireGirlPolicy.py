@@ -32,11 +32,11 @@ class FireGirlPolicy:
         #Because the logistic function can easily produce 0-values for very low probabilities, 
         #  we need to set a limit for what the lowest probability allowed is. Otherwise
         #  the product of any series of events is likely to be 0, because of even one very low probability
-        self.probability_lower_limit = 0.01
+        self.probability_lower_limit = 0.001
         
         #likewise, since a choice that DOES NOT follow a rule when the probability is 1 will also produce 
         #  and effective probability of 0, there needs to be an upper limit as well.
-        self.probability_upper_limit = 0.99
+        self.probability_upper_limit = 0.999
 
     def setParams(self, parameter_list):
         self.b = []

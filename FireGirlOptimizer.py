@@ -13,7 +13,9 @@ class FireGirlPolicyOptimizer:
         self.pathway_net_values =[]
         
         #A list to hold the "probability weights" of each pathway
-        self.pathway_weights = []
+        self.pathway_weights = []               #J1 weights
+        self.pathway_weights_normalized = []    #J1.1 weights
+        self.pathway_weights_averaged = []      #J2 weights
         
         #Boundaries for what the parameters can be set to during scipy's optimization routine:
         self.b_bounds = []
@@ -25,9 +27,15 @@ class FireGirlPolicyOptimizer:
         #                                 To just multiply probabilities, set to False
         self.USE_LOG_PROB = False
         
-        #Flag: Use average probability instead of total probability on the pathway weight
-        #   calculations
-        self.USE_AVE_PROB = False
+        #Flag: use normalized weights for the objective function
+        self.NORMALIZED_WEIGHTS_OBJ_FN = False
+        #Flag: use normalized weights for F prime
+        self.NORMALIZED_WEIGHTS_F_PRIME = False
+        #Flag: use averaged weights for the objective function
+        self.AVERAGED_WEIGHTS_OBJ_FN = False
+        #Flag: use averaged weights for F prime
+        self.AVERAGED_WEIGHTS_F_PRIME = False
+        
 
         #Flag: Using FireGirl pathways = True
         #      Using FireWoman pathways = False
@@ -70,7 +78,9 @@ class FireGirlPolicyOptimizer:
         #  the pathway_set list
 
         #clearing old weights
-        self.pathway_weights = []
+        self.pathway_weights = []               #J1 weights
+        self.pathway_weights_normalized = []    #J1.1 weights
+        self.pathway_weights_averaged = []      #J2 weights
 
         #iterating over each pathway and appending each new weigh to the list
         for pw in self.pathway_set:
@@ -87,16 +97,29 @@ class FireGirlPolicyOptimizer:
                 # taking the optimizer's current policy. Mostly used for testing
                 pass
             
-            #pw.DEBUG = True
-            p = 0.0
-            if self.USE_AVE_PROB:
-                #TESTING - USING Average Probability instead of total probability
-                p = pw.calcAveProb()
-            #pw.DEBUG = False
-            else:
-                p = pw.calcTotalProb()
+            #calculate all three weighting regimes
+            p1 = pw.calcTotalProb()             #J1 weights - "total probability"
+            p1_1 = p1 / pw.calcSumOfProbs()     #J1.1 weights - normalized probabilities
+            p2 = pw.calcAveProb()               #J2 weights - averaged probabilities
             
-            self.pathway_weights.append(p)
+            
+            # # pw.DEBUG = True
+            # p = 0.0
+            # if self.USE_AVE_PROB:
+                # # TESTING - USING Average Probability instead of total probability
+                # p = pw.calcAveProb()
+            # # pw.DEBUG = False
+            # else:
+                # p = pw.calcTotalProb()
+            
+            
+            # # Doing J1.1 probability normalization step
+            # if self.USE_NORMALIZATION:
+                # p = p / pw.calcSumOfProbs()
+           
+            self.pathway_weights.append(p1)                  #J1 weights
+            self.pathway_weights_normalized.append(p1_1)     #J1.1 weights
+            self.pathway_weights_averaged.append(p2)         #J2 weights
 
     def calcObjFn(self, b=None):
         #This function contains the optimization objective function. It operates
@@ -124,8 +147,9 @@ class FireGirlPolicyOptimizer:
         #    rather than whatever policy the pathways used during simulation
         #    Typically, this will be the multiplied total of the inidividual probabilities
         #    associated with following or not-following the policy
+        
         self.calcPathwayWeights()
-
+        
         #Note: self.pathway_net_values is being assigned either in:
         #   1) createFireGirlPathways() when those pathways are first made
         #   2) loadFireGirlPathways() when those pathways are loaded up
@@ -141,7 +165,21 @@ class FireGirlPolicyOptimizer:
         
         #loop over all the values/weights and sum them
         for pw in range(len(self.pathway_set)):
-            total_value += self.pathway_net_values[pw] * self.pathway_weights[pw]
+        
+            #check which weights to use:
+            #Normalization supercedes averaging
+            if self.NORMALIZED_WEIGHTS_OBJ_FN:
+                #using normalized weights
+                total_value += self.pathway_net_values[pw] * self.pathway_weights_normalized[pw]
+            else:
+                #using "un-normalized" weights... check averaging...
+                if self.AVERAGED_WEIGHTS_OBJ_FN:
+                    #using averaged weights
+                    total_value += self.pathway_net_values[pw] * self.pathway_weights_averaged[pw]
+                else:
+                    #using straight "total probability weights"
+                    total_value += self.pathway_net_values[pw] * self.pathway_weights[pw]
+            
         
 
 
@@ -234,10 +272,11 @@ class FireGirlPolicyOptimizer:
         # list to hold the final values, one per parameter
         d_obj_d_bk = []
         for i in range(len(b)):
-            d_obj_d_bk.append(0)
+            d_obj_d_bk.append(0.0)
             
         #get the weight (total or ave) for each pathway decision sequence using the 
         #   current policy (which is possibly being varied by l_bfgs, etc...)
+        
         self.calcPathwayWeights()
         
         #iterate over each beta and evaluate the gradient along it
@@ -246,12 +285,14 @@ class FireGirlPolicyOptimizer:
             #SEE MATHEMATICS DOCUMENTATION FOR A DETAILED EXPLANATION OF ALL THAT FOLLOWS
 
             #variable to hold the sum of the delta(prob)/prop values
-            sum_delta_prob = 0
+            sum_delta_prob = 0.0
+            sum_delta_prob_AVE = 0.0
 
             for pw in range(len(self.pathway_set)):
 
                 #reset value for this pathway
-                sum_delta_prob = 0
+                sum_delta_prob = 0.0
+                sum_delta_prob_AVE = 0.0
 
                 for ign in range(self.pathway_set[pw].getIgnitionCount()):
 
@@ -260,21 +301,26 @@ class FireGirlPolicyOptimizer:
 
                     delta_prob = self.FP_delta_prob(beta, pw, ign, prob)
 
-                    
-                    if self.USE_AVE_PROB:
-                        sum_delta_prob += delta_prob
-                    else:
-                        sum_delta_prob += delta_prob / prob
+                    sum_delta_prob_AVE += delta_prob #for use in the J2 "averaged" calculation
+                    sum_delta_prob += delta_prob / prob #for use in J1.*
 
                 
                 #finished adding up sum_delta_prob for all the ignitions in this pathway, so
                 # calculate the d/dx value:
                 
-                if self.USE_AVE_PROB:
+                
+                #check which weights to use, and to the derivative appropriately
+                if self.AVERAGED_WEIGHTS_F_PRIME:
+                    #doing average-weight calculation (J2)
                     invI = (1.0 / self.pathway_set[pw].getIgnitionCount())
-                    d_obj_d_bk[beta] += self.pathway_net_values[pw] * invI * sum_delta_prob
+                    d_obj_d_bk[beta] += self.pathway_net_values[pw] * invI * sum_delta_prob_AVE
                 else:
-                    d_obj_d_bk[beta] += self.pathway_net_values[pw] * self.pathway_weights[pw] * sum_delta_prob
+                    if self.NORMALIZED_WEIGHTS_F_PRIME:
+                        #using normalized weights inside the derivative calculation (J1.1)
+                        d_obj_d_bk[beta] += self.pathway_net_values[pw] * self.pathway_weights_normalized[pw] * sum_delta_prob
+                    else:
+                        #using standard derivative math (J1)
+                        d_obj_d_bk[beta] += self.pathway_net_values[pw] * self.pathway_weights[pw]            * sum_delta_prob
                     
                     
 
@@ -284,11 +330,10 @@ class FireGirlPolicyOptimizer:
 
         #finished with all betas
 
-        # because this is a minimization routine, and the objective function is being flipped, so too
-        #should be the derivatives
+        #because this is a minimization routine, and the objective function is being flipped, so too
+        #  should be the derivatives
         for b in range(len(d_obj_d_bk)):
-            #d_obj_d_bk[b] *= -1
-            d_obj_d_bk[b] *= -1
+            d_obj_d_bk[b] *= -1.0
 
 
         # And Finally, return the list
@@ -497,7 +542,7 @@ class FireGirlPolicyOptimizer:
 
     def resetPolicy(self):
         #This function resets the policy to a 50/50 coin-toss
-        pass
+        self.Policy = FireGirlPolicy()
 
     def loadPolicy(self, filename):
         #This function loads a saved policy and assigns it to this optimization object

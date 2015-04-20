@@ -408,6 +408,33 @@ class FireGirlPathway:
         
         return ave_prob
     
+    def calcSumOfProbs(self):
+        #this function simply returns the sums of the probabilities for each ignition in the chain,
+        # for use by FireGirlOptimizer's probability normalization calculations
+        
+        sum_of_probs = 0
+        
+        #for use within the loop
+        p = 0
+        
+        for ign in self.ignitions:
+            #use the current policy to calculate a new probability with the original features
+            #   of each ignition
+            p = self.Policy.calcProb(ign.getFeatures())
+              
+            p_actual = 0.0
+            if ign.getChoice() == True:
+                #this fire was suppressed, so use the probability as is
+                p_actual = p
+            else:
+                #this fire was allowed to burn, so use the other probability
+                p_actual = 1.0 - p
+            
+            sum_of_probs += p_actual
+        
+        
+        return sum_of_probs
+    
     def getNetValue(self):
         return self.net_value
 
