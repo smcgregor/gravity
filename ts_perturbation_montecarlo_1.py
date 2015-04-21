@@ -1,62 +1,56 @@
-# I don’t think this is quite what we want. Here is the experiment I would like to see:
-
-# 1.  Generate an initial set of trajectories. Apply your optimization code to find a (locally) optimal policy. Call it pi0
-
-# 2.  Call MonteCarloPolicyEvaluation(pi0)
-
-# 3.  Generate a few perturbations of the policy. If there are m parameters, then I suggest creating 2m perturbed policies. For each policy, you will perturb the mth parameter by +50% and –50% of its learned value, for example. This will give us pi_1 through pi_2m
-
-# 4.  For each policy pi in pi_1, ..., pi_2m call MonteCarloPolicyEvaluation(pi)
-
-# 5.  Compare the values returned by the policy evaluations
-
-# The subroutine MonteCarloPolicyEvaluation(pi) does the following:
-
-# N = 100
-# totalReward = 0
-# for iter = 1 to N do
-#    generate a trajectory of length 50 in which the actions are chosen according to pi
-#    let tr = total reward along that trajectory
-#    totalReward = totalReward + tr
-# end for
-# averageReward = totalReward/100
-# ## Probably better would be to create a list of the tr values, but I’ll leave that to you
-# return averageReward
- 
-# If pi0 is at a local optimum, then the result of MonteCarloPolicyEvaluation(pi0) should be better than the results of all of the other calls to MonteCarloPolicyEvaluation
-
-# This is just an experimental test for a local optimum.
-
-# --Tom
-
-
-
-
-
 import random, math
 from FireGirlOptimizer import *
 FGPO = FireGirlPolicyOptimizer()
 
-pathway_count = 100
+pathway_count = 10
 ignition_count = 50
 perturb_percent = 0.5 #this is the percent increase or decrease that will be applied to each 
 #                       perturbed parameter in the perturbed polcies
+new_paths = pathway_count       #the number of new pathways to generate under each policy
 
 ### STEP 1 ######################################################
-#   Generate a set of pathways (100s) using a coin-toss policy
+#   Generate a set of pathways (100s) using a coin-toss policy and find an optimal policy
 
 print("Creating original pathways with coin-toss policy")
 FGPO.createFireGirlPathways(pathway_count,ignition_count)
+FGPO.normalizeAllFeatures()
 
+#setting flags
+FGPO.NORMALIZED_WEIGHTS_OBJ_FN = True
+FGPO.NORMALIZED_WEIGHTS_F_PRIME = True
+FGPO.AVERAGED_WEIGHTS_OBJ_FN = False
+FGPO.AVERAGED_WEIGHTS_F_PRIME = False
 
-### STEP 2 ######################################################
-#   Calculate the optimal policy using my surrogate obj fn (though if I could, both would be far better)
 
 print("Beginning Policy Optimzation")
-FGPO.USE_AVE_PROB = True
 results = FGPO.optimizePolicy()
 print("Policy Optimization Complete: Parameters are:")
 print(str(FGPO.Policy.b))
+
+
+### STEP 2 ######################################################
+#   Do 100 pathways using the optimized policy and take the average of their net values
+
+print(" ")
+print("Beginning Monte Carlo pathway generation for the optimzed policy.")
+total_val = 0
+optimal_pol_average = 0
+    
+for i in range(new_paths):
+    #generate a new pathway with this policy
+    #NOTE: this will erase the original set used in step 1
+    #NOTE: passing in "i" as the ID number ensures that each pathway starts from a different landscape
+    #      otherwise, they'll always be exactly the same as each other.
+    #NOTE: leaving the optional argument, Policy, off, lets the optimizer use its current policy, which
+    #      is always saved at the end of an optimization function call. So this function will use the 
+    #      optimal policy we generated in step 1
+    FGPO.createFireGirlPathways(1,ignition_count, i)
+    
+    #add the net_value of this landscape to the total for this perturbed policy
+    total_val += FGPO.pathway_set[0].net_value  #I'm just accessing the member directly
+
+optimal_pol_average = total_val / new_paths
+
 
 ### STEP 3 ######################################################
 #   Create a large set of perturbations of that optimal policy
@@ -66,7 +60,7 @@ pol_optim = []
 for i in range(11):
     pol_optim.append(FGPO.Policy.b[i] + 1.0 - 1.0)
 
-pert_pols = []
+perturbed_policies = []
 for i in range(11):
     #make new copies of the optimal policy
     pol_copy1 = []
@@ -80,7 +74,54 @@ for i in range(11):
     pol_copy2[i] *= (1 - perturb_percent)  # decrease by this percent
     
     #add the perturbed copies to the list
-    pert_pols.append(pol_copy1)
-    pert_pols.append(pol_copy2)
+    perturbed_policies.append(pol_copy1)
+    perturbed_policies.append(pol_copy2)
     
-#print(str(pert_pols))
+#print(str(perturbed_policies))
+
+
+### STEP 4 ######################################################
+#   For each perturbed policy do a MonteCarlo evaluation of the net values produced when generating NEW pathways under that policy
+
+#For each perturbed policy, we want to generate 100 new pathways, and take the average of their net values
+#  rather than any of the objective function values
+
+pert_pols_average_values = []
+new_policy = FireGirlPolicy()
+
+for pert_pol in perturbed_policies:
+    print("Beginning Monte Carlo pathway generation for perturbed policy " + str(perturbed_policies.index(pert_pol)))
+    #variable to hold the sum of all the net_values from the pathways generated under this perturbed policy
+    total_val = 0
+    
+    for i in range(new_paths):
+        #generate a new pathway with this policy
+        #NOTE: this will erase the original set used in step 1
+        #NOTE: passing in "i" as the ID number ensures that each pathway starts from a different landscape
+        #      otherwise, they'll always be exactly the same as each other.
+        new_policy.b = pert_pol
+        FGPO.createFireGirlPathways(1,ignition_count, i, new_policy)
+        
+        #add the net_value of this landscape to the total for this perturbed policy
+        FGPO.pathway_set[0].updateNetValue()
+        total_val += FGPO.pathway_set[0].net_value  #I'm just accessing the member directly
+    
+    pert_pols_average_values.append(total_val / new_paths)
+
+    
+### STEP 5 ######################################################
+#   Compare the average net values of each perturbed policy to those generated under the optimal policy
+
+print(" ")
+print("Average value of pathways generated under the optimal policy:")
+print("(lower values are better)")
+print(str(optimal_pol_average))
+print("Average value of pathways generated under perturbed policies:")
+print("Value           Delta")
+for i in range(len(pert_pols_average_values)):
+    print(str(pert_pols_average_values[i]) + "  " + str( pert_pols_average_values[i] - optimal_pol_average ) ), #comma to tell python not to end the line
+    if pert_pols_average_values[i] < optimal_pol_average:
+        print(" <-- IMPROVEMENT")
+    else:
+        print(" ") #to end the line
+    

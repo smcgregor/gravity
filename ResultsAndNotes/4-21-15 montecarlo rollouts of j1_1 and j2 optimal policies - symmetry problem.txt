@@ -1,0 +1,80 @@
+4-21-15
+TEST GENERATED WITH ts_perturbation_montecarlo_1.py
+pathway count, newpathays = 10
+ignition count = 50
+perturbation magnitude = 0.5
+
+There is an odd symmetry here: Both policies, different though they are, result in exactly the same decisions being made
+ at EVERY fire in EVERY pathway. At least unless there's some problem in the code, forcing the optimal policy net value average
+ to be 203064.785076 in both J1.1 and J2 rollouts... 
+However, the strange +/- 18000 on perturbed policies is too similar to be ignored. Why is one perturbing up while the other perturbs
+ down??? I think it might just be an issue with a negative sign somewhere... its strange.
+________________________________________________________________________________________________________
+Monte Carlo Roll-outs using the optimal policy, and using 22 perturbed policies (2 each on 11 variables)
+USING J1 with normalization of joint probabilities AND normalization of features
+
+Policy Optimization arameters are:
+[0.068890349587309663, -0.090877889127665368, -0.074009332683416695, -0.031707654839511434, 0.30709161654909178, 
+ 0.090962180763990208, 0.12962649452212816, 0.055799116141203697, -0.010731484103715494, -0.046869583157665096, -0.057244076411414158]
+ 
+Average value of pathways generated under the optimal policy:
+203064.785076
+Average value of pathways generated under perturbed policies:
+Value          Delta 
+221809.26882   18744.4837447
+221809.26882   18744.4837447
+221838.784311  18773.9992355
+221809.26882   18744.4837447
+221907.782758  18842.9976827
+221672.884138  18608.0990627
+221809.26882   18744.4837447
+221838.784311  18773.9992355
+221809.26882   18744.4837447
+221854.905653  18790.1205773
+221774.777708  18709.9926328
+221825.390162  18760.6050865
+221809.26882   18744.4837447
+221838.784311  18773.9992355
+221809.26882   18744.4837447
+221838.784311  18773.9992355
+221809.26882   18744.4837447
+221809.26882   18744.4837447
+221809.26882   18744.4837447
+221809.26882   18744.4837447
+221838.784311  18773.9992355
+221809.26882   18744.4837447
+
+________________________________________________________________________________________________________
+Monte Carlo Roll-outs using the optimal policy, and using 22 perturbed policies (2 each on 11 variables)
+USING J2 with normalization of features
+
+Policy Optimization Parameters are:
+[3.1702544281152782, -10.0, 1.1187522569307107, 8.9334246664496, 0.61125825041360349, 
+ 8.4672873198868892,  10.0, -2.072503647840727, -1.0418945373149862, 10.0, 10.0]
+ 
+Average value of pathways generated under the optimal policy:
+203064.785076
+Average value of pathways generated under perturbed policies:
+Value           Delta
+184639.103928  -18425.6811477
+184639.103928  -18425.6811477
+184646.439388  -18418.3456875 
+184612.888235  -18451.8968404
+184612.888235  -18451.8968404
+184698.487891  -18366.2971842
+184807.322948  -18257.4621276
+184526.793793  -18537.9912828
+184639.103928  -18425.6811477
+184639.103928  -18425.6811477
+184574.924561  -18489.8605148
+184728.159563  -18336.6255123
+184574.924561  -18489.8605148
+184654.774695  -18410.01038   
+184639.103928  -18425.6811477
+184632.1411    -18432.6439758
+184639.103928  -18425.6811477
+184639.103928  -18425.6811477
+184632.1411    -18432.6439758
+184639.103928  -18425.6811477
+184632.1411    -18432.6439758
+184646.439388  -18418.3456875
