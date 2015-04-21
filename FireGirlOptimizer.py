@@ -16,7 +16,6 @@ class FireGirlPolicyOptimizer:
         self.pathway_weights = []               #J1 weights
         self.pathway_weights_normalized = []    #J1.1 weights
         self.pathway_weights_averaged = []      #J2 weights
-        self.new_weights = []
         
         #Boundaries for what the parameters can be set to during scipy's optimization routine:
         self.b_bounds = []
@@ -166,7 +165,6 @@ class FireGirlPolicyOptimizer:
         self.pathway_weights = []               #J1 weights
         self.pathway_weights_normalized = []    #J1.1 weights
         self.pathway_weights_averaged = []      #J2 weights
-        self.new_weights = []
 
         #iterating over each pathway and appending each new weigh to the list
         for pw in self.pathway_set:
@@ -184,8 +182,7 @@ class FireGirlPolicyOptimizer:
                 pass
             
             #calculate all three weighting regimes
-            p1 = pw.calcTotalProb()             #J1 weights - "total probability"
-            p1_1 = p1 / pw.calcSumOfProbs()     #J1.1 weights - normalized probabilities
+            p1 = pw.calcTotalProb()             #J1 weights - "joint probability"
             p2 = pw.calcAveProb()               #J2 weights - averaged probabilities
             
                 
@@ -205,7 +202,6 @@ class FireGirlPolicyOptimizer:
                 # p = p / pw.calcSumOfProbs()
            
             self.pathway_weights.append(p1)                  #J1 weights
-            self.pathway_weights_normalized.append(p1_1)     #J1.1 weights
             self.pathway_weights_averaged.append(p2)         #J2 weights
         
                     
@@ -215,9 +211,9 @@ class FireGirlPolicyOptimizer:
             weight_sum += w
         
         #computing normalization of each pathway weight over the sum of ALL pathway weights
-        new_weights = []
+        pathway_weights_normalized = []
         for w in self.pathway_weights:
-            self.new_weights.append( w / weight_sum )  #J1 weights???
+            self.pathway_weights_normalized.append( w / weight_sum )  #J1.1 weights
             
             
 
@@ -270,15 +266,14 @@ class FireGirlPolicyOptimizer:
             #Normalization supercedes averaging
             if self.NORMALIZED_WEIGHTS_OBJ_FN:
                 #using normalized weights
-                total_value += self.pathway_net_values[pw] * self.new_weights[pw]
-                #total_value += self.pathway_net_values[pw] * self.pathway_weights_normalized[pw]
+                total_value += self.pathway_net_values[pw] * self.pathway_weights_normalized[pw]
             else:
                 #using "un-normalized" weights... check averaging...
                 if self.AVERAGED_WEIGHTS_OBJ_FN:
                     #using averaged weights
                     total_value += self.pathway_net_values[pw] * self.pathway_weights_averaged[pw]
                 else:
-                    #using straight "total probability weights"
+                    #using straight "joint probability weights"
                     total_value += self.pathway_net_values[pw] * self.pathway_weights[pw]
             
         
@@ -403,7 +398,7 @@ class FireGirlPolicyOptimizer:
                     delta_prob = self.FP_delta_prob(beta, pw, ign, prob)
 
                     sum_delta_prob_AVE += delta_prob #for use in the J2 "averaged" calculation
-                    sum_delta_prob += delta_prob / prob #for use in J1.*
+                    sum_delta_prob += delta_prob / prob #for use in J1 "standard" and J1.1 "normalized"
 
                 
                 #finished adding up sum_delta_prob for all the ignitions in this pathway, so
@@ -411,22 +406,17 @@ class FireGirlPolicyOptimizer:
                 
                 
                 #check which weights to use, and to the derivative appropriately
-                if self.AVERAGED_WEIGHTS_F_PRIME:
-                    #doing average-weight calculation (J2)
-                    invI = (1.0 / self.pathway_set[pw].getIgnitionCount())
-                    d_obj_d_bk[beta] += self.pathway_net_values[pw] * invI * sum_delta_prob_AVE
+                if self.NORMALIZED_WEIGHTS_F_PRIME:
+                    #using normalized weights inside the derivative calculation (J1.1)
+                    d_obj_d_bk[beta] += self.pathway_net_values[pw] * self.pathway_weights_normalized[pw] * sum_delta_prob
                 else:
-                    if self.NORMALIZED_WEIGHTS_F_PRIME:
-                        #using normalized weights inside the derivative calculation (J1.1)
-                        #d_obj_d_bk[beta] += self.pathway_net_values[pw] * self.pathway_weights_normalized[pw] * sum_delta_prob
-                        
-                     
-                        #now computing d_obj_d_bk(beta) with the new weights
-                        d_obj_d_bk[beta] += self.pathway_net_values[pw] * self.new_weights[pw] * sum_delta_prob
-                            
+                    if self.AVERAGED_WEIGHTS_F_PRIME:
+                        #doing average-weight calculation (J2)
+                        invI = (1.0 / self.pathway_set[pw].getIgnitionCount())
+                        d_obj_d_bk[beta] += self.pathway_net_values[pw] * invI * sum_delta_prob_AVE                            
                     else:
-                        #using standard derivative math (J1)
-                        d_obj_d_bk[beta] += self.pathway_net_values[pw] * self.pathway_weights[pw]            * sum_delta_prob
+                        #using standard joint-probability math (J1)
+                        d_obj_d_bk[beta] += self.pathway_net_values[pw] * self.pathway_weights[pw] * sum_delta_prob
                     
                     
 

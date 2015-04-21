@@ -1,3 +1,7 @@
+#This script can check either J1.1 or J2.
+#It will find an optimal policy, and then do N rollouts of 22 perturbed policies, and N rollouts from the optimal policy,
+#  and compare the actual pathway net values at the end of each rollout (rather than the objective function values
+
 import random, math
 from FireGirlOptimizer import *
 FGPO = FireGirlPolicyOptimizer()
