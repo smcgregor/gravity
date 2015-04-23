@@ -6,11 +6,11 @@ import random, math
 from FireGirlOptimizer import *
 FGPO = FireGirlPolicyOptimizer()
 
-pathway_count = 10
-ignition_count = 50
+pathway_count = 200
+ignition_count = 100
 perturb_percent = 0.5 #this is the percent increase or decrease that will be applied to each 
 #                       perturbed parameter in the perturbed polcies
-new_paths = pathway_count       #the number of new pathways to generate under each policy
+new_paths = 100       #the number of new pathways to generate under each policy
 
 ### STEP 1 ######################################################
 #   Generate a set of pathways (100s) using a coin-toss policy and find an optimal policy
