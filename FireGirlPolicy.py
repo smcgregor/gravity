@@ -108,7 +108,7 @@ class FireGirlPolicy:
         #checking policy flags
         if self.SUPPRESS_ALL:
             return 1.0
-        elif: self.LET_BURN:
+        elif self.LET_BURN:
             return 0.0
         #None of the policy flags were set, so do the math and report a real policy decision
         else:

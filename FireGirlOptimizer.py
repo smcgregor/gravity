@@ -35,6 +35,12 @@ class FireGirlPolicyOptimizer:
         self.AVERAGED_WEIGHTS_OBJ_FN = False
         #Flag: use averaged weights for F prime
         self.AVERAGED_WEIGHTS_F_PRIME = False
+
+
+        #Flag: Suppress all outputs that originate from this object
+        self.SILENT = False
+        #Flag: Suppress all outputs that originate from pathways this object creates/uses
+        self.MUTE_PATHWAYS = True
         
 
         #Flag: Using FireGirl pathways = True
@@ -575,10 +581,11 @@ class FireGirlPolicyOptimizer:
         
         #Have each pathway create new data for itself. Right now their timber_values 
         #   and fuel_loads are set uniformally to zero
-        if pathway_count == 1:
-            print("Creating pathway " + str(start_at_ID))
-        else:
-            print("Creating pathways " + str(start_at_ID) + "-" + str(start_at_ID + pathway_count))
+        if not self.SILENT:
+            if pathway_count == 1:
+                print("Creating pathway " + str(start_at_ID))
+            else:
+                print("Creating pathways " + str(start_at_ID) + "-" + str(start_at_ID + pathway_count))
 
         for pw in self.pathway_set:
 

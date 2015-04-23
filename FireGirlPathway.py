@@ -54,7 +54,7 @@ class FireGirlPathway:
 
 
         # A list of each ignition event, recorded as FireGirlIgnitonRecord objects
-        self.ignitions = []
+        self.ignition_events = []
 
         # A value to hold the net value of the pathway after all fires, suppresions, 
         #    etc...
@@ -240,38 +240,38 @@ class FireGirlPathway:
             return False
     
     def getIgnitionCount(self):
-        return len(self.ignitions)
+        return len(self.ignition_events)
 
     def getProb(self, ignition_index):
         #This function returns it's current Policy's probability calculation for
         #  the ignition at the given index
-        f = self.ignitions[ignition_index].getFeatures()
+        f = self.ignition_events[ignition_index].getFeatures()
         return self.Policy.calcProb(f)
 
     def getChoice(self, ignition_index):
         #the choice for any given ignition never changes.
-        return self.ignitions[ignition_index].getChoice()
+        return self.ignition_events[ignition_index].getChoice()
 
     def getCrossProduct(self, ignition_index):
         #This function returns it's current Policy's crossproduct calculation for
         #  the ignition at the given index
-        f = self.ignitions[ignition_index].getFeatures()
+        f = self.ignition_events[ignition_index].getFeatures()
         return self.Policy.crossProduct(f)
 
     def getFeature(self, ignition_index, k):
         #this function returns the kth feature of the ith ignition
 
         #checking bounds
-        if ignition_index >= len(self.ignitions):
+        if ignition_index >= len(self.ignition_events):
             print("Error in FGPathway.getFeature(i,k): There is no ignition at index i")
         else:
-            if k >= len(self.ignitions[ignition_index].getFeatures()):
+            if k >= len(self.ignition_events[ignition_index].getFeatures()):
                 print("Error in FGPathway.getFeature(i,k): There is no feature at index k")
-                print(" -feature list has " + str(len(self.ignitions[ignition_index].getFeatures())) + " elements.")
+                print(" -feature list has " + str(len(self.ignition_events[ignition_index].getFeatures())) + " elements.")
                 print(" -function call requesting element at index " + str(k))
 
 
-        return self.ignitions[ignition_index].getFeatures()[k]
+        return self.ignition_events[ignition_index].getFeatures()[k]
 
 
     def assignPolicy(self, policy):
@@ -298,9 +298,9 @@ class FireGirlPathway:
             if self.DEBUG == True:
                 print("In ls.calcTotalProb()...  Pathway " + str(self.ID_number))
                 
-            for ign in self.ignitions:
+            for ign in self.ignition_events:
                 if self.DEBUG == True:
-                    print("  ign " + str(self.ignitions.index(ign)))
+                    print("  ign " + str(self.ignition_events.index(ign)))
 
                 try:
                     #use the current policy to calculate a new probability with the original features
@@ -349,7 +349,7 @@ class FireGirlPathway:
             
             summation = 0.0
 
-            for ign in self.ignitions:
+            for ign in self.ignition_events:
                 #use the current policy to calculate a new probability with the original features
                 #   of each ignition
                 p = self.Policy.calcProb(ign.getFeatures())
@@ -388,7 +388,7 @@ class FireGirlPathway:
         #for use within the loop
         p = 0
         
-        for ign in self.ignitions:
+        for ign in self.ignition_events:
             #use the current policy to calculate a new probability with the original features
             #   of each ignition
             p = self.Policy.calcProb(ign.getFeatures())
@@ -404,7 +404,7 @@ class FireGirlPathway:
             sum_of_probs += p_actual
         
         #now that we've summed all the probabilities, divide by the total number of ignitions
-        ave_prob = sum_of_probs / len(self.ignitions)
+        ave_prob = sum_of_probs / len(self.ignition_events)
         
         return ave_prob
     
@@ -417,7 +417,7 @@ class FireGirlPathway:
         #for use within the loop
         p = 0
         
-        for ign in self.ignitions:
+        for ign in self.ignition_events:
             #use the current policy to calculate a new probability with the original features
             #   of each ignition
             p = self.Policy.calcProb(ign.getFeatures())
@@ -712,7 +712,7 @@ class FireGirlPathway:
 
         loss = 0
         #look through past ignitions and add up timber loss
-        for ign in self.ignitions:
+        for ign in self.ignition_events:
             #the following line is used when the fire outcomes are recorded
             #firerecord_new.setOutcomes([timber_loss, cells_burned, sup_cost, end_time])
             outcomes = ign.getOutcomes()
@@ -1260,7 +1260,7 @@ class FireGirlPathway:
         #but first check for empty records
         if not firerecord_new.getFeatures() == []:  #this will happen if there was ever a no-ignition event.
             #there is a record, so append it.
-            self.ignitions.append(firerecord_new)
+            self.ignition_events.append(firerecord_new)
         else:
             print("no ignition???")
 
