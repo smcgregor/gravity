@@ -67,19 +67,19 @@ FGPO.AVERAGED_WEIGHTS_F_PRIME = True
 print("obj fn under J2: " + str(FGPO.calcObjFn()))
 
 #Setting Flags for J1.1b (derivative only)
-FGPO.NORMALIZED_WEIGHTS_OBJ_FN = False
-FGPO.NORMALIZED_WEIGHTS_F_PRIME = True
-FGPO.AVERAGED_WEIGHTS_OBJ_FN = False
-FGPO.AVERAGED_WEIGHTS_F_PRIME = False
-FGPO.Policy.b = [0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0]
-print(" ")
-print("DETAILS for J1.1b - normalizing ONLY the derivative")
-print("objfn: " + str(FGPO.calcObjFn()))
-print("fprme: " + str(FGPO.calcObjFPrime()))
-print("Beginning Optimization Routine J1.1b")
-#FGPO.resetPolicy()
-output=FGPO.optimizePolicy()
-FGPO.printOptOutput(output)
+# FGPO.NORMALIZED_WEIGHTS_OBJ_FN = False
+# FGPO.NORMALIZED_WEIGHTS_F_PRIME = True
+# FGPO.AVERAGED_WEIGHTS_OBJ_FN = False
+# FGPO.AVERAGED_WEIGHTS_F_PRIME = False
+# FGPO.Policy.b = [0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0]
+# print(" ")
+# print("DETAILS for J1.1b - normalizing ONLY the derivative")
+# print("objfn: " + str(FGPO.calcObjFn()))
+# print("fprme: " + str(FGPO.calcObjFPrime()))
+# print("Beginning Optimization Routine J1.1b")
+# #FGPO.resetPolicy()
+# output=FGPO.optimizePolicy()
+# FGPO.printOptOutput(output)
 
 #Setting Flags for J2 (averaged weights for BOTH)
 FGPO.NORMALIZED_WEIGHTS_OBJ_FN = False

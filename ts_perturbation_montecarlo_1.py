@@ -20,10 +20,10 @@ FGPO.createFireGirlPathways(pathway_count,ignition_count)
 FGPO.normalizeAllFeatures()
 
 #setting flags
-FGPO.NORMALIZED_WEIGHTS_OBJ_FN = True
-FGPO.NORMALIZED_WEIGHTS_F_PRIME = True
-FGPO.AVERAGED_WEIGHTS_OBJ_FN = False
-FGPO.AVERAGED_WEIGHTS_F_PRIME = False
+FGPO.NORMALIZED_WEIGHTS_OBJ_FN = False
+FGPO.NORMALIZED_WEIGHTS_F_PRIME = False
+FGPO.AVERAGED_WEIGHTS_OBJ_FN = True
+FGPO.AVERAGED_WEIGHTS_F_PRIME = True
 
 
 print("Beginning Policy Optimzation")
@@ -62,6 +62,7 @@ optimal_pol_average = total_val / new_paths
 #copy the values of the optimal policy
 pol_optim = []
 for i in range(11):
+    #copying the data from the optimzied policy (and doing + - 1 to ensure the VALUE is saved, not a reference)
     pol_optim.append(FGPO.Policy.b[i] + 1.0 - 1.0)
 
 perturbed_policies = []
@@ -70,6 +71,9 @@ for i in range(11):
     pol_copy1 = []
     pol_copy2 = []
     for j in range(11):
+        #copying the values of the optimal policy to the perturbed policies.
+        # again, the + - 1 is to ensure no pythony references get used. I need to be absolutely sure
+        # that none of the later policies overwrite the changes in previous policies, etc...
         pol_copy1.append(pol_optim[j] + 1.0 - 1.0)
         pol_copy2.append(pol_optim[j] + 1.0 - 1.0)
     
@@ -118,13 +122,13 @@ for pert_pol in perturbed_policies:
 
 print(" ")
 print("Average value of pathways generated under the optimal policy:")
-print("(lower values are better)")
+print("(higher values are better)")
 print(str(optimal_pol_average))
 print("Average value of pathways generated under perturbed policies:")
 print("Value           Delta")
 for i in range(len(pert_pols_average_values)):
     print(str(pert_pols_average_values[i]) + "  " + str( pert_pols_average_values[i] - optimal_pol_average ) ), #comma to tell python not to end the line
-    if pert_pols_average_values[i] < optimal_pol_average:
+    if pert_pols_average_values[i] > optimal_pol_average:
         print(" <-- IMPROVEMENT")
     else:
         print(" ") #to end the line

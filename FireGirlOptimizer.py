@@ -283,7 +283,7 @@ class FireGirlPolicyOptimizer:
         #any final checks/modifications to total_val can go here:
 
         #since scipy fmin... is a minimization routine, return the negative
-        obj_fn_val = -1 * total_value    
+        obj_fn_val = -1.0 * total_value    
         
         
         return obj_fn_val
@@ -570,15 +570,18 @@ class FireGirlPolicyOptimizer:
         
         #Create new pathways and add them to the pathway_set list
         for i in range(start_at_ID, start_at_ID + pathway_count):
-            self.pathway_set.append(FireGirlPathway(i, policy))
+            self.pathway_set.append(FireGirlPathway(i, self.Policy))
         
         #Have each pathway create new data for itself. Right now their timber_values 
         #   and fuel_loads are set uniformally to zero
-        print("Creating pathway "),  #the comma indicates to python not to end the line
+        if pathway_count == 1:
+            print("Creating pathway " + str(start_at_ID))
+        else:
+            print("Creating pathways " + str(start_at_ID) + "-" + str(start_at_ID + pathway_count))
+
         for pw in self.pathway_set:
 
             #have each pathway create timber/fuel data for itself
-            print(str(pw.ID_number) + ","), #the comma indicates to python not to end the line
             pw.generateNewPathway()
 
             #Have each pathway simulate for the given number of years
@@ -586,9 +589,7 @@ class FireGirlPolicyOptimizer:
 
             #and after all years are finished, have each pathway calculate its net value
             pw.updateNetValue()
-        
-        #end the print line
-        print(" ")
+
         
         #DEPRECATED
         #Finish up by calculating the final values of each pathway
