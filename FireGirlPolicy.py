@@ -66,12 +66,12 @@ class FireGirlPolicy:
         self.LET_BURN = False
         self.b = []
         for param in parameter_list:
-            self.b.append(float(param))
+            self.b.append(float(param) + 1.0 - 1.0) #+1 -1 is to strictly enforce a value being appended, rather than a reference
 
     def setFeatures(self, feature_list):
         self.features = []
         for feature in feature_list:
-            self.features.append(float(feature))
+            self.features.append(float(feature) + 1.0 - 1.0)
 
     def getParams(self):
         return self.b
