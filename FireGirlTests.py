@@ -17,9 +17,10 @@ class FireGirlTests:
     def monte_carlo_baselines(self, pathway_count=5, years=100, start_ID=2000):
         #This test will roll out N pathways using a let-burn, suppress-all, and coin-toss policies
 
-        if (self.PRINT_DETAILS or self.PRINT_SUMMARIES):
-            print(" ")
-            print("MONTE CARLO BASELINES:")
+        if not self.SILENT:
+            if (self.PRINT_DETAILS or self.PRINT_SUMMARIES):
+                print(" ")
+                print("MONTE CARLO BASELINES:")
 
         opt = FireGirlPolicyOptimizer()
         pol = FireGirlPolicy()
@@ -32,8 +33,9 @@ class FireGirlTests:
         net_val_sum = 0.0
 
         #doing let-burn pathways
-        if self.PRINT_DETAILS:
-            print("--beginning let-burn pathway generation")
+        if not self.SILENT:
+            if self.PRINT_DETAILS:
+                print("--beginning let-burn pathway generation")
 
         for pw in range(pathway_count):
             opt.createFireGirlPathways(1, years, start_ID+pw, pol)
@@ -52,8 +54,9 @@ class FireGirlTests:
         #setting a suppress-all policy
         pol.setSuppressAll()
 
-        if self.PRINT_DETAILS:
-            print("--beginning suppress-all pathway generation")
+        if not self.SILENT:
+            if self.PRINT_DETAILS:
+                print("--beginning suppress-all pathway generation")
 
         #doing suppress-all pathways
         for pw in range(pathway_count):
@@ -73,8 +76,9 @@ class FireGirlTests:
         #setting a coin-toss policy (all params = 0)
         pol.setParams([0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0])
 
-        if self.PRINT_DETAILS:
-            print("--beginning coin-toss pathway generation")
+        if not self.SILENT:
+            if self.PRINT_DETAILS:
+                print("--beginning coin-toss pathway generation")
 
         #doing coin-toss pathways
         for pw in range(pathway_count):
