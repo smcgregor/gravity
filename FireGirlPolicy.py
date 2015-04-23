@@ -19,6 +19,11 @@ class FireGirlPolicy:
         
         # a list of this policy's parameters.
         self.b = []
+
+        #FLAGS for distinct, non-logistic policy types
+        self.SUPPRESS_ALL = False
+        self.LET_BURN = False
+
         
         #Checking for initialization values, and assigning them as appropriate
         if not params == None:
@@ -38,7 +43,27 @@ class FireGirlPolicy:
         #  and effective probability of 0, there needs to be an upper limit as well.
         self.probability_upper_limit = 0.999
 
+    def setSuppressAll(self):
+        # this function flips the appropriate flags so that the policy will always return a 100% suppress decision
+        self.SUPPRESS_ALL = True
+        self.LET_BURN = False
+
+    def setLetBurn(self):
+        # this functions flips the appropriate flags so that the policy will always return a 0% suppress decision
+        self.SUPPRESS_ALL = False
+        self.LET_BURN = True
+
+    def setUseParameters(self):
+        # this function de-selects both the SUPPRESS_ALL and LET_BURN flags, so that the policy will return
+        #  suppression decisions according to whatever it's parameters currently are.
+        self.SUPPRESS_ALL = False
+        self.LET_BURN = False
+
     def setParams(self, parameter_list):
+        #this function takes a new list of parameters for the policy, and in doing so, also de-selects any
+        #  previous let-burn or suppress-all behaviors that would otherwise ignore the new parameters
+        self.SUPPRESS_ALL = False
+        self.LET_BURN = False
         self.b = []
         for param in parameter_list:
             self.b.append(float(param))
@@ -80,24 +105,31 @@ class FireGirlPolicy:
             return 0.0
     
     def calcProb(self, feature_list):
-        self.features = feature_list
-        cp = self.crossProduct()
-        try:
-            p = self.logistic(cp)
-            
-            #enforce lower limit on probabilities...
-            if p < self.probability_lower_limit:
-                p = self.probability_lower_limit
-                
-            #enforce upper limit on probabilities...
-            if p > self.probability_upper_limit:
-                p = self.probability_upper_limit
-                
-            return p
-        except(OverflowError):
-            print("FGPolicy.calcProb() encountered and overflow error:")
-            print("  crossproduct is: " + str(cp))
+        #checking policy flags
+        if self.SUPPRESS_ALL:
+            return 1.0
+        elif: self.LET_BURN:
             return 0.0
+        #None of the policy flags were set, so do the math and report a real policy decision
+        else:
+            self.features = feature_list
+            cp = self.crossProduct()
+            try:
+                p = self.logistic(cp)
+                
+                #enforce lower limit on probabilities...
+                if p < self.probability_lower_limit:
+                    p = self.probability_lower_limit
+                    
+                #enforce upper limit on probabilities...
+                if p > self.probability_upper_limit:
+                    p = self.probability_upper_limit
+
+                return p
+            except(OverflowError):
+                print("FGPolicy.calcProb() encountered and overflow error:")
+                print("  crossproduct is: " + str(cp))
+                return 0.0
 
 
  

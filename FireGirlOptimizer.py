@@ -79,20 +79,20 @@ class FireGirlPolicyOptimizer:
         feature_min = []
 
         #fill the max and min lists with placeholder values
-        for i in range(len(self.pathway_set[0].ignitions[0].features)):
+        for i in range(len(self.pathway_set[0].ignition_events[0].features)):
             feature_max.append( -999999999.9 )
             feature_min.append(  999999999.9 )
 
         #re-initialize ignition.feature_raw arrays
         for pw in self.pathway_set:
-            for ig in pw.ignitions:
+            for ig in pw.ignition_events:
                 ig.features_raw = []
 
 
         #look in every pathway
         for pw in self.pathway_set:
             #look in every ignition in this pathway
-            for ig in pw.ignitions:
+            for ig in pw.ignition_events:
                 #look at each feature in this ignition
                 for f in range(len(ig.features)):
 
@@ -120,7 +120,7 @@ class FireGirlPolicyOptimizer:
         #in every pathway
         for pw in self.pathway_set:
             #in every ignition in this pathway
-            for ig in pw.ignitions:
+            for ig in pw.ignition_events:
                 #look at each feature in this ignition
                 for f in range(len(ig.features)):
                     #we forced a re-initialization of of the ignition.features_raw lists, so 
@@ -455,7 +455,7 @@ class FireGirlPolicyOptimizer:
         #  to keep indices even
         obj_vals.append(self.calcObjFn())
         #record the first parameter set
-        param_sets.append(self.Policy.b)
+        param_sets.append(self.Policy.getParams())
         
         for iter in range(iterations):
             #tell scipy to optimize our objective function (calcObjectiveFn())
@@ -481,7 +481,7 @@ class FireGirlPolicyOptimizer:
             # The rest of the arguments are left as defaults.
             
             #converting to numpy arrays
-            x0 = scipy.array(self.Policy.b)
+            x0 = scipy.array(self.Policy.getParams)
 
 
             #               arg names:    func            x0  fprime,               args, approx_grad, bounds       ,  m, factr
@@ -505,8 +505,9 @@ class FireGirlPolicyOptimizer:
             
           
             #take the new parameter set and assign them back to the policy
-            for i in range(len(output_policy[0])):
-                self.Policy.b[i] = output_policy[0][i] + 1.0 - 1.0
+            #for i in range(len(output_policy[0])):
+            #    self.Policy.b[i] = output_policy[0][i] + 1.0 - 1.0
+            self.Policy.setParams(output_policy[0])
 
             #self.Policy.b = output_policy[0]
             
