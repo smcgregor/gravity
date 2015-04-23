@@ -107,8 +107,10 @@ for pert_pol in perturbed_policies:
         #NOTE: this will erase the original set used in step 1
         #NOTE: passing in "i" as the ID number ensures that each pathway starts from a different landscape
         #      otherwise, they'll always be exactly the same as each other.
+        #NOTE: adding 2000 to the ID number so that the new rollouts are NOT the same pathways that generated
+        #      the policy. Otherwise, overfit will be an advantage.
         new_policy.b = pert_pol
-        FGPO.createFireGirlPathways(1,ignition_count, i, new_policy)
+        FGPO.createFireGirlPathways(1,ignition_count, 2000 + i, new_policy)
         
         #add the net_value of this landscape to the total for this perturbed policy
         FGPO.pathway_set[0].updateNetValue()
