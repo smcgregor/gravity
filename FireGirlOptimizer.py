@@ -612,6 +612,26 @@ class FireGirlPolicyOptimizer:
     ###################
     # Other Functions #
     ###################
+
+    def getNetValues(self):
+        """returns a copy of the current list of pathway net values
+        """
+
+        #clear the current list
+        self.pathway_net_values = []
+
+        #create a copy to return (to force vals, rather than references)
+        copy_vals = []
+
+        #have all pathways update their own net values
+        for pw in self.pathway_set:
+            #updating the official list, while we're here
+            self.pathway_net_values.append(pw.updateNetValue())
+            #building the return list
+            copy_vals.append(pw.updateNetValue())
+
+        return copy_vals
+
     def saveFireGirlPathways(self, filename):
         output = open(filename, 'wb')
 

@@ -1,5 +1,6 @@
 from FireGirlOptimizer import *
 from FireGirlStats import *
+from numpy import mean
 
 class FireGirlTests:
     #This class is designed to house functions useful in testing and analyzing the behavior
@@ -184,7 +185,7 @@ class FireGirlTrials:
 
     """
 
-    def __init__():
+    def __init__(self):
         """Initialization function: Instantiates a FireGirlPolicyOptimizer and FireGirlPolicy for trials to use.
 
         """
@@ -206,34 +207,44 @@ class FireGirlTrials:
         """
 
         #Create N pathways under let-burn
-        self.Pol.setLetBurn()
-        self.Opt.setPolicy(pol)
+        self.Policy.setLetBurn()
+        self.Opt.setPolicy(self.Policy)
         self.Opt.createFireGirlPathways(pathway_count,years,start_ID)
-        stats_let_burn = FireGirlStats.all_stats_by_year(self.Opt.pathway_set)
+        stats_let_burn = all_stats_by_year(self.Opt.pathway_set)
+        #copy pathway net values
+        vals_let_burn = self.Opt.getNetValues()
         
         #Create N pathways under suppress-all
-        self.Pol.setSuppressAll()
-        self.Opt.setPolicy(pol)
+        self.Policy.setSuppressAll()
+        self.Opt.setPolicy(self.Policy)
         self.Opt.createFireGirlPathways(pathway_count,years,start_ID)
-        stats_suppress_all = FireGirlStats.all_stats_by_year(self.Opt.pathway_set)
+        stats_suppress_all = all_stats_by_year(self.Opt.pathway_set)
+        #copy pathway net values
+        vals_suppress_all = self.Opt.getNetValues()
 
         #Create N pathways under coin-toss
-        self.Pol.setParams([0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0])
-        self.Opt.setPolicy(pol)
+        self.Policy.setParams([0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0])
+        self.Opt.setPolicy(self.Policy)
         self.Opt.createFireGirlPathways(pathway_count,years,start_ID)
-        stats_coin_toss = FireGirlStats.all_stats_by_year(self.Opt.pathway_set)
+        stats_coin_toss = all_stats_by_year(self.Opt.pathway_set)
+        #copy pathway net values
+        vals_coin_toss = self.Opt.getNetValues()
 
         #Create N pathways under previously found J1.1 policy
-        self.Pol.setParams([-4.0548126597150898, 4.0548126597150898, 4.0548126597150898, -4.0548126597150898, 4.0548126597150898, -2.216996097452042, -2.216996097452042, -2.216996097452042, -2.216996097452042, -2.216996097452042, -2.216996097452042])
-        self.Opt.setPolicy(pol)
+        self.Policy.setParams([-4.0548126597150898, 4.0548126597150898, 4.0548126597150898, -4.0548126597150898, 4.0548126597150898, -2.216996097452042, -2.216996097452042, -2.216996097452042, -2.216996097452042, -2.216996097452042, -2.216996097452042])
+        self.Opt.setPolicy(self.Policy)
         self.Opt.createFireGirlPathways(pathway_count,years,start_ID)
-        stats_J1_1 = FireGirlStats.all_stats_by_year(self.Opt.pathway_set)
+        stats_J1_1 = all_stats_by_year(self.Opt.pathway_set)
+        #copy pathway net values
+        vals_J1_1 = self.Opt.getNetValues()
 
         #Create N pathways under previously found J2 policy
-        self.Pol.setParams([-8.8497603806694123, 10.0, 0.14475050808112244, -10.0, 8.7811621637830832, 4.5530784623219773, 7.6456981485587256, 4.3894187002736862, 6.6923034115234064, -0.88238815750515465, 10.0])
-        self.Opt.setPolicy(pol)
+        self.Policy.setParams([-8.8497603806694123, 10.0, 0.14475050808112244, -10.0, 8.7811621637830832, 4.5530784623219773, 7.6456981485587256, 4.3894187002736862, 6.6923034115234064, -0.88238815750515465, 10.0])
+        self.Opt.setPolicy(self.Policy)
         self.Opt.createFireGirlPathways(pathway_count,years,start_ID)
-        stats_J2 = FireGirlStats.all_stats_by_year(self.Opt.pathway_set)
+        stats_J2 = all_stats_by_year(self.Opt.pathway_set)
+        #copy pathway net values
+        vals_J2 = self.Opt.getNetValues()
 
 
         #open the output file
@@ -466,6 +477,34 @@ class FireGirlTrials:
 
             #element 2 of fire is suppress decisions (1 list)
             f.write(str(round(stats_J2[4][2][y], 3)) + "\n") #this also ends the line before next year's stats begin writing
+
+
+
+        #write pathway net values
+        f.write("\n\nPATHWAY NET VALUES")
+        f.write("\nLet-Burn Pathways,")
+        for i in range(pathway_count):
+            f.write(  str(round((vals_let_burn[i]),3) )  + ",")
+        f.write("\nSuppress-All Pathways,")
+        for i in range(pathway_count):
+            f.write(  str(round((vals_suppress_all[i]),3) )  + ",")
+        f.write("\nCoin-Toss Pathways,")
+        for i in range(pathway_count):
+            f.write(  str(round((vals_coin_toss[i]),3) )  + ",")
+        f.write("\nJ1.1 Pathways,")
+        for i in range(pathway_count):
+            f.write(  str(round((vals_J1_1[i]),3) )  + ",")
+        f.write("\nJ2 Pathways,")
+        for i in range(pathway_count):
+            f.write(  str(round((vals_J2[i]),3) )  + ",")
+
+        #write Averages
+        f.write("\n\nAVERAGE NET VALUES") 
+        f.write("\nLet-Burn Pathways," +     str(round(mean(vals_let_burn)))  )
+        f.write("\nSuppress-All Pathways," + str(round(mean(vals_suppress_all)))  )
+        f.write("\nCoin-Toss Pathways," +    str(round(mean(vals_coin_toss)))  )
+        f.write("\nJ1.1 Pathways," +         str(round(mean(vals_J1_1)))  )
+        f.write("\nJ2 Pathways," +           str(round(mean(vals_J2)))  )
 
 
 
