@@ -85,7 +85,7 @@ def suppression_cost_stats_by_year(pathway_set):
     #finished with ALL years
 
     #return a list with each list of stats
-    return [yearly_ave, yearly_max, yearly_min, yearly_stdev, yearly_confidence_upper, yearly_confidence_lower]
+    return [yearly_ave, yearly_min, yearly_max, yearly_stdev, yearly_confidence_lower, yearly_confidence_upper]
 
 def timber_harvest_stats_by_year(pathway_set):
     """From a list of FireGirlPathway objects, return summary statistics of harvest values by year
@@ -162,7 +162,7 @@ def timber_harvest_stats_by_year(pathway_set):
     #finished with ALL years
 
     #return a list with each list of stats
-    return [yearly_ave, yearly_max, yearly_min, yearly_stdev, yearly_confidence_upper, yearly_confidence_lower]
+    return [yearly_ave, yearly_min, yearly_max, yearly_stdev, yearly_confidence_lower, yearly_confidence_upper]
 
 def growth_stats_by_year(pathway_set):
     """From a list of FireGirlPathway objects, return summary statistics of timber growth by year
@@ -239,7 +239,7 @@ def growth_stats_by_year(pathway_set):
     #finished with ALL years
 
     #return a list with each list of stats
-    return [yearly_ave, yearly_max, yearly_min, yearly_stdev, yearly_confidence_upper, yearly_confidence_lower]
+    return [yearly_ave, yearly_min, yearly_max, yearly_stdev, yearly_confidence_lower, yearly_confidence_upper]
 
 def fire_stats_by_year(pathway_set):
     """From a list of FireGirlPathway objects, return descriptive statistics of fires, by yearly_logging_totals
@@ -345,10 +345,23 @@ def fire_stats_by_year(pathway_set):
 
     #All Years are finished, so compile the return lists
 
-    cells_burned_stats = [cells_burned_ave, cells_burned_min, cells_burned_max, cells_burned_std, cells_burned_confidence_upper, timber_lost_confidence_lower]
-    timber_lost_stats = [timber_lost_ave, timber_lost_min, cells_burned_max, timber_lost_std, timber_lost_confidence_upper, timber_lost_confidence_lower]
+    cells_burned_stats = [cells_burned_ave, cells_burned_min, cells_burned_max, cells_burned_std, timber_lost_confidence_lower, cells_burned_confidence_upper]
+    timber_lost_stats = [timber_lost_ave, timber_lost_min, cells_burned_max, timber_lost_std, timber_lost_confidence_lower, timber_lost_confidence_upper]
 
     return [cells_burned_stats, timber_lost_stats, suppress_decisions]
 
+def all_stats_by_year(pathway_set):
+    """This function returns a list containing the results of the other _by_year tests
 
+    NOTE: The first element of the returned list is a string describing what is in each of the subsequent elements
+    """
+
+    output = []
+    output.append("Elements are: suppression stats, harvest stats, growth stats, fire stats")
+    output.append(suppression_cost_stats_by_year(pathway_set))
+    output.append(timber_harvest_stats_by_year(pathway_set))
+    output.append(growth_stats_by_year(pathway_set))
+    output.append(fire_stats_by_year(pathway_set))
+
+    return output
 

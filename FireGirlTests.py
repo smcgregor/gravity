@@ -84,9 +84,6 @@ class FireGirlTests:
                     #printing suppress decisions stat and ending the line
                     print(str(fires[2][i]))
 
-
-
-
     def monte_carlo_baselines(self, pathway_count=5, years=100, start_ID=2000):
         #This test will roll out N pathways using a let-burn, suppress-all, and coin-toss policies
 
@@ -193,6 +190,288 @@ class FireGirlTrials:
         """
         self.Opt = FireGirlPolicyOptimizer()
         self.Policy = FireGirlPolicy()
+
+    def policy_comparisons_1(self, pathway_count=75, years=100, start_ID=2000):
+        """Runs the same N pathways on several different policies and prints stats for each
+
+        Arguements
+        -pathway_count: the number of pathways to run under each policy
+        -years: how many years each pathway should run
+        -start_ID: which pathway ID to assign to the first pathway in each set. Subsequent pathway IDs 
+        increment by one
+
+        Return
+        None. Results are printed to file (there's a lot of them)
+
+        """
+
+        #Create N pathways under let-burn
+        self.Pol.setLetBurn()
+        self.Opt.setPolicy(pol)
+        self.Opt.createFireGirlPathways(pathway_count,years,start_ID)
+        stats_let_burn = FireGirlStats.all_stats_by_year(self.Opt.pathway_set)
+        
+        #Create N pathways under suppress-all
+        self.Pol.setSuppressAll()
+        self.Opt.setPolicy(pol)
+        self.Opt.createFireGirlPathways(pathway_count,years,start_ID)
+        stats_suppress_all = FireGirlStats.all_stats_by_year(self.Opt.pathway_set)
+
+        #Create N pathways under coin-toss
+        self.Pol.setParams([0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0])
+        self.Opt.setPolicy(pol)
+        self.Opt.createFireGirlPathways(pathway_count,years,start_ID)
+        stats_coin_toss = FireGirlStats.all_stats_by_year(self.Opt.pathway_set)
+
+        #Create N pathways under previously found J1.1 policy
+        self.Pol.setParams([-4.0548126597150898, 4.0548126597150898, 4.0548126597150898, -4.0548126597150898, 4.0548126597150898, -2.216996097452042, -2.216996097452042, -2.216996097452042, -2.216996097452042, -2.216996097452042, -2.216996097452042])
+        self.Opt.setPolicy(pol)
+        self.Opt.createFireGirlPathways(pathway_count,years,start_ID)
+        stats_J1_1 = FireGirlStats.all_stats_by_year(self.Opt.pathway_set)
+
+        #Create N pathways under previously found J2 policy
+        self.Pol.setParams([-8.8497603806694123, 10.0, 0.14475050808112244, -10.0, 8.7811621637830832, 4.5530784623219773, 7.6456981485587256, 4.3894187002736862, 6.6923034115234064, -0.88238815750515465, 10.0])
+        self.Opt.setPolicy(pol)
+        self.Opt.createFireGirlPathways(pathway_count,years,start_ID)
+        stats_J2 = FireGirlStats.all_stats_by_year(self.Opt.pathway_set)
+
+
+        #open the output file
+        f = open('TrialResult-PolicyComparisons1.txt', 'w')
+
+
+        f.write("FireGirlTrials_PolicyComparisons_1 Outputs\n")
+        f.write("\n")
+        f.write("\n")
+        
+        #write let-burn statistics
+        f.write("PATHWAYS GENERATED UNDER a LET-BURN POLICY\n")
+        #printing column labels for excel, etc...
+        f.write("supp_ave,supp_min,supp_max,supp_std,supp_95_low,supp_95_high,")
+        f.write("harv_ave,harv_min,harv_max,harv_std,harv_95_low,harv_95_high,")
+        f.write("grwth_ave,grwth_min,grwth_max,grwth_std,grwth_95_low,grwth_95_high,")
+        f.write("cells_burned_ave,cells_burned_min,cells_burned_max,cells_burned_std,cells_burned_95_low,cells_burned_95_high,")
+        f.write("timb_lost_ave,timb_lost_min,timb_lost_max,timb_lost_std,timb_lost_95_low,timb_lost_95_high,")
+        f.write("supp_decicions\n")
+
+        #new row for each year
+        for y in range(years):
+            #print suppression cost stats for this year
+            #the first element of stats_whatever is a string decription
+            #element 1 is the suppression costs (6 lists)
+            for i in range(6):
+                f.write(str(round(stats_let_burn[1][i][y], 3)) + ",")
+
+            #print harvest stats for this year
+            #element 2 of stats_whatever is harvest values (6 lists)
+            for i in range(6):
+                f.write(str(round(stats_let_burn[2][i][y], 3)) + ",")
+
+            #print growth stats for this year
+            #element 3 of stats_whatever is growth  (6 lists)
+            for i in range(6):
+                f.write(str(round(stats_let_burn[3][i][y], 3)) + ",")
+
+            #print fire stats for this year
+            #element 4 of stats_whatever is fire
+            for i in range(6):
+                #element 0 of fire is cells burned (6 lists)
+                f.write(str(round(stats_let_burn[4][0][i][y], 3)) + ",")
+
+            for i in range(6):
+                #element 1 of fire is timber lost (6 lists)
+                f.write(str(round(stats_let_burn[4][1][i][y], 3)) + ",")
+
+            #element 2 of fire is suppress decisions (1 list)
+            f.write(str(round(stats_let_burn[4][2][y], 3)) + "\n") #this also ends the line before next year's stats begin writing
+            
+
+        f.write("\n")
+        f.write("\n")
+
+        #write suppress-all statistics
+        f.write("PATHWAYS GENERATED UNDER a SUPPRESS-ALL POLICY\n")
+        #printing column labels for excel, etc...
+        f.write("supp_ave,supp_min,supp_max,supp_std,supp_95_low,supp_95_high,")
+        f.write("harv_ave,harv_min,harv_max,harv_std,harv_95_low,harv_95_high,")
+        f.write("grwth_ave,grwth_min,grwth_max,grwth_std,grwth_95_low,grwth_95_high,")
+        f.write("cells_burned_ave,cells_burned_min,cells_burned_max,cells_burned_std,cells_burned_95_low,cells_burned_95_high,")
+        f.write("timb_lost_ave,timb_lost_min,timb_lost_max,timb_lost_std,timb_lost_95_low,timb_lost_95_high,")
+        f.write("supp_decicions\n")
+
+        #new row for each year
+        for y in range(years):
+            #print suppression cost stats for this year
+            #the first element of stats_whatever is a string decription
+            #element 1 is the suppression costs (6 lists)
+            for i in range(6):
+                f.write(str(round(stats_suppress_all[1][i][y], 3)) + ",")
+
+            #print harvest stats for this year
+            #element 2 of stats_whatever is harvest values (6 lists)
+            for i in range(6):
+                f.write(str(round(stats_suppress_all[2][i][y], 3)) + ",")
+
+            #print growth stats for this year
+            #element 3 of stats_whatever is growth  (6 lists)
+            for i in range(6):
+                f.write(str(round(stats_suppress_all[3][i][y], 3)) + ",")
+
+            #print fire stats for this year
+            #element 4 of stats_whatever is fire
+            for i in range(6):
+                #element 0 of fire is cells burned (6 lists)
+                f.write(str(round(stats_suppress_all[4][0][i][y], 3)) + ",")
+
+            for i in range(6):
+                #element 1 of fire is timber lost (6 lists)
+                f.write(str(round(stats_suppress_all[4][1][i][y], 3)) + ",")
+
+            #element 2 of fire is suppress decisions (1 list)
+            f.write(str(round(stats_suppress_all[4][2][y], 3)) + "\n") #this also ends the line before next year's stats begin writing
+
+        f.write("\n")
+        f.write("\n")
+
+
+        #write coin-toss statistics
+        f.write("PATHWAYS GENERATED UNDER a COIN-TOSS POLICY\n")
+
+        #printing column labels for excel, etc...
+        f.write("supp_ave,supp_min,supp_max,supp_std,supp_95_low,supp_95_high,")
+        f.write("harv_ave,harv_min,harv_max,harv_std,harv_95_low,harv_95_high,")
+        f.write("grwth_ave,grwth_min,grwth_max,grwth_std,grwth_95_low,grwth_95_high,")
+        f.write("cells_burned_ave,cells_burned_min,cells_burned_max,cells_burned_std,cells_burned_95_low,cells_burned_95_high,")
+        f.write("timb_lost_ave,timb_lost_min,timb_lost_max,timb_lost_std,timb_lost_95_low,timb_lost_95_high,")
+        f.write("supp_decicions\n")
+
+        #new row for each year
+        for y in range(years):
+            #print suppression cost stats for this year
+            #the first element of stats_whatever is a string decription
+            #element 1 is the suppression costs (6 lists)
+            for i in range(6):
+                f.write(str(round(stats_coin_toss[1][i][y], 3)) + ",")
+
+            #print harvest stats for this year
+            #element 2 of stats_whatever is harvest values (6 lists)
+            for i in range(6):
+                f.write(str(round(stats_coin_toss[2][i][y], 3)) + ",")
+
+            #print growth stats for this year
+            #element 3 of stats_whatever is growth  (6 lists)
+            for i in range(6):
+                f.write(str(round(stats_coin_toss[3][i][y], 3)) + ",")
+
+            #print fire stats for this year
+            #element 4 of stats_whatever is fire
+            for i in range(6):
+                #element 0 of fire is cells burned (6 lists)
+                f.write(str(round(stats_coin_toss[4][0][i][y], 3)) + ",")
+
+            for i in range(6):
+                #element 1 of fire is timber lost (6 lists)
+                f.write(str(round(stats_coin_toss[4][1][i][y], 3)) + ",")
+
+            #element 2 of fire is suppress decisions (1 list)
+            f.write(str(round(stats_coin_toss[4][2][y], 3)) + "\n") #this also ends the line before next year's stats begin writing
+
+        f.write("\n")
+        f.write("\n")
+
+        #write J1.1 statistics
+        f.write("PATHWAYS GENERATED UNDER a J1.1 POLICY\n")
+
+        #printing column labels for excel, etc...
+        f.write("supp_ave,supp_min,supp_max,supp_std,supp_95_low,supp_95_high,")
+        f.write("harv_ave,harv_min,harv_max,harv_std,harv_95_low,harv_95_high,")
+        f.write("grwth_ave,grwth_min,grwth_max,grwth_std,grwth_95_low,grwth_95_high,")
+        f.write("cells_burned_ave,cells_burned_min,cells_burned_max,cells_burned_std,cells_burned_95_low,cells_burned_95_high,")
+        f.write("timb_lost_ave,timb_lost_min,timb_lost_max,timb_lost_std,timb_lost_95_low,timb_lost_95_high,")
+        f.write("supp_decicions\n")
+
+        #new row for each year
+        for y in range(years):
+            #print suppression cost stats for this year
+            #the first element of stats_whatever is a string decription
+            #element 1 is the suppression costs (6 lists)
+            for i in range(6):
+                f.write(str(round(stats_J1_1[1][i][y], 3)) + ",")
+
+            #print harvest stats for this year
+            #element 2 of stats_whatever is harvest values (6 lists)
+            for i in range(6):
+                f.write(str(round(stats_J1_1[2][i][y], 3)) + ",")
+
+            #print growth stats for this year
+            #element 3 of stats_whatever is growth  (6 lists)
+            for i in range(6):
+                f.write(str(round(stats_J1_1[3][i][y], 3)) + ",")
+
+            #print fire stats for this year
+            #element 4 of stats_whatever is fire
+            for i in range(6):
+                #element 0 of fire is cells burned (6 lists)
+                f.write(str(round(stats_J1_1[4][0][i][y], 3)) + ",")
+
+            for i in range(6):
+                #element 1 of fire is timber lost (6 lists)
+                f.write(str(round(stats_J1_1[4][1][i][y], 3)) + ",")
+
+            #element 2 of fire is suppress decisions (1 list)
+            f.write(str(round(stats_J1_1[4][2][y], 3)) + "\n") #this also ends the line before next year's stats begin writing
+
+
+        f.write("\n")
+        f.write("\n")
+
+        #write J2 statistics
+        f.write("PATHWAYS GENERATED UNDER a J2 POLICY\n")
+
+        #printing column labels for excel, etc...
+        f.write("supp_ave,supp_min,supp_max,supp_std,supp_95_low,supp_95_high,")
+        f.write("harv_ave,harv_min,harv_max,harv_std,harv_95_low,harv_95_high,")
+        f.write("grwth_ave,grwth_min,grwth_max,grwth_std,grwth_95_low,grwth_95_high,")
+        f.write("cells_burned_ave,cells_burned_min,cells_burned_max,cells_burned_std,cells_burned_95_low,cells_burned_95_high,")
+        f.write("timb_lost_ave,timb_lost_min,timb_lost_max,timb_lost_std,timb_lost_95_low,timb_lost_95_high,")
+        f.write("supp_decicions\n")
+
+        #new row for each year
+        for y in range(years):
+            #print suppression cost stats for this year
+            #the first element of stats_whatever is a string decription
+            #element 1 is the suppression costs (6 lists)
+            for i in range(6):
+                f.write(str(round(stats_J2[1][i][y], 3)) + ",")
+
+            #print harvest stats for this year
+            #element 2 of stats_whatever is harvest values (6 lists)
+            for i in range(6):
+                f.write(str(round(stats_J2[2][i][y], 3)) + ",")
+
+            #print growth stats for this year
+            #element 3 of stats_whatever is growth  (6 lists)
+            for i in range(6):
+                f.write(str(round(stats_J2[3][i][y], 3)) + ",")
+
+            #print fire stats for this year
+            #element 4 of stats_whatever is fire
+            for i in range(6):
+                #element 0 of fire is cells burned (6 lists)
+                f.write(str(round(stats_J2[4][0][i][y], 3)) + ",")
+
+            for i in range(6):
+                #element 1 of fire is timber lost (6 lists)
+                f.write(str(round(stats_J2[4][1][i][y], 3)) + ",")
+
+            #element 2 of fire is suppress decisions (1 list)
+            f.write(str(round(stats_J2[4][2][y], 3)) + "\n") #this also ends the line before next year's stats begin writing
+
+
+
+
+        #close the output file
+        f.close()
 
 
 
