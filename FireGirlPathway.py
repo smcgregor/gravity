@@ -96,7 +96,7 @@ class FireGirlPathway:
             #  timber_value that is lost, or not, by the blaze.
                     
             #The Logbook object allows this pathway to record its yearly history
-            self.Logbook = FireGirlPathwayLogbook()
+            #self.Logbook = FireGirlPathwayLogbook()
 
             #Starting a list to hold FireGirl_FireLog objects. Each one holds a full 
             #  record of one fire, including the cells that burn, when they burn, and 
@@ -1162,16 +1162,16 @@ class FireGirlPathway:
             ignite_temp = self.drawTemperature(ignite_date)
             
             #recording ignition data in the Logbook
-            self.Logbook.updateWind        (self.year, ignite_wind)
-            self.Logbook.updateTemp        (self.year, ignite_temp)
-            self.Logbook.updateDate        (self.year, ignite_date)
-            self.Logbook.updateLoc         (self.year, ignite_loc)
-            self.Logbook.updateTimber      (self.year, self.timber_value[x][y]   )
-            self.Logbook.updateTimberAve8  (self.year, self.calcTimberAve8(x,y)  )
-            self.Logbook.updateTimberAve24 (self.year, self.calcTimberAve24(x,y) )
-            self.Logbook.updateFuel        (self.year, self.fuel_load[x][y]      )
-            self.Logbook.updateFuelAve8    (self.year, self.calcFuelAve8(x,y)    )
-            self.Logbook.updateFuelAve24   (self.year, self.calcFuelAve24(x,y)   )
+            # self.Logbook.updateWind        (self.year, ignite_wind)
+            # self.Logbook.updateTemp        (self.year, ignite_temp)
+            # self.Logbook.updateDate        (self.year, ignite_date)
+            # self.Logbook.updateLoc         (self.year, ignite_loc)
+            # self.Logbook.updateTimber      (self.year, self.timber_value[x][y]   )
+            # self.Logbook.updateTimberAve8  (self.year, self.calcTimberAve8(x,y)  )
+            # self.Logbook.updateTimberAve24 (self.year, self.calcTimberAve24(x,y) )
+            # self.Logbook.updateFuel        (self.year, self.fuel_load[x][y]      )
+            # self.Logbook.updateFuelAve8    (self.year, self.calcFuelAve8(x,y)    )
+            # self.Logbook.updateFuelAve24   (self.year, self.calcFuelAve24(x,y)   )
         
             #recording in the new ignition object type
             features = [1, ignite_date, (ignite_date*ignite_date), ignite_temp, ignite_wind,
@@ -1203,8 +1203,8 @@ class FireGirlPathway:
             suppress_decision = self.chooseSuppression(suppress_prob)
             
             #recording suppression data in the Logbook
-            self.Logbook.updateSuppressProb(self.year, suppress_prob)
-            self.Logbook.updateSuppressDecision(self.year, suppress_decision)
+            #self.Logbook.updateSuppressProb(self.year, suppress_prob)
+            #self.Logbook.updateSuppressDecision(self.year, suppress_decision)
 
             #recording suppression data in the new logbook type
             firerecord_new.setChoice(suppress_decision)
@@ -1230,8 +1230,8 @@ class FireGirlPathway:
             end_time = round(fireresults[3], 3)
             
             #recording outcomes
-            self.Logbook.updateTimberLoss(self.year, timber_loss)
-            self.Logbook.updateCellsBurned(self.year, cells_burned)
+            #self.Logbook.updateTimberLoss(self.year, timber_loss)
+            #self.Logbook.updateCellsBurned(self.year, cells_burned)
 
             #recording outcomes in new object type
             firerecord_new.setOutcomes([timber_loss, cells_burned, sup_cost, end_time])

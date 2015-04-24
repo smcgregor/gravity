@@ -91,6 +91,50 @@ class FireGirlIgnitionRecord:
         return prob
 
 
+        
+class FireGirlFireLog:
+    #This class defines a logbook for a single fire. The location of each cell
+    #that burns, and the local fire time (not the pathway year) is recorded.
+        
+    def __init__(self, year):
+
+        #a list to hold individual burn events <- meaning a single cell igniting
+        self.burn_events = []
+        
+        #a record of the year in which this fire takes place
+        self.year = year
+        
+        #records of overall fire results
+        self.cells_burned = 0
+        self.timeber_loss = 0
+    
+    
+    def addIgnitionEvent(self, time, location, spread_rate, crown_burned):
+        #this function takes the time and location of an ignition and other 
+        #  pertinent information and adds it to the list.
+        
+        this_event = [time, location, spread_rate, crown_burned, "ignition"]
+        self.burn_events.append(this_event)
+    
+    def updateResults(self, timber_loss, cells_burned):
+        self.cells_burned = cells_burned
+        self.timber_loss = timber_loss
+        
+    def printBasicInfo(self):
+        print("Year " + str(self.year) + " Fire:  Cells burned = " + str(self.cells_burned) + "   Timber Loss = " + str(self.timber_loss) )
+    
+    def printFireHistory(self):
+        for i in range(len(self.burn_events)):
+            b = self.burn_events[i]
+            print("Ignition at time " + str( round(b[0],3) )     ),
+            print("   Loc : " + str(b[1]) ),
+            print("   SprdRt: " + str(  round(b[2],3)   )),
+            print("   CrownBurn: " + str(b[3]))
+
+
+
+### Deprecating Soon ###
+
 class FireGirlPathwayLogbook:
     # This class defines an entire logbook
     
@@ -442,42 +486,3 @@ class FireGirlPathwayLogbookItem:
         if not self.eco2 == None: print("  eco2: " + str(self.eco2)),
         if not self.eco3 == None: print("  eco3: " + str(self.eco3))
         
-        
-class FireGirlFireLog:
-    #This class defines a logbook for a single fire. The location of each cell
-    #that burns, and the local fire time (not the pathway year) is recorded.
-        
-    def __init__(self, year):
-
-        #a list to hold individual burn events <- meaning a single cell igniting
-        self.burn_events = []
-        
-        #a record of the year in which this fire takes place
-        self.year = year
-        
-        #records of overall fire results
-        self.cells_burned = 0
-        self.timeber_loss = 0
-    
-    
-    def addIgnitionEvent(self, time, location, spread_rate, crown_burned):
-        #this function takes the time and location of an ignition and other 
-        #  pertinent information and adds it to the list.
-        
-        this_event = [time, location, spread_rate, crown_burned, "ignition"]
-        self.burn_events.append(this_event)
-    
-    def updateResults(self, timber_loss, cells_burned):
-        self.cells_burned = cells_burned
-        self.timber_loss = timber_loss
-        
-    def printBasicInfo(self):
-        print("Year " + str(self.year) + " Fire:  Cells burned = " + str(self.cells_burned) + "   Timber Loss = " + str(self.timber_loss) )
-    
-    def printFireHistory(self):
-        for i in range(len(self.burn_events)):
-            b = self.burn_events[i]
-            print("Ignition at time " + str( round(b[0],3) )     ),
-            print("   Loc : " + str(b[1]) ),
-            print("   SprdRt: " + str(  round(b[2],3)   )),
-            print("   CrownBurn: " + str(b[3]))
