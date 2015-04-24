@@ -589,6 +589,10 @@ class FireGirlPolicyOptimizer:
 
         for pw in self.pathway_set:
 
+            #Silence the pathways, if this object is set to silent
+            if self.SILENT:
+                pw.SILENT = True
+            
             #have each pathway create timber/fuel data for itself
             pw.generateNewPathway()
 

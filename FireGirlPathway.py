@@ -33,6 +33,9 @@ class FireGirlPathway:
         
         #for testing only, a flag for Debug outputs
         self.DEBUG = False
+
+        #Flag: if True, suppress all print statements
+        self.SILENT = False
         
         #The policy object is defined in FireGirl_Policy.py, and contains everything
         #  required to evaluate a set of features against a given policy. To the
@@ -810,7 +813,9 @@ class FireGirlPathway:
             #failsafe exit
             iter_count += 1
             if iter_count > iter_cap:
-                print("WARNING: Firespread priority queue has failed to exit.  Current_time is: " + str( round(current_time,3) )    )
+                if not self.SILENT:
+                    #print("self.SILENT equals" + str(self.SILENT))
+                    print("WARNING: Firespread priority queue has failed to exit.  Current_time is: " + str( round(current_time,3) )    )
                 break
                 
             #check to make sure that there is at least one queued arrival
