@@ -19,9 +19,14 @@ class FireGirlPolicyOptimizer:
         
         #Boundaries for what the parameters can be set to during scipy's optimization routine:
         self.b_bounds = []
+
         if USING_FIREGIRL_PATHWAYS == True:
             for i in range(11):
                 self.b_bounds.append([-10,10])
+        else:
+            #set FireWoman bounds appropriately
+            pass
+
 
         #Flag: Use log(probabilities)  -  If we want to force sums of log(probs), set to True
         #                                 To just multiply probabilities, set to False
@@ -486,8 +491,27 @@ class FireGirlPolicyOptimizer:
             #      1e12 for low accuracy; 1e7 for moderate accuracy; 10.0 for extremely high accuracy.
             # The rest of the arguments are left as defaults.
             
+
+            #setting x0 to the initial guess, which can just be whatever our current policy parameters are.
             #converting to numpy arrays
-            x0 = scipy.array(self.Policy.getParams)
+
+            #checking to see if the policy actually has parameters yet
+            x0 = []
+            if len(self.Policy.getParams()) == 0:
+                #the Policy object's parameter array is empty, so lets arbitrarily fill it
+                if self.USING_FIREGIRL_PATHWAYS:
+                    self.Policy.setParams([0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0])
+                else:
+                    #this is a FireWoman pathway/policy, so fill it accordingly...
+                    pass
+            x0 = scipy.array(self.Policy.getParams())
+
+            #DEBUG
+            if not (len(self.b_bounds) == len(x0)):
+                print("error in FireGirlOptimizer.optimizePolicy...")
+                print("x0 = " + str(x0))
+                print("bounds = " + str(self.b_bounds))
+
 
 
             #               arg names:    func            x0  fprime,               args, approx_grad, bounds       ,  m, factr
@@ -530,6 +554,38 @@ class FireGirlPolicyOptimizer:
         
         return ret_val
     
+
+    def setObjFn(self, objfn):
+        """Sets the optimizer's flags to set it up for the given objective function type.
+
+        Arguements
+        objfn: a string indicating which objective function to use.
+        --options are:
+        -- "J1" for the J1.1 objective function (original joint-probability method with normalization)
+        -- "J2" for the J2 objective function (Hailey's averaging method)
+        -- (J1.0 is ineffective, so it is not represented here)
+        """
+
+        if objfn == "J1":
+            #set flags for J1.1
+            self.NORMALIZED_WEIGHTS_OBJ_FN = True
+            self.NORMALIZED_WEIGHTS_F_PRIME = True
+            self.AVERAGED_WEIGHTS_OBJ_FN = False
+            self.AVERAGED_WEIGHTS_F_PRIME = False
+        elif objfn == "J2":
+            #set flags for J2
+            self.NORMALIZED_WEIGHTS_OBJ_FN = False
+            self.NORMALIZED_WEIGHTS_F_PRIME = False
+            self.AVERAGED_WEIGHTS_OBJ_FN = True
+            self.AVERAGED_WEIGHTS_F_PRIME = True
+        else:
+            #undefined behavior... default to J2 for now?
+            print("Undefined objective function: " + str(objfn) + "   Setting J2 by default")
+            self.NORMALIZED_WEIGHTS_OBJ_FN = False
+            self.NORMALIZED_WEIGHTS_F_PRIME = False
+            self.AVERAGED_WEIGHTS_OBJ_FN = True
+            self.AVERAGED_WEIGHTS_F_PRIME = True
+
 
     def printOptOutput(self, output):
         #takes the outputs from the optimize() function and prints them in a nicer way
@@ -603,12 +659,7 @@ class FireGirlPolicyOptimizer:
             pw.updateNetValue()
 
         
-        #DEPRECATED
-        #Finish up by calculating the final values of each pathway
-        #print("Summing pathway Values")
-        #self.sumPathwayValues()
-
-
+ 
     ###################
     # Other Functions #
     ###################

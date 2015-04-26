@@ -53,6 +53,15 @@ class FireGirlPolicy:
         self.SUPPRESS_ALL = False
         self.LET_BURN = True
 
+    def setCoinToss(self):
+        """Sets all parameters in this policy to 0.0, and sets other policy-type flags appropriately.
+        """
+        self.SUPPRESS_ALL = False
+        self.LET_BURN = False
+        #set all parameters to zero
+        for beta in self.b:
+            beta = 0.0
+
     def setUseParameters(self):
         # this function de-selects both the SUPPRESS_ALL and LET_BURN flags, so that the policy will return
         #  suppression decisions according to whatever it's parameters currently are.

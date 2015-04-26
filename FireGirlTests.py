@@ -512,8 +512,84 @@ class FireGirlTrials:
         #close the output file
         f.close()
 
+    def optimize_then_monte_carlo(self, pathway_count=75, years=100, start_ID=0, monte_carlo_rollouts=75, monte_carlo_years=100, monte_carlo_start_ID=2000, objfn="J2", start_policy="LB"):
+        """Creates a new set according to a given policy, then finds an improved policy, and finally rolls out new pathways
+
+        Arguements
+        pathway_count: the number of pathays to simulate in the initial set. These will be used by the optimization routine
+        years: the number of years each pathway in the initial set should be simulated for.
+        start_ID: the pathway ID of the first pathway in the initial set.
+        monte_carlo_rollouts: How many new pathways to generate according to the improved policy.
+        monte_carlo_years: How many years each of the new pathways should run.
+        monte_carlo_start_ID: The pathway ID of the first pathway in the new set
+        objfn: a string indicating which objective function to use. Set to "J2" by default. "J1" indicates J1.1. Others will be added as they are developed.
+        start_policy: which pathway to use while generating the initial set. Set to "LB" for let-burn, by default. "SA" for suppress-all, and "CT" for coin-toss
+
+        Returns
+        A list with elements
+        --element 0: the average net value of the initial set
+        --element 1: the average net value of the monte carlo roll-outs
+        --element 2: a list of net values for the initial set
+        --element 3: a list of net values for the monte carlo roll-outs
+        """
+
+        if start_policy == "LB":
+            #set self.Policy to let burn
+            self.Policy.setLetBurn()
+        elif start_policy == "SA":
+            #set self.Policy to suppress all
+            self.Policy.setSuppressAll()
+        elif start_policy == "CT":
+            #set self.Policy to coin-toss
+            self.Policy.setCoinToss()
+        else:
+            #behavior is undefined...
+            # default will just be coin-toss for now
+            print("Unrecognized policy type... setting policy to coin-toss")
+            self.Policy.setCoinToss()
+
+        #silence self.Opt
+        self.Opt.SILENT = True
+
+        #assign policy and create pathways
+
+        print("Creating Pathways...")
+        self.Opt.setPolicy(self.Policy)
+        self.Opt.createFireGirlPathways(pathway_count,years,start_ID)
+
+        #record starting pathway net values
+        start_net_vals = self.Opt.getNetValues()
+        start_ave_net_val = mean(start_net_vals)
 
 
+        #set objective function flags
+        self.Opt.setObjFn(objfn)
+
+        #do the optimization routine
+        print("Starting Optimization...")
+        opt_output = self.Opt.optimizePolicy()
+        self.Opt.printOptOutput(opt_output)
+
+
+        #do montecarlo rollouts. Policy is already set to the optimized one as a result of self.Opt.optimizePolicy()
+        print("")
+        print("Beginnging Monte Carlo Rollouts with the new policy")
+        self.Opt.createFireGirlPathways(monte_carlo_rollouts,monte_carlo_years,monte_carlo_start_ID)
+
+
+        #get monte carlo rollout net_values
+        mc_net_vals = self.Opt.getNetValues()
+
+        mc_ave_net_val = mean(mc_net_vals)
+
+        print("")
+        print("Average Net Val before Optimzation: " + str(round(start_ave_net_val, 0)))
+        print("Average Net Val after Optimzation:  " + str(round(mc_ave_net_val, 0)))
+        
+        #set up return list
+        output = [ start_ave_net_val, mc_ave_net_val, start_net_vals, mc_net_vals]
+
+        return output
 
 
 
