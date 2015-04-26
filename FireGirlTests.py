@@ -85,7 +85,86 @@ class FireGirlTests:
                     #printing suppress decisions stat and ending the line
                     print(str(fires[2][i]))
 
-    def monte_carlo_baselines(self, pathway_count=5, years=100, start_ID=2000):
+
+    def optimization_test_1(self, objfn="J1"):
+        """Test of basic optimization functions. Uses a given obj. fn. to find an "optimal policy"
+
+        Arguements
+        objfn: "J1" or "J2" to choose which objective function to optimize under
+
+        Returns
+        Boolean: True, if successful (i.e. at least one parameter is non-zero). False otherwise.
+        """
+
+        if not self.SILENT:
+            if (self.PRINT_DETAILS or self.PRINT_SUMMARIES):
+                print(" ")
+                print("OPTIMIZATION TEST 1:")
+
+        opt = FireGirlPolicyOptimizer()
+
+        #set objfn
+        if objfn == "J1":
+            opt.setObjFn("J1")
+        else:
+            opt.setObjFn("J2")
+
+
+        #setting new policy
+        opt.Policy.setParams([0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0])
+        opt.Policy.setLetBurn()
+
+
+        #create a small set of pathways
+        if not self.SILENT:
+            if self.PRINT_DETAILS or self.PRINT_SUMMARIES:
+                print("Creating pathways...")
+
+        opt.createFireGirlPathways(20,50)
+        
+
+        if not self.SILENT:
+            if self.PRINT_DETAILS:
+                print(" ")
+                print("Initial Values")
+                print("objfn: " + str(opt.calcObjFn()))
+                print("fprme: " + str(opt.calcObjFPrime()))
+                print("weights: " + str(opt.pathway_weights))
+                print("net values: " + str(opt.pathway_net_values))
+
+        if not self.SILENT:
+            if self.PRINT_DETAILS:
+                print(" ")
+                print("Beginning Optimization Routine")
+           
+
+        output=opt.optimizePolicy()
+
+        if not self.SILENT:
+            if self.PRINT_DETAILS or self.PRINT_SUMMARIES:
+                opt.printOptOutput(output)
+
+        if not self.SILENT:
+            if self.PRINT_DETAILS:
+                print(" ")
+                print("Final Values")
+                print("objfn: " + str(opt.calcObjFn()))
+                print("fprme: " + str(opt.calcObjFPrime()))
+                print("weights: " + str(opt.pathway_weights))
+                print("net values: " + str(opt.pathway_net_values))
+
+
+        #testing output for success (non-zero parameters)
+        non_zero = False
+        for param in output[0][1]:
+            #checking for non-zero values, at least to three decimal places
+            if not round(param, 3) == 0:
+                non_zero = True
+
+        return non_zero
+
+
+    def monte_carlo_baselines(self, pathway_count=20, years=100, start_ID=2000):
         #This test will roll out N pathways using a let-burn, suppress-all, and coin-toss policies
 
         if not self.SILENT:
@@ -191,6 +270,7 @@ class FireGirlTrials:
         """
         self.Opt = FireGirlPolicyOptimizer()
         self.Policy = FireGirlPolicy()
+
 
     def policy_comparisons_1(self, pathway_count=75, years=100, start_ID=2000):
         """Runs the same N pathways on several different policies and prints stats for each
@@ -585,7 +665,7 @@ class FireGirlTrials:
         print("")
         print("Average Net Val before Optimzation: " + str(round(start_ave_net_val, 0)))
         print("Average Net Val after Optimzation:  " + str(round(mc_ave_net_val, 0)))
-        
+
         #set up return list
         output = [ start_ave_net_val, mc_ave_net_val, start_net_vals, mc_net_vals]
 
@@ -603,6 +683,11 @@ if __name__ == "__main__":
     #tests.SILENT = True
     tests.PRINT_DETAILS = False
     tests.PRINT_SUMMARIES = True
+
+    #running optimization tests and ignoring any output
+    opt1_passed = tests.optimization_test_1()
+    if not opt1_passed:
+        print("FAILED: FireGirlTests.optimization_test_1()")
 
     #running monte carlo tests, and ignoring results (at the moment)
     tests.monte_carlo_baselines()
