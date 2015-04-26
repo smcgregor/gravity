@@ -86,11 +86,15 @@ class FireGirlTests:
                     print(str(fires[2][i]))
 
 
-    def optimization_test_1(self, objfn="J1"):
+    def optimization_test_1(self, pathway_count = 20, years=100, start_ID=0):
         """Test of basic optimization functions. Uses a given obj. fn. to find an "optimal policy"
 
+        This is a successor to test_script_optimziation2.py
+
         Arguements
-        objfn: "J1" or "J2" to choose which objective function to optimize under
+        pathway_count: the number of pathways to generate
+        years: how many years each pathway should run
+        start_ID: which pathway ID to begin with
 
         Returns
         Boolean: True, if successful (i.e. at least one parameter is non-zero). False otherwise.
@@ -102,17 +106,12 @@ class FireGirlTests:
                 print("OPTIMIZATION TEST 1:")
 
         opt = FireGirlPolicyOptimizer()
-
-        #set objfn
-        if objfn == "J1":
-            opt.setObjFn("J1")
-        else:
-            opt.setObjFn("J2")
+        opt.SILENT = True
 
 
         #setting new policy
         opt.Policy.setParams([0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0])
-        opt.Policy.setLetBurn()
+        #opt.Policy.setLetBurn()
 
 
         #create a small set of pathways
@@ -120,34 +119,72 @@ class FireGirlTests:
             if self.PRINT_DETAILS or self.PRINT_SUMMARIES:
                 print("Creating pathways...")
 
-        opt.createFireGirlPathways(20,50)
-        
+        opt.createFireGirlPathways(pathway_count, years, start_ID)
+        opt.normalizeAllFeatures()
 
         if not self.SILENT:
             if self.PRINT_DETAILS:
                 print(" ")
-                print("Initial Values")
+                opt.setObjFn("J1")
+                print("Initial Values: J1")
+                print("objfn: " + str(opt.calcObjFn()))
+                print("fprme: " + str(opt.calcObjFPrime()))
+                print("weights: " + str(opt.pathway_weights))
+                print("net values: " + str(opt.pathway_net_values))
+                print(" ")
+                opt.setObjFn("J2")
+                print("Initial Values: J2")
                 print("objfn: " + str(opt.calcObjFn()))
                 print("fprme: " + str(opt.calcObjFPrime()))
                 print("weights: " + str(opt.pathway_weights))
                 print("net values: " + str(opt.pathway_net_values))
 
-        if not self.SILENT:
-            if self.PRINT_DETAILS:
-                print(" ")
-                print("Beginning Optimization Routine")
-           
 
-        output=opt.optimizePolicy()
-
+        #Do J1 optimization
         if not self.SILENT:
             if self.PRINT_DETAILS or self.PRINT_SUMMARIES:
-                opt.printOptOutput(output)
+                print(" ")
+                print("Beginning Optimization Routine for J1")
+           
+        opt.setObjFn("J1")
+        output1=opt.optimizePolicy()
+        #printing optimizations summary
+        if not self.SILENT:
+            if self.PRINT_DETAILS or self.PRINT_SUMMARIES:
+                opt.printOptOutput(output1)
+
+
+
+        #Reseting policy
+        opt.Policy.setParams([0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0])
+
+        #Do J2 optimization
+        if not self.SILENT:
+            if self.PRINT_DETAILS or self.PRINT_SUMMARIES:
+                print(" ")
+                print("Beginning Optimization Routine for J2")
+           
+        opt.setObjFn("J2")
+        output2=opt.optimizePolicy()
+        #printing optimizations summary
+        if not self.SILENT:
+            if self.PRINT_DETAILS or self.PRINT_SUMMARIES:
+                opt.printOptOutput(output2)
+
+
 
         if not self.SILENT:
             if self.PRINT_DETAILS:
                 print(" ")
-                print("Final Values")
+                opt.setObjFn("J1")
+                print("Final Values: J1")
+                print("objfn: " + str(opt.calcObjFn()))
+                print("fprme: " + str(opt.calcObjFPrime()))
+                print("weights: " + str(opt.pathway_weights))
+                print("net values: " + str(opt.pathway_net_values))
+                print(" ")
+                opt.setObjFn("J2")
+                print("Final Values: J2")
                 print("objfn: " + str(opt.calcObjFn()))
                 print("fprme: " + str(opt.calcObjFPrime()))
                 print("weights: " + str(opt.pathway_weights))
@@ -155,13 +192,21 @@ class FireGirlTests:
 
 
         #testing output for success (non-zero parameters)
-        non_zero = False
-        for param in output[0][1]:
-            #checking for non-zero values, at least to three decimal places
+        J1_non_zero = False
+        J2_non_zero = False
+        for param in output1[0][1]:
+            #checking for non-zero values , at least to three decimal places
             if not round(param, 3) == 0:
-                non_zero = True
+                J1_non_zero = True
+        for param in output2[0][1]:
+            #checking for non-zero values , at least to three decimal places
+            if not round(param, 3) == 0:
+                J2_non_zero = True
 
-        return non_zero
+        if J1_non_zero and J2_non_zero:
+            return True
+        else:
+            return False
 
 
     def monte_carlo_baselines(self, pathway_count=20, years=100, start_ID=2000):
@@ -311,7 +356,10 @@ class FireGirlTrials:
         vals_coin_toss = self.Opt.getNetValues()
 
         #Create N pathways under previously found J1.1 policy
-        self.Policy.setParams([-4.0548126597150898, 4.0548126597150898, 4.0548126597150898, -4.0548126597150898, 4.0548126597150898, -2.216996097452042, -2.216996097452042, -2.216996097452042, -2.216996097452042, -2.216996097452042, -2.216996097452042])
+        #this policy was made with suppression costs 400 and 2000
+        self.Policy.setParams([-3.62927, -3.7809, -4.37689, 5.26483, 2.63978, -3.37337, -2.96879, -3.17781, 3.01042, 4.72186, 4.6146])
+        #this policy was made with suppression costs 10 and 50
+        #self.Policy.setParams([-4.0548126597150898, 4.0548126597150898, 4.0548126597150898, -4.0548126597150898, 4.0548126597150898, -2.216996097452042, -2.216996097452042, -2.216996097452042, -2.216996097452042, -2.216996097452042, -2.216996097452042])
         self.Opt.setPolicy(self.Policy)
         self.Opt.createFireGirlPathways(pathway_count,years,start_ID)
         stats_J1_1 = all_stats_by_year(self.Opt.pathway_set)
@@ -319,7 +367,10 @@ class FireGirlTrials:
         vals_J1_1 = self.Opt.getNetValues()
 
         #Create N pathways under previously found J2 policy
-        self.Policy.setParams([-8.8497603806694123, 10.0, 0.14475050808112244, -10.0, 8.7811621637830832, 4.5530784623219773, 7.6456981485587256, 4.3894187002736862, 6.6923034115234064, -0.88238815750515465, 10.0])
+        #this policy was made with suppression costs 400 and 2000
+        self.Policy.setParams([-3.50848, -9.60937, -10.0, 9.13844, 6.97666, -10.0, -8.49793, -9.57214, 9.24394, 7.45344, 4.95935 ])
+        #this policy was made with suppression costs 10 and 50
+        #self.Policy.setParams([-8.8497603806694123, 10.0, 0.14475050808112244, -10.0, 8.7811621637830832, 4.5530784623219773, 7.6456981485587256, 4.3894187002736862, 6.6923034115234064, -0.88238815750515465, 10.0])
         self.Opt.setPolicy(self.Policy)
         self.Opt.createFireGirlPathways(pathway_count,years,start_ID)
         stats_J2 = all_stats_by_year(self.Opt.pathway_set)
@@ -636,6 +687,7 @@ class FireGirlTrials:
         print("Creating Pathways...")
         self.Opt.setPolicy(self.Policy)
         self.Opt.createFireGirlPathways(pathway_count,years,start_ID)
+        self.OPT.normalizeAllFeatures()
 
         #record starting pathway net values
         start_net_vals = self.Opt.getNetValues()
@@ -684,10 +736,13 @@ if __name__ == "__main__":
     tests.PRINT_DETAILS = False
     tests.PRINT_SUMMARIES = True
 
-    #running optimization tests and ignoring any output
-    opt1_passed = tests.optimization_test_1()
+    #running optimization tests
+    opt1_passed = tests.optimization_test_1(20,50,0,"J1")
     if not opt1_passed:
-        print("FAILED: FireGirlTests.optimization_test_1()")
+        print("FAILED: J1 FireGirlTests.optimization_test_1()")
+    opt1_passed = tests.optimization_test_1(20,50,0,"J2")
+    if not opt1_passed:
+        print("FAILED: J2 FireGirlTests.optimization_test_1()")
 
     #running monte carlo tests, and ignoring results (at the moment)
     tests.monte_carlo_baselines()
