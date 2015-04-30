@@ -11,8 +11,101 @@ from urlparse import urlparse, parse_qs
 # Return data
 #
 def get_initialize(query):
+    """Function returns a set of name:value pairs describing which
+    controls/options will be available on the web visualization.
+
+    General return value format as follows:
+    {
+    "reward": [
+    {"name": "Discount",  "description":"The per-year discount", "current_value": 1, "max": 1, "min": 0, "units": "-"},
+    {"name": "Board Feet",  "description":"The number of dollars per board foot for wood", "current_value": 10, "max": 100, "min": 0, "units": "$"},
+    {"name": "Suppression Fixed Cost",  "description":"How much it costs to suppress a fire regardless of size.", "current_value": 1000, "max": 1000000, "min": 0, "units": "$"},
+    {"name": "Suppression Marginal Cost",  "description":"How much it costs per hectare of burnt land to suppress a fire.", "current_value": 500, "max": 10000, "min": 0, "units": "$"},
+    {"name": "Old Growth Value",  "description":"How much every hectare of old growth trees are valued.", "current_value": 100, "max": 100000, "min": 0, "units": "$"},
+    {"name": "Forested Mountain Bike Trail",  "description":"The number of dollars each mountain bike trail is worth.", "current_value": 10, "max": 1000, "min": 0, "units": "$"}
+    ],
+    "transition": [
+    {"name": "Number of Fires Per Year",  "description":"The total number of separate fires experiences per year.", "current_value": 1, "max": 1, "min": 1, "units": ""},
+    {"name": "Fire spread rate",  "description":"The feet per hour spread of wildfires, normalized to wind.", "current_value": 10, "max": 10, "min": 10, "units": ""}
+    ],
+    "policy": [
+    {"name": "Wind Speed",  "description":"for each kilometer per hour", "current_value": 0.8, "max": 10000, "min": -10000, "units": ""},
+    {"name": "Humidity",  "description":"for each percent relative humidity", "current_value": -0.12, "max": 10000, "min": -10000, "units": ""},
+    {"name": "Day",  "description":"for each day of the fire season", "current_value": -0.15, "max": 10000, "min": -10000, "units": ""},
+    {"name": "Constant",  "description":"the intercept", "current_value": 9, "max": 10000, "min": 10000, "units": ""}
+    ]
+    }
+    """
     # Hailey todo: return an object following the spec Sean Provides
-    return {'todo':'get_initialize'}
+
+    return_val = {
+            "reward": [
+                        {"name": "Discount",
+                         "description":"The per-year discount",
+                         "current_value": 1, "max": 1, "min": 0, "units": "-"},
+                        {"name": "Suppression Fixed Cost",
+                         "description":"cost per day of suppression",
+                         "current_value": 500, "max": 999999, "min": 0, "units": "$"},
+                        {"name": "Suppression Variable Cost",
+                         "description":"cost per hectare of suppression",
+                         "current_value": 500, "max": 999999, "min": 0, "units": "$"}
+                        ],
+            "transition": [
+                         {"name": "Harvest Percent",
+                          "description": "timber harvest rate as a percent of annual increment",
+                          "current_value": 0.95, "max": 1, "min": 0, "units": "-"},
+                         {"name": "Minimum Timber Value",
+                          "description":"the minimum timber value required before harvest is allowed",
+                          "current_value": 50, "max":9999, "min": 0, "units": "$"},
+                         {"name": "Slash Remaning",
+                          "description": "the amount of fuel load (slash) left after a harvest",
+                          "current_value": 10, "max":9999, "min": 0, "units": "-"},
+                         {"name": "Fuel Accumulation",
+                          "description": "the amount of fuel load that accumulates each year",
+                          "current_value": 2, "max":9999, "min": 0, "units": "-"},
+                         {"name": "Suppression Effect",
+                          "description": "the reduction in fire spread rate as the result of suppression",
+                          "current_value": 0.5, "max":1, "min": 0, "units": "%"}
+                         ],
+            "policy": [
+                        {"name": "Constant",
+                         "description":"for the intercept",
+                         "current_value": 0, "max": 10, "min":-10, "units": ""},
+                        {"name": "Date",
+                         "description":"for each day of the year",
+                         "current_value": 0, "max": 10, "min":-10, "units": ""},
+                        {"name": "Days Left",
+                         "description":"for each day left in the year",
+                         "current_value": 0, "max": 10, "min":-10, "units": ""},
+                        {"name":"Temperature",
+                         "description":"for air temperature at the time of an ignition",
+                         "current_value": 0, "max": 10, "min":-10, "units": ""},
+                        {"name": "Wind Speed",
+                         "description":"for wind speed at the time of an ignition",
+                         "current_value": 0, "max": 10, "min":-10, "units": ""},
+                        {"name": "Timber Value",
+                         "description":"for the timber value at an ignition location",
+                         "current_value": 0, "max": 10, "min":-10, "units": ""},
+                        {"name": "Timber Value 8",
+                         "description":"for the average timber value in the 8 neighboring stands",
+                         "current_value": 0, "max": 10, "min":-10, "units": ""},
+                        {"name": "Timber Value 24",
+                         "description":"for the average timber value in the 24 neighboring stands",
+                         "current_value": 0, "max": 10, "min":-10, "units": ""},
+                        {"name": "Fuel Load",
+                         "description":"for the fuel load at an ignition location",
+                         "current_value": 0, "max": 10, "min":-10, "units": ""},
+                        {"name": "Fuel Load 8",
+                         "description":"for the average fuel load in the 8 neighboring stands",
+                         "current_value": 0, "max": 10, "min":-10, "units": ""},
+                        {"name": "Fuel Load 24",
+                         "description":"for the average fuel load in the 24 neighboring stands",
+                         "current_value": 0, "max": 10, "min":-10, "units": ""}
+
+                      ]
+                }
+
+    return return_val
 
 def get_rollouts(query):
     # Hailey todo: return an object following the spec Sean Provides
