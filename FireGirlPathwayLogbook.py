@@ -90,6 +90,37 @@ class FireGirlIgnitionRecord:
 
         return prob
 
+    def getDictionary(self):
+        """Returns dictionary representation of this ignition's primary features
+
+        """
+        d = {}
+
+        #check if the features have been normalized by checking the length of the
+        # _raw list. It only gets filled during the normalization process
+        if len(self.features_raw) > 0:
+            #normalization has happened, so use the raw values
+            for f in range(len(self.features_raw)):
+                d[self.feature_labels[f]] = self.features_raw[f]
+
+        else:
+            #normalization hasn't happened, so just use the orginal features
+            for f in range(len(self.features)):
+                d[self.feature_labels[f]] = self.features[f]
+
+
+        d["Policy Probability"] = self.policy_prob
+        d["Suppression Choice"] = self.policy_choice
+
+        #add outcomes
+        for o in range(len(self.outcomes)):
+            d[self.outcome_labels[o]] = self.outcomes[o]
+
+        d["Year"] = self.year
+        d["Burn Time"] = self.burn_time
+        d["Location"] = self.location
+
+        return d
 
         
 class FireGirlFireLog:

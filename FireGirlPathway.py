@@ -708,6 +708,26 @@ class FireGirlPathway:
         
         return cf_risk
 
+    def getGrowth(self, year):
+        """Returns the timber growth that happened in a specific year"""
+        if year < len(self.yearly_growth_totals) and year >= 0:
+            return self.yearly_growth_totals[year]
+        else:
+            return -1.0
+
+    def getHarvestTotal(self, year):
+        """Returns the harvest total in the speficied year"""
+        if year < len(self.yearly_logging_totals) and year >= 0:
+            return self.yearly_logging_totals[year]
+        else:
+            return -1.0
+
+    def getSuppressionCost(self,year):
+        """Returns the suppression costs in the speficied year"""
+        if year < len(self.yearly_suppression_costs) and year >= 0:
+            return self.yearly_suppression_costs[year]
+        else:
+            return -1.0
 
     def getTimberLossTotal(self):
         #This function looks through all the fires that have occurred and adds up their

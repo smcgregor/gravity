@@ -1,6 +1,7 @@
 from FireGirlOptimizer import *
 from FireGirlStats import *
 from numpy import mean
+import random
 
 class FireGirlTests:
     #This class is designed to house functions useful in testing and analyzing the behavior
@@ -237,8 +238,8 @@ class FireGirlTests:
         for pw in pathways:
             for i in range(years):
                 ign = FireGirlIgnitionRecord()
-                f1 = 1
-                f2 = -1
+                f1 = 1.0  * random.random()
+                f2 = -1.0  * random.random()
                 ign.features = [0,f1,f2,0,0,0,0,0,0,0,0]
                 
                 choice = True
@@ -247,7 +248,7 @@ class FireGirlTests:
                 pw.ignition_events.append(ign)
             
             #setting pathway net values
-            pw.net_value = 1
+            pw.net_value = 1 * random.random()
 
         
         #create optimizer

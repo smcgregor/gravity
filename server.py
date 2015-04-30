@@ -6,6 +6,7 @@ import json
 from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
 from os import curdir, sep
 from urlparse import urlparse, parse_qs
+from FireGirlOptimizer import *
 
 #
 # Return data
@@ -53,7 +54,7 @@ def get_initialize(query):
             "transition": [
                          {"name": "Harvest Percent",
                           "description": "timber harvest rate as a percent of annual increment",
-                          "current_value": 0.95, "max": 1, "min": 0, "units": "-"},
+                          "current_value": 0.95, "max": 1, "min": 0, "units": "%"},
                          {"name": "Minimum Timber Value",
                           "description":"the minimum timber value required before harvest is allowed",
                           "current_value": 50, "max":9999, "min": 0, "units": "$"},
@@ -109,7 +110,66 @@ def get_initialize(query):
 
 def get_rollouts(query):
     # Hailey todo: return an object following the spec Sean Provides
-    return {'todo':'get_rollouts'}
+    """Generates FireGirl pathways and returns a host of data from their histories
+
+    Returns in the form:
+    [
+    [{"variable name":"variable value", ...}, {"variable name":"variable value", ...}],
+    [{"variable name":"variable value", ...}, {"variable name":"variable value", ...}],
+    ...
+    ]
+    which is a list containing one element per pathway. Each element is itself a list of 
+    dictionaries representing each year of a pathway's evolution, and containing pertanent 
+    information about that year.
+
+    """
+    pathway_count = 100
+    years = 100
+    start_ID = 0
+
+    #generate 100 rollouts
+    opt = FireGirlPolicyOptimizer()
+    opt.setObjFn("J1")
+    #opt.setObjFn("J2")
+    opt.SILENT = True
+    
+    #since no policy has been explicitly set, it will default to all-zero parameters
+    opt.createFireGirlPathways(pathway_count,years,start_ID)
+
+    #outermost list to collect one sub-list for each pathway, etc...
+    return_list = []
+
+    #parse the data needed...
+    for pw in opt.pathway_set:
+        #new ignition events list for this pathway
+        year_values = []
+        for ign in pw.ignition_events:
+
+            #make a dictionary for the yearly totals (supp cost, harvest, etc...)
+            totals = {}
+
+            #fill the total's dictionary
+            totals["Harvest Value"] = pw.getHarvestTotal(pw.index(ign))
+            totals["Suppression Cost"] = pw.getSuppressionCost(pw.index(ign))
+            totals["Growth"] = pw.getGrowth(pw.index(ign))
+
+
+            #get the dictionary representation of the ignition
+            features = ign.getDictionary()
+
+            #concatenate the dictionaries
+            full_dictionary = totals.items() + features.items()
+
+            #add this ignition event + year details to this pathway's list of dictionaries
+            year_values.append(full_dictionary)
+
+
+        #the events list for this pathway has been filled, so add it to the return list
+        return_list.append(year_values)
+
+    #done with all pathways
+
+    return return_list
 
 def get_state(query):
     # Hailey todo: return an object following the spec Sean Provides
