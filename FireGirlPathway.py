@@ -112,6 +112,10 @@ class FireGirlPathway:
             #  the central 43x43 square
             self.width = 129
             self.height = 129
+
+            #lists to remember past fuel load and timber value grids
+            self.timber_value_history = []
+            self.fuel_load_history = []
             
             #Creating a rectangular array to hold timber values for each cell
             self.timber_value = []
@@ -777,6 +781,29 @@ class FireGirlPathway:
         #the value is already assigned to the local variable, but also return it:
         return self.net_value
 
+    def recordCurrentStateToHistory(self):
+        """Make value-copies of the current landscape grids and add them to the history lists
+        """
+
+        #making arrays to hold the copied information
+        fuel_copy = []
+        timber_copy = []
+
+        #copying values
+        for i in range(len(self.fuel_load)):
+            #append a new column in each list
+            fuel_copy.append([])
+            timber_copy.append([])
+            for j in range(len(self.fuel_load[0])):
+                #add this element to the most recently added column
+                #using +1-1 to ensure copy-by-value instead of copy-by-reference
+                fuel_copy[i].append(self.fuel_load[i][j]) + 1.0 - 1.0)
+                timber_copy[i].append(self.timber_value[i][j] + 1.0 - 1.0)
+
+        self.fuel_load_history.append(fuel_copy)
+        self.timber_value_history.append(timber_copy)
+
+
 
     def doFire(self, ignite_date, ignite_loc, ignite_wind, ignite_temp, suppress):
         #This function is the fire model. Given the input arguments, it will
@@ -1162,6 +1189,14 @@ class FireGirlPathway:
         #       d) the suppression decision and probability (if any)
         #       e) logging totals
         #       f) ecological variables???
+
+        
+        ##################################
+        ### STEP 0 - RECORDING HISTORY ###
+        ##################################
+
+        #take the current fuel_load and timber_value lists and add them to the historical lists
+        self.recordCurrentStateToHistory()
         
         
         ###############################
