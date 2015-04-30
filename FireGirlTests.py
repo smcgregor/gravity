@@ -208,6 +208,98 @@ class FireGirlTests:
         else:
             return False
 
+    def optimization_test_2(self, pathway_count=100, years=100):
+        """This testing function sets all features and actions to constants, which results in a known optimal policy
+
+        Arguements
+        pathway_count: How many pathways to simulate. It hardly matters, since they're all identical...
+        years: How many years to "simulate" each pathway. No simulations actually happen, but ignitions are 
+         made artifically and identically
+        """
+
+        if not self.SILENT:
+            if (self.PRINT_DETAILS or self.PRINT_SUMMARIES):
+                print(" ")
+                print("OPTIMIZATION TEST 2:")
+
+        if not self.SILENT:
+            if (self.PRINT_DETAILS):
+                print("-creating synthetic pathways:")
+
+        #create pathways
+        pathways = []
+        for pw in range(pathway_count):
+            #creating pathways: They'll have grids for landscape features, but they'll be unpopulated
+            pathways.append(FireGirlPathway(pw))
+
+
+        #create ignitions and setting net values
+        for pw in pathways:
+            for i in range(years):
+                ign = FireGirlIgnitionRecord()
+                f1 = 1
+                f2 = -1
+                ign.features = [0,f1,f2,0,0,0,0,0,0,0,0]
+                
+                choice = True
+                ign.policy_choice = choice
+                
+                pw.ignition_events.append(ign)
+            
+            #setting pathway net values
+            pw.net_value = 1
+
+        
+        #create optimizer
+        opt = FireGirlPolicyOptimizer()
+        opt.pathway_set = pathways
+
+        #Optimizing with J1.1
+        if not self.SILENT:
+            if self.PRINT_DETAILS:
+                print("-optimizing policy using J1.1")
+
+        opt.setObjFn("J1")
+        opt.Policy.setParams([0,0,0,0,0,0,0,0,0,0,0])
+        output_J1 = opt.optimizePolicy()
+        print(output_J1[0])
+
+        #Optimizing with J2
+        if not self.SILENT:
+            if self.PRINT_DETAILS:
+                print("-optimizing policy using J2")
+
+        opt.setObjFn("J2")
+        opt.Policy.setParams([0,0,0,0,0,0,0,0,0,0,0])
+        output_J2 = opt.optimizePolicy()
+        print(output_J2[0])
+
+        #now checking to ensure that the parameters returned appropriately
+        J1_pass = False
+        if (output_J1[0][1][1] > 9.9) and (output_J1[0][1][2] < -9.9):
+            J1_pass = True
+
+        J2_pass = False
+        if (output_J2[0][1][1] > 9.9) and (output_J2[0][1][2] < -9.9):
+            J2_pass = True
+
+        if not self.SILENT:
+            if self.PRINT_SUMMARIES or self.PRINT_DETAILS:
+                print("Results:")
+                if J1_pass:
+                    print("J1 Policy Passed")
+                else:
+                    print("J1 Policy FAILED")
+                    if self.PRINT_DETAILS:
+                        print("-parameters: " + str(output_J1[0][1]))
+                
+                if J2_pass:
+                    print("J2 Policy Passed")
+                else:
+                    print("J2 Policy FAILED")
+                    if self.PRINT_DETAILS:
+                        print("-parameters: " + str(output_J2[0][1]))
+
 
     def monte_carlo_baselines(self, pathway_count=20, years=100, start_ID=2000):
         #This test will roll out N pathways using a let-burn, suppress-all, and coin-toss policies
