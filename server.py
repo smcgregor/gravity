@@ -207,6 +207,8 @@ def get_rollouts(query):
             totals["Harvest Value"] = pw.getHarvest(pw.ignition_events.index(ign))
             totals["Suppression Cost"] = pw.getSuppressionCost(pw.ignition_events.index(ign))
             totals["Growth"] = pw.getGrowth(pw.ignition_events.index(ign))
+
+            #TODO - Fix for Discount Rate
             totals["Discounted Reward"] = totals["Harvest Value"] - totals["Suppression Cost"]
 
 

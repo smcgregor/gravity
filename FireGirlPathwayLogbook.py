@@ -118,7 +118,8 @@ class FireGirlIgnitionRecord:
 
         d["Year"] = self.year
         d["Burn Time"] = self.burn_time
-        d["Location"] = self.location
+        d["Location X"] = self.location[0]
+        d["Location Y"] = self.location[1]
 
         return d
 
