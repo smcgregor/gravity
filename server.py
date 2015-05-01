@@ -52,6 +52,12 @@ def get_initialize(query):
                          "current_value": 500, "max": 999999, "min": 0, "units": "$"}
                         ],
             "transition": [
+                         {"name": "Years to simulate",
+                          "description": "how far to look into the future",
+                          "current_value": 10, "max": 150, "min": 0, "units": "Y"},
+                         {"name": "Futures to simulate",
+                          "description": "how many stochastic futures to generate",
+                          "current_value": 10, "max": 1000, "min": 0, "units": "-"},
                          {"name": "Harvest Percent",
                           "description": "timber harvest rate as a percent of annual increment",
                           "current_value": 0.95, "max": 1, "min": 0, "units": "%"},
@@ -127,8 +133,8 @@ def get_rollouts(query):
     dict_transition = query["transition"]
     dict_policy = query["policy"] 
 
-    pathway_count = 5
-    years = 5
+    pathway_count = int(dict_transition["Futures to simulate"])
+    years = int(dict_transition["Years to simulate"])
     start_ID = 0
 
     #generate 100 rollouts
