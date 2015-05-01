@@ -123,6 +123,38 @@ def get_rollouts(query):
     information about that year.
 
     """
+
+    query = {
+            "reward": {  "Discount": 1,
+                         "Suppression Fixed Cost": 500, 
+                         "Suppression Variable Cost": 500
+                      },
+                        
+            "transition": {"Harvest Percent": 0.95,
+                           "Minimum Timber Value": 50,
+                           "Slash Remaning": 10,
+                           "Fuel Accumulation": 2,
+                           "Suppression Effect": 0.5
+                          },
+                         
+            "policy": { "Constant": 0, 
+                        "Date": 0,
+                        "Days Left": 0,
+                        "Temperature": 0,
+                        "Wind Speed": 0,
+                        "Timber Value": 0,
+                        "Timber Value 8": 0,
+                        "Timber Value 24": 0,
+                        "Fuel Load": 0,
+                        "Fuel Load 8": 0,
+                        "Fuel Load 24": 0
+                       }      
+                }
+
+    dict_reward = query["reward"]
+    dict_transition = query["transition"]
+    dict_policy = query["policy"] 
+
     pathway_count = 100
     years = 100
     start_ID = 0
@@ -133,7 +165,27 @@ def get_rollouts(query):
     #opt.setObjFn("J2")
     opt.SILENT = True
     
-    #since no policy has been explicitly set, it will default to all-zero parameters
+    #setting policy...
+    #This is brittle, and will not work directly with FireWoman data... or with future versions
+    # of FireGirl if new features get added...
+    pol = FireGirlPolicy()
+    pol.setParams([dict_policy["Constant"],
+                   dict_policy["Date"],
+                   dict_policy["Days Left"],
+                   dict_policy["Temperature"],
+                   dict_policy["Wind Speed"],
+                   dict_policy["Timber Value"],
+                   dict_policy["Timber Value 8"],
+                   dict_policy["Timber Value 24"],
+                   dict_policy["Fuel Load"],
+                   dict_policy["Fuel Load 8"],
+                   dict_policy["Fuel Load 24"],
+                  ])
+
+    #setting the policy in the optimizer, which will pass it to each created pathway
+    opt.setPolicy(pol)
+
+    #creating landscapes
     opt.createFireGirlPathways(pathway_count,years,start_ID)
 
     #outermost list to collect one sub-list for each pathway, etc...
@@ -158,10 +210,10 @@ def get_rollouts(query):
             features = ign.getDictionary()
 
             #concatenate the dictionaries
-            full_dictionary = totals.items() + features.items()
+            totals.update(features)
 
             #add this ignition event + year details to this pathway's list of dictionaries
-            year_values.append(full_dictionary)
+            year_values.append(totals)
 
 
         #the events list for this pathway has been filled, so add it to the return list
