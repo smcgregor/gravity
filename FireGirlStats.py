@@ -9,6 +9,14 @@ Note: Most functions of this class accept a list of FireGirlPathway objects on w
 to run the statistic(s) in question.
 """
 
+def average_net_value(pathway_set):
+    """Takes a pathway set and returns the average net value of those pathways
+    """
+    sum_val = 0.0
+    for pw in pathway_set:
+        sum_val += pw.getNetValue()
+
+    return sum_val / len(pathway_set)
 
 def suppression_cost_stats_by_year(pathway_set):
     """From a list of FireGirlPathway objects, return summary statistics of suppression costs by year

@@ -114,7 +114,7 @@ class FireGirlPathway:
             self.height = 129
 
             #lists to remember past fuel load and timber value grids
-            self.SAVE_HISTORY = True
+            self.SAVE_HISTORY = False
             self.timber_value_history = []
             self.fuel_load_history = []
             
@@ -720,7 +720,7 @@ class FireGirlPathway:
         else:
             return -1.0
 
-    def getHarvestTotal(self, year):
+    def getHarvest(self, year):
         """Returns the harvest total in the speficied year"""
         if year < len(self.yearly_logging_totals) and year >= 0:
             return self.yearly_logging_totals[year]

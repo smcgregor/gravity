@@ -824,7 +824,7 @@ class FireGirlTrials:
 
         return output
 
-    def suppresion_cost_sensitivity(self, pathway_count = 50, years=100, start_ID=0, supp_cost_max=10000, supp_cost_steps=20):
+    def suppression_cost_sensitivity(self, pathway_count = 50, years=100, start_ID=0, supp_cost_max=10000, supp_cost_steps=20):
         """This test varies suppression costs and records J2 optimal policy suppression choices.
         """
 
@@ -833,13 +833,78 @@ class FireGirlTrials:
         if step < 1:
             return False
 
-        #loop over each suppression cost value
-        for cost in range(0,step,supp_cost_max):
-            
-            #create empty pathway
+        #lists to hold suppress decision averages and net value averages for each step
+        ave_suppress_decisions = []
+        ave_net_values = []
 
-            #set 
-            pass
+        print("Beginning Simulation-Optimization-MonteCarlo Loop")
+        #loop over each suppression cost value
+        for cost in range(0, supp_cost_max, step):
+            
+            print("-creating pathways for supp cost: " + str(cost))
+            #create empty pathways
+            pathway_set = []
+            for i in range(start_ID, start_ID + pathway_count):
+                pathway_set.append(FireGirlPathway(i))
+
+            #loop over pathways and set suppression costs
+            for pw in pathway_set:
+                pw.SAVE_HISTORY = False
+                pw.fire_suppression_cost_per_cell = cost
+                pw.fire_suppression_cost_per_day = cost
+
+            #simulate years
+            for pw in pathway_set:
+                pw.doYears(years)
+
+            #learn a new policy
+            self.Opt.pathway_set = pathway_set
+            self.Opt.SILENT = True
+            self.Opt.Policy = FireGirlPolicy(None,0.0,11)
+            self.Opt.setObjFn("J2")
+
+            print("--learning new policy")
+            output = self.Opt.optimizePolicy()
+
+            print("--generating Monte Carlo rollouts")
+            #create new empty pathways
+            new_pathway_set = []
+            for i in range(start_ID + 2000, start_ID + 2000 + pathway_count):
+                new_pathway_set.append(FireGirlPathway(i))
+
+            #loop over pathways and set suppression costs and Policy
+            for pw in new_pathway_set:
+                pw.SAVE_HISTORY = False
+                pw.fire_suppression_cost_per_cell = cost
+                pw.fire_suppression_cost_per_day = cost
+                pw.Policy = self.Opt.Policy
+
+            #simulate years
+            for pw in new_pathway_set:
+                pw.doYears(years)
+                pw.updateNetValue()
+
+            #record average suppression decisions
+            fire_stats = fire_stats_by_year(new_pathway_set)
+            #the list we want is element #2
+            ave_suppress_decisions.append(mean(fire_stats[2]))
+
+            #record average net values
+            ave_net_values.append(average_net_value(new_pathway_set))
+
+        
+        #finished looping over every suppression cost step
+        #printing values
+        print("Suppression Cost Sensitivity Trial Complete")
+        print("-pathways: " + str(pathway_count))
+        print("-years: " + str(years))
+        print(" ")
+        print("suppression cost, ave suppress decisions, ave net values")
+        for i in range(supp_cost_steps):
+            print(str(i*step) + "," + str(ave_suppress_decisions[i]) + "," + str(ave_net_values[i]))
+
+
+
 
 
 
