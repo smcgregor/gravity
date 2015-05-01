@@ -114,10 +114,12 @@ class FireGirlIgnitionRecord:
 
         #add outcomes
         for o in range(len(self.outcomes)):
+            #adding keys/pairs from outcomes, which is set to
+            # "Timber Loss", "Cells Burned", "Suppression Cost", "Burn Time" in FGPathway...
             d[self.outcome_labels[o]] = self.outcomes[o]
 
         d["Year"] = self.year
-        d["Burn Time"] = self.burn_time
+        #d["Burn Time"] = self.burn_time #this one is already repored in self.outcomes
         d["Location X"] = self.location[0]
         d["Location Y"] = self.location[1]
 
@@ -167,7 +169,7 @@ class FireGirlFireLog:
 
 ### Deprecating Soon ###
 
-class FireGirlPathwayLogbook:
+class FireGirlPathwayLogbook_DEPRECATED:
     # This class defines an entire logbook
     
     def __init__(self):
@@ -395,7 +397,7 @@ class FireGirlPathwayLogbook:
                 break
 
 
-class FireGirlPathwayLogbookItem:
+class FireGirlPathwayLogbookItem_DEPRECATED:
     # This class defines a single entry in a pathway logbook
     
     def __init__(self, year=None, date=None, loc=None, temp=None, wind=None, 

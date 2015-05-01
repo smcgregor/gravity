@@ -174,7 +174,6 @@ class FireGirlPolicyOptimizer:
             print("Normalization Magnitude:")
             print(str(feature_norm_mag))
 
-
     def calcPathwayWeights(self, USE_SELF_POLICY=True):
         #This function looks through each fire of a given pathway and applies the current
         #  policy to the features of each one. The resulting 'probability' from the policy 
@@ -236,9 +235,7 @@ class FireGirlPolicyOptimizer:
         pathway_weights_normalized = []
         for w in self.pathway_weights:
             self.pathway_weights_normalized.append( w / weight_sum )  #J1.1 weights
-            
-            
-
+                    
     def calcObjFn(self, b=None):
         #This function contains the optimization objective function. It operates
         #  on the current list of pathways. If any values for 'b' are passed in,
@@ -358,8 +355,7 @@ class FireGirlPolicyOptimizer:
         delta_prob = sup * delta_lgstc + (1 - sup)*(-1)*delta_lgstc
         
         return delta_prob
-
-        
+    
     def calcObjFPrime(self, betas=None):
         #This function returns the gradient of the objective function
 
@@ -456,8 +452,7 @@ class FireGirlPolicyOptimizer:
 
         # And Finally, return the list
         return scipy.array(d_obj_d_bk)
-
-       
+   
     def optimizePolicy(self, iterations=1, acceptance_threshold=None):
         #This function will work through the given number of gradient descent 
         #  iterations using the current set of pathways for its data set.
@@ -565,7 +560,6 @@ class FireGirlPolicyOptimizer:
         
         return ret_val
     
-
     def setObjFn(self, objfn):
         """Sets the optimizer's flags to set it up for the given objective function type.
 
@@ -596,7 +590,6 @@ class FireGirlPolicyOptimizer:
             self.NORMALIZED_WEIGHTS_F_PRIME = False
             self.AVERAGED_WEIGHTS_OBJ_FN = True
             self.AVERAGED_WEIGHTS_F_PRIME = True
-
 
     def printOptOutput(self, output):
         #takes the outputs from the optimize() function and prints them in a nicer way

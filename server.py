@@ -200,26 +200,19 @@ def get_rollouts(query):
         year_values = []
         for ign in pw.ignition_events:
 
-            #make a dictionary for the yearly totals (supp cost, harvest, etc...)
-            totals = {}
-
-            #fill the total's dictionary
-            totals["Harvest Value"] = pw.getHarvest(pw.ignition_events.index(ign))
-            totals["Suppression Cost"] = pw.getSuppressionCost(pw.ignition_events.index(ign))
-            totals["Growth"] = pw.getGrowth(pw.ignition_events.index(ign))
-
-            #TODO - Fix for Discount Rate
-            totals["Discounted Reward"] = totals["Harvest Value"] - totals["Suppression Cost"]
-
-
             #get the dictionary representation of the ignition
             features = ign.getDictionary()
 
-            #concatenate the dictionaries
-            totals.update(features)
+            #fill the total's dictionary
+            features["Harvest Value"] = pw.getHarvest(ign.year)
+            #features["Suppression Cost"] = pw.getSuppressionCost(ign.year) #already reported in ign.getDictionary()
+            features["Growth"] = pw.getGrowth(ign.year)
+
+            #TODO - Fix for Discount Rate
+            features["Discounted Reward"] = features["Harvest Value"] - features["Suppression Cost"]
 
             #add this ignition event + year details to this pathway's list of dictionaries
-            year_values.append(totals)
+            year_values.append(features)
 
 
         #the events list for this pathway has been filled, so add it to the return list

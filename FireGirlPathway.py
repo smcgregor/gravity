@@ -1223,18 +1223,7 @@ class FireGirlPathway:
             ignite_wind = self.drawWindSpeed(ignite_date)
             ignite_temp = self.drawTemperature(ignite_date)
             
-            #recording ignition data in the Logbook
-            # self.Logbook.updateWind        (self.year, ignite_wind)
-            # self.Logbook.updateTemp        (self.year, ignite_temp)
-            # self.Logbook.updateDate        (self.year, ignite_date)
-            # self.Logbook.updateLoc         (self.year, ignite_loc)
-            # self.Logbook.updateTimber      (self.year, self.timber_value[x][y]   )
-            # self.Logbook.updateTimberAve8  (self.year, self.calcTimberAve8(x,y)  )
-            # self.Logbook.updateTimberAve24 (self.year, self.calcTimberAve24(x,y) )
-            # self.Logbook.updateFuel        (self.year, self.fuel_load[x][y]      )
-            # self.Logbook.updateFuelAve8    (self.year, self.calcFuelAve8(x,y)    )
-            # self.Logbook.updateFuelAve24   (self.year, self.calcFuelAve24(x,y)   )
-        
+       
             #recording in the new ignition object type
             features = [1, ignite_date, (ignite_date*ignite_date), ignite_temp, ignite_wind,
                         self.timber_value[x][y], self.calcTimberAve8(x,y), self.calcTimberAve24(x,y),
@@ -1264,10 +1253,6 @@ class FireGirlPathway:
             suppress_prob = self.evaluateSuppressionRule(ignite_date, ignite_loc, ignite_wind, ignite_temp)
             suppress_decision = self.chooseSuppression(suppress_prob)
             
-            #recording suppression data in the Logbook
-            #self.Logbook.updateSuppressProb(self.year, suppress_prob)
-            #self.Logbook.updateSuppressDecision(self.year, suppress_decision)
-
             #recording suppression data in the new logbook type
             firerecord_new.setChoice(suppress_decision)
             firerecord_new.setProb(suppress_prob)
@@ -1291,13 +1276,9 @@ class FireGirlPathway:
             sup_cost = fireresults[2]
             end_time = round(fireresults[3], 3)
             
-            #recording outcomes
-            #self.Logbook.updateTimberLoss(self.year, timber_loss)
-            #self.Logbook.updateCellsBurned(self.year, cells_burned)
-
             #recording outcomes in new object type
             firerecord_new.setOutcomes([timber_loss, cells_burned, sup_cost, end_time])
-            firerecord_new.setOutcomeLabels(["timber loss", "cells burned", "suppression cost", "burn time"])
+            firerecord_new.setOutcomeLabels(["Timber Loss", "Cells Burned", "Suppression Cost", "Burn Time"])
         
                 
         #################################
@@ -1348,7 +1329,7 @@ class FireGirlPathway:
 
         #and update net values
         self.updateNetValue()
-        
+
         
     def doYears(self, number_of_years):
         #this function will process any number of pathway years, starting with
@@ -1356,7 +1337,7 @@ class FireGirlPathway:
         #  by one and continue
         for y in range(number_of_years):
             self.doOneYear()
-            self.year += 1
+            #self.year += 1
             
     
     
