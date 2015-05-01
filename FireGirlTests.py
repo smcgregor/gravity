@@ -824,6 +824,22 @@ class FireGirlTrials:
 
         return output
 
+    def suppresion_cost_sensitivity(self, pathway_count = 50, years=100, start_ID=0, supp_cost_max=10000, supp_cost_steps=20):
+        """This test varies suppression costs and records J2 optimal policy suppression choices.
+        """
+
+        #calculate step value
+        step = int(supp_cost_max/supp_cost_steps)
+        if step < 1:
+            return False
+
+        #loop over each suppression cost value
+        for cost in range(0,step,supp_cost_max):
+            
+            #create empty pathway
+
+            #set 
+            pass
 
 
 
