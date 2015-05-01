@@ -108,6 +108,7 @@ class FireGirlTests:
 
         opt = FireGirlPolicyOptimizer()
         opt.SILENT = True
+        opt.PATHWAYS_RECORD_HISTORIES = False
 
 
         #setting new policy
@@ -263,7 +264,7 @@ class FireGirlTests:
         opt.setObjFn("J1")
         opt.Policy.setParams([0,0,0,0,0,0,0,0,0,0,0])
         output_J1 = opt.optimizePolicy()
-        print(output_J1[0])
+        #print(output_J1[0])
 
         #Optimizing with J2
         if not self.SILENT:
@@ -273,7 +274,7 @@ class FireGirlTests:
         opt.setObjFn("J2")
         opt.Policy.setParams([0,0,0,0,0,0,0,0,0,0,0])
         output_J2 = opt.optimizePolicy()
-        print(output_J2[0])
+        #print(output_J2[0])
 
         #now checking to ensure that the parameters returned appropriately
         J1_pass = False
@@ -302,6 +303,10 @@ class FireGirlTests:
                         print("-parameters: " + str(output_J2[0][1]))
 
 
+        #return true only if both tests passed
+        return (J1_pass and J2_pass)
+
+
     def monte_carlo_baselines(self, pathway_count=20, years=100, start_ID=2000):
         #This test will roll out N pathways using a let-burn, suppress-all, and coin-toss policies
 
@@ -313,6 +318,7 @@ class FireGirlTests:
         opt = FireGirlPolicyOptimizer()
         pol = FireGirlPolicy()
         opt.SILENT = True
+        opt.PATHWAYS_RECORD_HISTORIES = False
 
 
         #setting a let-burn policy
@@ -830,12 +836,14 @@ if __name__ == "__main__":
     tests.PRINT_SUMMARIES = True
 
     #running optimization tests
-    opt1_passed = tests.optimization_test_1(20,50,0,"J1")
+    opt1_passed = tests.optimization_test_1(20,50,0)
     if not opt1_passed:
         print("FAILED: J1 FireGirlTests.optimization_test_1()")
-    opt1_passed = tests.optimization_test_1(20,50,0,"J2")
+    opt1_passed = tests.optimization_test_1(20,50,0)
     if not opt1_passed:
         print("FAILED: J2 FireGirlTests.optimization_test_1()")
+
+    tests.optimization_test_2()
 
     #running monte carlo tests, and ignoring results (at the moment)
     tests.monte_carlo_baselines()

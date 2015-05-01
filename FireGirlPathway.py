@@ -114,6 +114,7 @@ class FireGirlPathway:
             self.height = 129
 
             #lists to remember past fuel load and timber value grids
+            self.SAVE_HISTORY = True
             self.timber_value_history = []
             self.fuel_load_history = []
             
@@ -797,7 +798,7 @@ class FireGirlPathway:
             for j in range(len(self.fuel_load[0])):
                 #add this element to the most recently added column
                 #using +1-1 to ensure copy-by-value instead of copy-by-reference
-                fuel_copy[i].append(self.fuel_load[i][j]) + 1.0 - 1.0)
+                fuel_copy[i].append(self.fuel_load[i][j] + 1.0 - 1.0)
                 timber_copy[i].append(self.timber_value[i][j] + 1.0 - 1.0)
 
         self.fuel_load_history.append(fuel_copy)
@@ -1196,7 +1197,8 @@ class FireGirlPathway:
         ##################################
 
         #take the current fuel_load and timber_value lists and add them to the historical lists
-        self.recordCurrentStateToHistory()
+        if self.SAVE_HISTORY:
+            self.recordCurrentStateToHistory()
         
         
         ###############################

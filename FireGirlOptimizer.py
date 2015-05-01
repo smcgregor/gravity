@@ -46,6 +46,9 @@ class FireGirlPolicyOptimizer:
         self.SILENT = False
         #Flag: Suppress all outputs that originate from pathways this object creates/uses
         self.MUTE_PATHWAYS = True
+
+        #Flag: Should Pathways remember their state histories
+        self.PATHWAYS_RECORD_HISTORIES = False
         
 
         #Flag: Using FireGirl pathways = True
@@ -125,7 +128,9 @@ class FireGirlPolicyOptimizer:
         feature_norm_mag = []
         for f in range(len(feature_max)):
             feature_norm_mag.append(  (feature_max[f] - feature_mean[f]) / rng )
-        print(str(feature_norm_mag))
+        if not self.SILENT:
+            #print(str(feature_norm_mag))
+            pass
 
         #now normalize each feature value to fall between "max" and "min"
         #in every pathway
@@ -152,7 +157,7 @@ class FireGirlPolicyOptimizer:
                         ig.features[f] = ig.features[f] / feature_norm_mag[f]
 
         #if desired, print the max, min, mean, and norm values
-        if True:
+        if not self.SILENT:
             print("Feature Descriptions before normalization")
             print("Max values:")
             print(str(feature_max))
@@ -646,8 +651,13 @@ class FireGirlPolicyOptimizer:
         for pw in self.pathway_set:
 
             #Silence the pathways, if this object is set to silent
-            if self.SILENT:
+            if self.SILENT or self.MUTE_PATHWAYS:
                 pw.SILENT = True
+
+            if self.PATHWAYS_RECORD_HISTORIES:
+                pw.SAVE_HISTORY = True
+            else:
+                pw.SAVE_HISTORY = False
             
             #have each pathway create timber/fuel data for itself
             pw.generateNewPathway()
