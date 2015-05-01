@@ -155,8 +155,8 @@ def get_rollouts(query):
     dict_transition = query["transition"]
     dict_policy = query["policy"] 
 
-    pathway_count = 100
-    years = 100
+    pathway_count = 5
+    years = 5
     start_ID = 0
 
     #generate 100 rollouts
@@ -185,7 +185,10 @@ def get_rollouts(query):
     #setting the policy in the optimizer, which will pass it to each created pathway
     opt.setPolicy(pol)
 
-    #creating landscapes
+    #giving the optimizer custom model parameters
+    opt.setFireGirlModelParameters(dict_transition,dict_reward)
+
+    #creating landscapes. The function will enforce the custom model parameters
     opt.createFireGirlPathways(pathway_count,years,start_ID)
 
     #outermost list to collect one sub-list for each pathway, etc...
@@ -201,9 +204,9 @@ def get_rollouts(query):
             totals = {}
 
             #fill the total's dictionary
-            totals["Harvest Value"] = pw.getHarvest(pw.index(ign))
-            totals["Suppression Cost"] = pw.getSuppressionCost(pw.index(ign))
-            totals["Growth"] = pw.getGrowth(pw.index(ign))
+            totals["Harvest Value"] = pw.getHarvest(pw.ignition_events.index(ign))
+            totals["Suppression Cost"] = pw.getSuppressionCost(pw.ignition_events.index(ign))
+            totals["Growth"] = pw.getGrowth(pw.ignition_events.index(ign))
 
 
             #get the dictionary representation of the ignition

@@ -49,6 +49,12 @@ class FireGirlPolicyOptimizer:
 
         #Flag: Should Pathways remember their state histories
         self.PATHWAYS_RECORD_HISTORIES = False
+
+        #Flag: Custom Model Parameters. If the optimizer has recieved custom model parameters,
+        # this flag warns createFireGirlPathways, and the parameters are assigned appropriately
+        self.CUSTOM_MODEL_PARAMETERS = False
+        self.custom_transition_params = {}
+        self.custom_reward_params = {}
         
 
         #Flag: Using FireGirl pathways = True
@@ -617,6 +623,90 @@ class FireGirlPolicyOptimizer:
     ###############################
     # FireGirl-specific Functions #
     ###############################
+
+    def setFireGirlModelParameters(self,transition_dictionary,reward_dictionary):
+        """Takes two dictionaries containing model parameters. Subsequent pathways will use these values.
+
+        Arguemnts have the following key:value pairs
+
+        reward =  {"Discount": 1,
+                    "Suppression Fixed Cost": 500, 
+                    "Suppression Variable Cost": 500
+                   }
+                        
+        transition = { "Harvest Percent": 0.95,
+                        "Minimum Timber Value": 50,
+                        "Slash Remaning": 10,
+                        "Fuel Accumulation": 2,
+                        "Suppression Effect": 0.5
+                      }
+        """
+
+        self.CUSTOM_MODEL_PARAMETERS = True
+        self.custom_reward_params = reward_dictionary
+        self.custom_transition_params = transition_dictionary
+    
+    def clearFireGirlModelParameters(self):
+        self.CUSTOM_MODEL_PARAMETERS = False
+        self.custom_transition_params = {}
+        self.custom_reward_params = {}
+
+    def updatePathwayCustomParameters(self):
+        """ Uses stored model parameter dictionaries and assigns them to the current pathway set
+
+        Dictionaries should have...
+
+        reward =  {"Discount": 1,
+                "Suppression Fixed Cost": 500, 
+                "Suppression Variable Cost": 500
+               }
+                    
+        transition = { "Harvest Percent": 0.95,
+                    "Minimum Timber Value": 50,
+                    "Slash Remaning": 10,
+                    "Fuel Accumulation": 2,
+                    "Suppression Effect": 0.5
+                  }
+        """
+
+        #reward parameters
+
+        if "Discount" in self.custom_reward_params.keys():
+            for pw in self.pathway_set:
+                #TODO: Add Pathway discount rate. =)
+                pass
+
+        if "Suppression Fixed Cost" in self.custom_reward_params.keys():
+            for pw in self.pathway_set:
+                pw.fire_suppression_cost_per_day = self.custom_reward_params["Suppression Fixed Cost"]
+
+        if "Suppression Variable Cost" in self.custom_reward_params.keys():
+            for pw in self.pathway_set:
+                pw.fire_suppression_cost_per_cell = self.custom_reward_params["Suppression Variable Cost"]
+
+
+        #state transition parameters
+
+        if "Harvest Percent" in self.custom_transition_params.keys():
+            for pw in self.pathway_set:
+                pw.logging_percentOfIncrement = self.custom_transition_params["Harvest Percent"]
+
+        if "Minimum Timber Value" in self.custom_transition_params.keys():
+            for pw in self.pathway_set:
+                pw.logging_min_value = self.custom_transition_params["Minimum Timber Value"]
+
+        if "Slash Remaning" in self.custom_transition_params.keys():
+            for pw in self.pathway_set:
+                pw.logging_slash_remaining = self.custom_transition_params["Slash Remaning"]
+
+        if "Fuel Accumulation" in self.custom_transition_params.keys():
+            for pw in self.pathway_set:
+                pw.growth_fuel_accumulation = self.custom_transition_params["Fuel Accumulation"]
+            
+        if "Suppression Effect" in self.custom_transition_params.keys():
+            for pw in self.pathway_set:
+                pw.fire_suppression_rate = self.custom_transition_params["Suppression Effect"]
+
     def createFireGirlPathways(self, pathway_count, years, start_at_ID=0, policy=None):
         #This function creates a new set of FireGirl-style pathways (deleting all current
         #    pathway data)
@@ -639,7 +729,13 @@ class FireGirlPolicyOptimizer:
         #Create new pathways and add them to the pathway_set list
         for i in range(start_at_ID, start_at_ID + pathway_count):
             self.pathway_set.append(FireGirlPathway(i, self.Policy))
-        
+
+        #Check for custom model parameters, and if found, set them in each pathway
+        if self.CUSTOM_MODEL_PARAMETERS:
+            #custom parameters have been given, so parse them and assign them
+            self.updatePathwayCustomParameters()
+                
+       
         #Have each pathway create new data for itself. Right now their timber_values 
         #   and fuel_loads are set uniformally to zero
         if not self.SILENT:
@@ -668,6 +764,7 @@ class FireGirlPolicyOptimizer:
             #and after all years are finished, have each pathway calculate its net value
             #this is being handled by the pathway objects now
             #pw.updateNetValue()
+
 
         
  
