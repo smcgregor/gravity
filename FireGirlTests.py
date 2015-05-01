@@ -433,6 +433,7 @@ class FireGirlTrials:
         #Create N pathways under let-burn
         self.Policy.setLetBurn()
         self.Opt.setPolicy(self.Policy)
+        self.Opt.PATHWAYS_RECORD_HISTORIES = False
         self.Opt.createFireGirlPathways(pathway_count,years,start_ID)
         stats_let_burn = all_stats_by_year(self.Opt.pathway_set)
         #copy pathway net values
@@ -780,6 +781,7 @@ class FireGirlTrials:
 
         #silence self.Opt
         self.Opt.SILENT = True
+        self.Opt.PATHWAYS_RECORD_HISTORIES = False
 
         #assign policy and create pathways
 
