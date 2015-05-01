@@ -824,12 +824,12 @@ class FireGirlTrials:
 
         return output
 
-    def suppression_cost_sensitivity(self, pathway_count = 50, years=100, start_ID=0, supp_cost_max=10000, supp_cost_steps=20):
+    def suppression_cost_sensitivity(self, pathway_count = 10, years=25, start_ID=0, supp_cost_min=0, supp_cost_max=1001, supp_cost_steps=20):
         """This test varies suppression costs and records J2 optimal policy suppression choices.
         """
 
         #calculate step value
-        step = int(supp_cost_max/supp_cost_steps)
+        step = int((supp_cost_max-supp_cost_min)/supp_cost_steps)
         if step < 1:
             return False
 
@@ -839,9 +839,9 @@ class FireGirlTrials:
 
         print("Beginning Simulation-Optimization-MonteCarlo Loop")
         #loop over each suppression cost value
-        for cost in range(0, supp_cost_max, step):
+        for cost in range(supp_cost_min, supp_cost_max, step):
             
-            print("-creating pathways for supp cost: " + str(cost))
+            print("creating pathways for supp cost: " + str(cost))
             #create empty pathways
             pathway_set = []
             for i in range(start_ID, start_ID + pathway_count):
@@ -855,16 +855,23 @@ class FireGirlTrials:
 
             #simulate years
             for pw in pathway_set:
+                pw.generateNewLandscape()
                 pw.doYears(years)
+                pw.updateNetValue()
 
             #learn a new policy
             self.Opt.pathway_set = pathway_set
             self.Opt.SILENT = True
             self.Opt.Policy = FireGirlPolicy(None,0.0,11)
             self.Opt.setObjFn("J2")
+            self.Opt.normalizeAllFeatures()
 
             print("--learning new policy")
             output = self.Opt.optimizePolicy()
+            print("--learned policy is:"),
+            for i in range(11):
+                print(str(round(output[0][1][i],2))),
+            print(" ")
 
             print("--generating Monte Carlo rollouts")
             #create new empty pathways
@@ -881,6 +888,7 @@ class FireGirlTrials:
 
             #simulate years
             for pw in new_pathway_set:
+                pw.generateNewLandscape()
                 pw.doYears(years)
                 pw.updateNetValue()
 
@@ -900,7 +908,7 @@ class FireGirlTrials:
         print("-years: " + str(years))
         print(" ")
         print("suppression cost, ave suppress decisions, ave net values")
-        for i in range(supp_cost_steps):
+        for i in range(len(ave_suppress_decisions)):
             print(str(i*step) + "," + str(ave_suppress_decisions[i]) + "," + str(ave_net_values[i]))
 
 

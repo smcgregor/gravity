@@ -660,7 +660,7 @@ class FireGirlPolicyOptimizer:
                 pw.SAVE_HISTORY = False
             
             #have each pathway create timber/fuel data for itself
-            pw.generateNewPathway()
+            pw.generateNewLandscape()
 
             #Have each pathway simulate for the given number of years
             pw.doYears(years)

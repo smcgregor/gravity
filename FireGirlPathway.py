@@ -543,7 +543,7 @@ class FireGirlPathway:
         day = random.expovariate(1) * self.fire_average_end_day
         return day + 1  #give them at least one day...
 
-    def generateNewPathway(self):
+    def generateNewLandscape(self):
         #This function will erase all current data in this pathway and 
         #  generate new values for timber/fuels, etc... It will also reset the 
         #  current year to 0.
