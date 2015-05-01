@@ -149,7 +149,7 @@ def get_rollouts(query):
             totals = {}
 
             #fill the total's dictionary
-            totals["Harvest Value"] = pw.getHarvestTotal(pw.index(ign))
+            totals["Harvest Value"] = pw.getHarvest(pw.index(ign))
             totals["Suppression Cost"] = pw.getSuppressionCost(pw.index(ign))
             totals["Growth"] = pw.getGrowth(pw.index(ign))
 
