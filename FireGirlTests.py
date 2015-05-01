@@ -306,7 +306,6 @@ class FireGirlTests:
         #return true only if both tests passed
         return (J1_pass and J2_pass)
 
-
     def monte_carlo_baselines(self, pathway_count=20, years=100, start_ID=2000):
         #This test will roll out N pathways using a let-burn, suppress-all, and coin-toss policies
 
@@ -857,7 +856,7 @@ class FireGirlTrials:
             for pw in pathway_set:
                 pw.generateNewLandscape()
                 pw.doYears(years)
-                pw.updateNetValue()
+                #pw.updateNetValue()
 
             #learn a new policy
             self.Opt.pathway_set = pathway_set
@@ -890,7 +889,7 @@ class FireGirlTrials:
             for pw in new_pathway_set:
                 pw.generateNewLandscape()
                 pw.doYears(years)
-                pw.updateNetValue()
+                #pw.updateNetValue()
 
             #record average suppression decisions
             fire_stats = fire_stats_by_year(new_pathway_set)

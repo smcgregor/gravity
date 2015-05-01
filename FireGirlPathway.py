@@ -1344,6 +1344,11 @@ class FireGirlPathway:
         #print("Finishing Year " + str(self.year))
         self.year += 1
         #print("Beginning year " + str(self.year))
+
+
+        #and update net values
+        self.updateNetValue()
+        
         
     def doYears(self, number_of_years):
         #this function will process any number of pathway years, starting with

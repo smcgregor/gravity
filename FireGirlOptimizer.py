@@ -666,7 +666,8 @@ class FireGirlPolicyOptimizer:
             pw.doYears(years)
 
             #and after all years are finished, have each pathway calculate its net value
-            pw.updateNetValue()
+            #this is being handled by the pathway objects now
+            #pw.updateNetValue()
 
         
  
