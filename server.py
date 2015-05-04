@@ -52,6 +52,12 @@ def get_initialize(query):
                          "current_value": 500, "max": 999999, "min": 0, "units": "$"}
                         ],
             "transition": [
+                         {"name": "Years to simulate",
+                          "description": "how far to look into the future",
+                          "current_value": 10, "max": 150, "min": 0, "units": "Y"},
+                         {"name": "Futures to simulate",
+                          "description": "how many stochastic futures to generate",
+                          "current_value": 10, "max": 1000, "min": 0, "units": "-"},
                          {"name": "Harvest Percent",
                           "description": "timber harvest rate as a percent of annual increment",
                           "current_value": 0.95, "max": 1, "min": 0, "units": "%"},
@@ -123,40 +129,12 @@ def get_rollouts(query):
     information about that year.
 
     """
-
-    query = {
-            "reward": {  "Discount": 1,
-                         "Suppression Fixed Cost": 500, 
-                         "Suppression Variable Cost": 500
-                      },
-                        
-            "transition": {"Harvest Percent": 0.95,
-                           "Minimum Timber Value": 50,
-                           "Slash Remaning": 10,
-                           "Fuel Accumulation": 2,
-                           "Suppression Effect": 0.5
-                          },
-                         
-            "policy": { "Constant": 0, 
-                        "Date": 0,
-                        "Days Left": 0,
-                        "Temperature": 0,
-                        "Wind Speed": 0,
-                        "Timber Value": 0,
-                        "Timber Value 8": 0,
-                        "Timber Value 24": 0,
-                        "Fuel Load": 0,
-                        "Fuel Load 8": 0,
-                        "Fuel Load 24": 0
-                       }      
-                }
-
     dict_reward = query["reward"]
     dict_transition = query["transition"]
     dict_policy = query["policy"] 
 
-    pathway_count = 5
-    years = 5
+    pathway_count = int(dict_transition["Futures to simulate"])
+    years = int(dict_transition["Years to simulate"])
     start_ID = 0
 
     #generate 100 rollouts
@@ -235,12 +213,17 @@ class Handler(BaseHTTPRequestHandler):
 
     #handle GET command
     def do_GET(self):
+
         parsedQuery = urlparse(self.path)
+        queryObject = parse_qs(parsedQuery[4])
+
+        queryDict = {"reward":{}, "transition":{}, "policy":{}}
+        for key in queryObject:
+            cur = key.replace("]","[").split("[") # Quick and dirty hack
+            queryDict[cur[0]][cur[1]] = float(queryObject[key][0])
+
         path = parsedQuery[2]
         print("processing get request:" + path)
-        queryString = parsedQuery[4]
-        queryDict = parse_qs(queryString)# todo, send this to the get_rollouts function
-        
         if path == "/initialize":
             ret = json.dumps(get_initialize(queryDict))
             self.request.sendall(ret)
