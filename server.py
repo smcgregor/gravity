@@ -202,6 +202,97 @@ def get_rollouts(query):
 
 def get_state(query):
     # Hailey todo: return an object following the spec Sean Provides
+    #remove this when needed
+    query = {
+            "Snapshot Year": 2,
+            "reward": {"Discount": 1,
+                       "Suppression Fixed Cost": 500,
+                       "Suppression Variable Cost": 500},
+            "transition": {"Years to simulate": 10,
+                           "Futures to simulate": 1,
+                           "Pathway Start ID": 0,
+                           "Harvest Percent": 0.95,
+                           "Minimum Timber Value": 50,
+                           "Slash Remaning": 10,
+                           "Fuel Accumulation": 2,
+                           "Suppression Effect": 0.5},
+            "policy": {"Constant": 0,
+                       "Date": 0,
+                       "Days Left": 0,
+                       "Temperature": 0,
+                       "Wind Speed": 0,
+                       "Timber Value": 0,
+                       "Timber Value 8": 0,
+                       "Timber Value 24": 0,
+                       "Fuel Load": 0,
+                       "Fuel Load 8": 0,
+                       "Fuel Load 24": 0}
+            }
+
+    snapshot_year = query["Snapshot Year"]
+    dict_reward = query["reward"]
+    dict_transition = query["transition"]
+    dict_policy = query["policy"] 
+
+    #some variables
+    #pathway_count = 5 #how many pathways to use in the optimization
+    #years = 5  #how many years to simulate for each pathway
+
+    pathway_count = dict_transition["Futures to simulate"]
+    years = dict_transition["Years to simulate"]
+    start_ID = dict_transition["Pathway Start ID"]
+
+
+    #creating optimization objects
+    opt = FireGirlPolicyOptimizer()
+
+    #giving the simulation parameters to opt, so that it can pass
+    # them on to it's pathways as it creates them
+    opt.setFireGirlModelParameters(dict_transition, dict_reward)
+
+    #setting policy as well
+    #TODO make this robust to FireWoman policies
+    pol = FireGirlPolicy()
+    pol.setParams([dict_policy["Constant"],
+                   dict_policy["Date"],
+                   dict_policy["Days Left"],
+                   dict_policy["Temperature"],
+                   dict_policy["Wind Speed"],
+                   dict_policy["Timber Value"],
+                   dict_policy["Timber Value 8"],
+                   dict_policy["Timber Value 24"],
+                   dict_policy["Fuel Load"],
+                   dict_policy["Fuel Load 8"],
+                   dict_policy["Fuel Load 24"],
+                  ])
+
+    #assigning the policy to opt, so that it can use it in simulations.
+    opt.setPolicy(pol)
+
+    #Setting opt to tell it's pathway(s) to remember their histories
+    opt.PATHWAYS_RECORD_HISTORIES = True
+
+    opt.SILENT = True
+
+    #creating pathways   
+    #NOTE: that pathway_count/futures should = 1
+    #      if it isn't, the rest will be ignored in the output anyway.
+    opt.createFireGirlPathways(pathway_count,years, start_ID)
+
+
+    #finding the year that the snapshot is requested for
+    fuel_array = opt.pathway_set[0].fuel_load_history[snapshot_year]
+    timber_array = opt.pathway_set[0].timber_value_history[snapshot_year]
+    array_width = opt.pathway_set[0].width
+    array_height = opt.pathway_set[0].height
+
+    #  ^^ these are lists of lists, indexed by x,y coordinates, so to call 
+    # cell 4,10 would be timber_array[4][10], etc...
+
+
+    #TODO: Post processing goes here?
+
+
     return {'todo':'get_state'}
 
 def get_optimize(query):
