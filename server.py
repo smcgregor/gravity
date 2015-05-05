@@ -206,7 +206,96 @@ def get_state(query):
 
 def get_optimize(query):
     # Hailey todo: return an object following the spec Sean Provides
-    return {'todo':'get_optimize'}
+
+    #remove this when needed
+    query = {
+            "reward": {"Discount": 1,
+                       "Suppression Fixed Cost": 500,
+                       "Suppression Variable Cost": 500},
+            "transition": {"Years to simulate": 10,
+                           "Futures to simulate": 10,
+                           "Harvest Percent": 0.95,
+                           "Minimum Timber Value": 50,
+                           "Slash Remaning": 10,
+                           "Fuel Accumulation": 2,
+                           "Suppression Effect": 0.5},
+            "policy": {"Constant": 0,
+                       "Date": 0,
+                       "Days Left": 0,
+                       "Temperature": 0,
+                       "Wind Speed": 0,
+                       "Timber Value": 0,
+                       "Timber Value 8": 0,
+                       "Timber Value 24": 0,
+                       "Fuel Load": 0,
+                       "Fuel Load 8": 0,
+                       "Fuel Load 24": 0}
+            }
+
+    dict_reward = query["reward"]
+    dict_transition = query["transition"]
+    dict_policy = query["policy"] 
+
+    #some variables
+    #pathway_count = 5 #how many pathways to use in the optimization
+    #years = 5  #how many years to simulate for each pathway
+
+    pathway_count = dict_transition["Futures to simulate"]
+    years = dict_transition["Years to simulate"]
+
+
+    #creating optimization objects
+    opt = FireGirlPolicyOptimizer()
+
+    #giving the simulation parameters to opt, so that it can pass
+    # them on to it's pathways as it creates them
+    opt.setFireGirlModelParameters(dict_transition, dict_reward)
+
+    #setting policy as well
+    #TODO make this robust to FireWoman policies
+    pol = FireGirlPolicy()
+    pol.setParams([dict_policy["Constant"],
+                   dict_policy["Date"],
+                   dict_policy["Days Left"],
+                   dict_policy["Temperature"],
+                   dict_policy["Wind Speed"],
+                   dict_policy["Timber Value"],
+                   dict_policy["Timber Value 8"],
+                   dict_policy["Timber Value 24"],
+                   dict_policy["Fuel Load"],
+                   dict_policy["Fuel Load 8"],
+                   dict_policy["Fuel Load 24"],
+                  ])
+
+    #assigning the policy to opt, so that it can use it in simulations.
+    opt.setPolicy(pol)
+
+
+    #creating pathways
+    opt.createFireGirlPathways(pathway_count,years)
+
+    #doing one round of optimization
+    opt.optimizePolicy()
+
+    #pulling the policy variables back out
+    learned_params = opt.Policy.getParams()
+
+    #TODO make this robust to FireWoman policies
+    dict_new_pol = {}
+    dict_new_pol["Constant"] = learned_params[0]
+    dict_new_pol["Date"] = learned_params[1]
+    dict_new_pol["Days Left"] = learned_params[2]
+    dict_new_pol["Temperature"] = learned_params[3]
+    dict_new_pol["Wind Speed"] = learned_params[4]
+    dict_new_pol["Timber Value"] = learned_params[5]
+    dict_new_pol["Timber Value 8"] = learned_params[6]
+    dict_new_pol["Timber Value 24"] = learned_params[7]
+    dict_new_pol["Fuel Load"] = learned_params[8]
+    dict_new_pol["Fuel Load 8"] = learned_params[9]
+    dict_new_pol["Fuel Load 24"] = learned_params[10]
+
+
+    return dict_new_pol
 
 # Request Handlers
 class Handler(BaseHTTPRequestHandler):
