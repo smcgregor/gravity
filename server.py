@@ -296,10 +296,9 @@ def get_state(query):
     return {'todo':'get_state'}
 
 def get_optimize(query):
-    # Hailey todo: return an object following the spec Sean Provides
 
     #remove this when needed
-    query = {
+    mocked_query = {
             "reward": {"Discount": 1,
                        "Suppression Fixed Cost": 500,
                        "Suppression Variable Cost": 500},
@@ -363,7 +362,7 @@ def get_optimize(query):
 
 
     #creating pathways
-    opt.createFireGirlPathways(pathway_count,years)
+    opt.createFireGirlPathways(int(pathway_count),int(years))
 
     #doing one round of optimization
     opt.optimizePolicy()
