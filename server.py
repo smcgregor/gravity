@@ -189,6 +189,13 @@ def get_rollouts(query):
             #TODO - Fix for Discount Rate
             features["Discounted Reward"] = features["Harvest Value"] - features["Suppression Cost"]
 
+            features["Event Number"] = ign.year
+
+            #NOTE:  This will be the same number for all ignitions in this pathway. It's the
+            # id number that a pathway uses to instantiate its random seed 
+            features["Pathway Number"] = pw.ID_number
+
+
             #add this ignition event + year details to this pathway's list of dictionaries
             year_values.append(features)
 
@@ -204,14 +211,12 @@ def get_state(query):
     # Hailey todo: return an object following the spec Sean Provides
     #remove this when needed
     query = {
-            "Snapshot Year": 2,
+            "Event Number": 2,
+            "Pathway Number": 0,
             "reward": {"Discount": 1,
                        "Suppression Fixed Cost": 500,
                        "Suppression Variable Cost": 500},
-            "transition": {"Years to simulate": 10,
-                           "Futures to simulate": 1,
-                           "Pathway Start ID": 0,
-                           "Harvest Percent": 0.95,
+            "transition": {"Harvest Percent": 0.95,
                            "Minimum Timber Value": 50,
                            "Slash Remaning": 10,
                            "Fuel Accumulation": 2,
@@ -229,18 +234,11 @@ def get_state(query):
                        "Fuel Load 24": 0}
             }
 
-    snapshot_year = query["Snapshot Year"]
+    event_number = query["Event Number"]
+    pathway_number = query["Pathway Number"]
     dict_reward = query["reward"]
     dict_transition = query["transition"]
     dict_policy = query["policy"] 
-
-    #some variables
-    #pathway_count = 5 #how many pathways to use in the optimization
-    #years = 5  #how many years to simulate for each pathway
-
-    pathway_count = dict_transition["Futures to simulate"]
-    years = dict_transition["Years to simulate"]
-    start_ID = dict_transition["Pathway Start ID"]
 
 
     #creating optimization objects
@@ -277,12 +275,12 @@ def get_state(query):
     #creating pathways   
     #NOTE: that pathway_count/futures should = 1
     #      if it isn't, the rest will be ignored in the output anyway.
-    opt.createFireGirlPathways(pathway_count,years, start_ID)
+    opt.createFireGirlPathways(1, event_number, pathway_number)
 
 
     #finding the year that the snapshot is requested for
-    fuel_array = opt.pathway_set[0].fuel_load_history[snapshot_year]
-    timber_array = opt.pathway_set[0].timber_value_history[snapshot_year]
+    fuel_array = opt.pathway_set[0].fuel_load_history[event_number - 1]
+    timber_array = opt.pathway_set[0].timber_value_history[event_number - 1]
     array_width = opt.pathway_set[0].width
     array_height = opt.pathway_set[0].height
 
