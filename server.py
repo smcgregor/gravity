@@ -275,12 +275,12 @@ def get_state(query):
     #creating pathways   
     #NOTE: that pathway_count/futures should = 1
     #      if it isn't, the rest will be ignored in the output anyway.
-    opt.createFireGirlPathways(1, event_number, pathway_number)
+    opt.createFireGirlPathways(1, event_number + 1, pathway_number)
 
 
     #finding the year that the snapshot is requested for
-    fuel_array = opt.pathway_set[0].fuel_load_history[event_number - 1]
-    timber_array = opt.pathway_set[0].timber_value_history[event_number - 1]
+    fuel_array = opt.pathway_set[0].fuel_load_history[event_number]
+    timber_array = opt.pathway_set[0].timber_value_history[event_number]
     array_width = opt.pathway_set[0].width
     array_height = opt.pathway_set[0].height
 
