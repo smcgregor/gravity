@@ -13,9 +13,12 @@ class FireGirlPolicyOptimizer:
         self.pathway_net_values =[]
         
         #A list to hold the "probability weights" of each pathway
-        self.pathway_weights = []               #J1 weights
-        self.pathway_weights_normalized = []    #J1.1 weights
-        self.pathway_weights_averaged = []      #J2 weights
+        self.pathway_weights = []                       #J1 weights
+        self.pathway_weights_normalized = []            #J1.1 weights
+        self.pathway_weights_averaged = []              #J2 weights
+        self.pathway_weights_importance_sampling = []   #J3 weights
+        self.pathway_weights_generation = []   #denominators for J3 weights
+
         
         #Boundaries for what the parameters can be set to during scipy's optimization routine:
         self.b_bounds = []
@@ -40,6 +43,9 @@ class FireGirlPolicyOptimizer:
         self.AVERAGED_WEIGHTS_OBJ_FN = False
         #Flag: use averaged weights for F prime
         self.AVERAGED_WEIGHTS_F_PRIME = False
+
+        #Flag: Use importance sampling weights (J3)
+        self.IMPORTANCE_SAMPLING = True
 
 
         #Flag: Suppress all outputs that originate from this object
@@ -183,9 +189,10 @@ class FireGirlPolicyOptimizer:
         #  the pathway_set list
 
         #clearing old weights
-        self.pathway_weights = []               #J1 weights
-        self.pathway_weights_normalized = []    #J1.1 weights
-        self.pathway_weights_averaged = []      #J2 weights
+        self.pathway_weights = []                       #J1 weights
+        self.pathway_weights_normalized = []            #J1.1 weights
+        self.pathway_weights_averaged = []              #J2 weights
+        self.pathway_weights_importance_sampling = []   #J3 weights
 
         #iterating over each pathway and appending each new weigh to the list
         for pw in self.pathway_set:
@@ -226,7 +233,7 @@ class FireGirlPolicyOptimizer:
             self.pathway_weights_averaged.append(p2)         #J2 weights
         
                     
-        #testing... calculate sum of ALL weights
+        #calculate sum of ALL weights
         weight_sum = 0.0
         for w in self.pathway_weights:
             weight_sum += w
@@ -235,6 +242,16 @@ class FireGirlPolicyOptimizer:
         pathway_weights_normalized = []
         for w in self.pathway_weights:
             self.pathway_weights_normalized.append( w / weight_sum )  #J1.1 weights
+
+        #calculating J3 weights
+        #but first see if any generation weights have been assigned. If this function is 
+        #  being called from createFireGirlPathways(), self.pathway_weights_generation will 
+        #  not have been instantiated yet, and this function is being called precisely to 
+        #  do just that. So, if that's the case, we also don't have to worry about calculating
+        #  the J3 weights because that will happen in optimizePolicy() and elsewhere
+        if len(self.pathway_weights_generation) > 0:
+            for i in range(len(self.pathway_weights)):
+                self.pathway_weights_importance_sampling.append(self.pathway_weights[i] / self.pathway_weights_generation[i])
                     
     def calcObjFn(self, b=None):
         #This function contains the optimization objective function. It operates
@@ -282,17 +299,23 @@ class FireGirlPolicyOptimizer:
         for pw in range(len(self.pathway_set)):
         
             #check which weights to use:
-            #Normalization supercedes averaging
-            if self.NORMALIZED_WEIGHTS_OBJ_FN:
-                #using normalized weights
+            #Importance Sampling (J3) supercedes Normalization (J1.1)
+            if self.IMPORTANCE_SAMPLING:
+                #using J3 weights
+                #TODO: Verfiy that this is how to do this???
+                total_value += self.pathway_net_values[pw] * self.pathway_weights_importance_sampling[pw]
+
+            #Normalization (J1.1) supercedes averaging (J2)
+            elif self.NORMALIZED_WEIGHTS_OBJ_FN:
+                #using J1.1 normalized weights
                 total_value += self.pathway_net_values[pw] * self.pathway_weights_normalized[pw]
             else:
                 #using "un-normalized" weights... check averaging...
                 if self.AVERAGED_WEIGHTS_OBJ_FN:
-                    #using averaged weights
+                    #using J2 averaged weights
                     total_value += self.pathway_net_values[pw] * self.pathway_weights_averaged[pw]
                 else:
-                    #using straight "joint probability weights"
+                    #using straight J1.0 "joint probability weights"
                     total_value += self.pathway_net_values[pw] * self.pathway_weights[pw]
             
         
@@ -424,7 +447,10 @@ class FireGirlPolicyOptimizer:
                 
                 
                 #check which weights to use, and to the derivative appropriately
-                if self.NORMALIZED_WEIGHTS_F_PRIME:
+                if self.IMPORTANCE_SAMPLING:
+                    #using J3 Importance Sampling Weights
+                    d_obj_d_bk[beta] += self.pathway_net_values[pw] * self.pathway_weights_importance_sampling[pw] * sum_delta_prob
+                elif self.NORMALIZED_WEIGHTS_F_PRIME:
                     #using normalized weights inside the derivative calculation (J1.1)
                     d_obj_d_bk[beta] += self.pathway_net_values[pw] * self.pathway_weights_normalized[pw] * sum_delta_prob
                 else:
@@ -433,7 +459,7 @@ class FireGirlPolicyOptimizer:
                         invI = (1.0 / self.pathway_set[pw].getIgnitionCount())
                         d_obj_d_bk[beta] += self.pathway_net_values[pw] * invI * sum_delta_prob_AVE                            
                     else:
-                        #using standard joint-probability math (J1)
+                        #using standard joint-probability math (J1.0)
                         d_obj_d_bk[beta] += self.pathway_net_values[pw] * self.pathway_weights[pw] * sum_delta_prob
                     
                     
@@ -573,23 +599,33 @@ class FireGirlPolicyOptimizer:
 
         if objfn == "J1":
             #set flags for J1.1
+            self.IMPORTANCE_SAMPLING = False
             self.NORMALIZED_WEIGHTS_OBJ_FN = True
             self.NORMALIZED_WEIGHTS_F_PRIME = True
             self.AVERAGED_WEIGHTS_OBJ_FN = False
             self.AVERAGED_WEIGHTS_F_PRIME = False
         elif objfn == "J2":
             #set flags for J2
+            self.IMPORTANCE_SAMPLING = False
             self.NORMALIZED_WEIGHTS_OBJ_FN = False
             self.NORMALIZED_WEIGHTS_F_PRIME = False
             self.AVERAGED_WEIGHTS_OBJ_FN = True
             self.AVERAGED_WEIGHTS_F_PRIME = True
+        elif objfn == "J3":
+            self.IMPORTANCE_SAMPLING = True
+            self.NORMALIZED_WEIGHTS_OBJ_FN = False
+            self.NORMALIZED_WEIGHTS_F_PRIME = False
+            self.AVERAGED_WEIGHTS_OBJ_FN = False
+            self.AVERAGED_WEIGHTS_F_PRIME = False
+
         else:
-            #undefined behavior... default to J2 for now?
-            print("Undefined objective function: " + str(objfn) + "   Setting J2 by default")
+            #undefined behavior... default to J1.10
+            print("Undefined objective function: " + str(objfn) + "   Setting J1.0 by default")
+            self.IMPORTANCE_SAMPLING = False
             self.NORMALIZED_WEIGHTS_OBJ_FN = False
             self.NORMALIZED_WEIGHTS_F_PRIME = False
-            self.AVERAGED_WEIGHTS_OBJ_FN = True
-            self.AVERAGED_WEIGHTS_F_PRIME = True
+            self.AVERAGED_WEIGHTS_OBJ_FN = False
+            self.AVERAGED_WEIGHTS_F_PRIME = False
 
     def printOptOutput(self, output):
         #takes the outputs from the optimize() function and prints them in a nicer way
@@ -758,7 +794,17 @@ class FireGirlPolicyOptimizer:
             #this is being handled by the pathway objects now
             #pw.updateNetValue()
 
+        #calculate and save current joint-probability weights
+        # these are needed for J3 calculation
 
+        self.calcPathwayWeights()
+
+        #clear any old values
+        self.pathway_weights_generation = []
+
+        #copy values:
+        for w in self.pathway_weights:
+            self.pathway_weights_generation.append(w + 1.0 - 1.0)
         
  
     ###################
@@ -823,7 +869,7 @@ class FireGirlPolicyOptimizer:
 
     def resetPolicy(self):
         #This function resets the policy to a 50/50 coin-toss
-        self.Policy = FireGirlPolicy()
+        self.Policy = FireGirlPolicy(None,0,11)
 
     def loadPolicy(self, filename):
         #This function loads a saved policy and assigns it to this optimization object

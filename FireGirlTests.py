@@ -140,6 +140,12 @@ class FireGirlTests:
                 print("fprme: " + str(opt.calcObjFPrime()))
                 print("weights: " + str(opt.pathway_weights))
                 print("net values: " + str(opt.pathway_net_values))
+                opt.setObjFn("J3")
+                print("Initial Values: J3")
+                print("objfn: " + str(opt.calcObjFn()))
+                print("fprme: " + str(opt.calcObjFPrime()))
+                print("weights: " + str(opt.pathway_weights))
+                print("net values: " + str(opt.pathway_net_values))
 
 
         #Do J1 optimization
@@ -175,6 +181,24 @@ class FireGirlTests:
 
 
 
+        #Reseting policy
+        opt.Policy.setParams([0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0])
+
+        #Do J3 optimization
+        if not self.SILENT:
+            if self.PRINT_DETAILS or self.PRINT_SUMMARIES:
+                print(" ")
+                print("Beginning Optimization Routine for J3")
+           
+        opt.setObjFn("J3")
+        output3=opt.optimizePolicy()
+        #printing optimizations summary
+        if not self.SILENT:
+            if self.PRINT_DETAILS or self.PRINT_SUMMARIES:
+                opt.printOptOutput(output3)
+
+
+
         if not self.SILENT:
             if self.PRINT_DETAILS:
                 print(" ")
@@ -191,11 +215,18 @@ class FireGirlTests:
                 print("fprme: " + str(opt.calcObjFPrime()))
                 print("weights: " + str(opt.pathway_weights))
                 print("net values: " + str(opt.pathway_net_values))
+                opt.setObjFn("J3")
+                print("Initial Values: J3")
+                print("objfn: " + str(opt.calcObjFn()))
+                print("fprme: " + str(opt.calcObjFPrime()))
+                print("weights: " + str(opt.pathway_weights))
+                print("net values: " + str(opt.pathway_net_values))
 
 
         #testing output for success (non-zero parameters)
         J1_non_zero = False
         J2_non_zero = False
+        J3_non_zero = False
         for param in output1[0][1]:
             #checking for non-zero values , at least to three decimal places
             if not round(param, 3) == 0:
@@ -204,8 +235,12 @@ class FireGirlTests:
             #checking for non-zero values , at least to three decimal places
             if not round(param, 3) == 0:
                 J2_non_zero = True
+        for param in output3[0][1]:
+            #checking for non-zero values , at least to three decimal places
+            if not round(param, 3) == 0:
+                J3_non_zero = True
 
-        if J1_non_zero and J2_non_zero:
+        if J1_non_zero and J2_non_zero and J3_non_zero:
             return True
         else:
             return False
@@ -276,6 +311,17 @@ class FireGirlTests:
         output_J2 = opt.optimizePolicy()
         #print(output_J2[0])
 
+
+        #Optimizing with J3
+        if not self.SILENT:
+            if self.PRINT_DETAILS:
+                print("-optimizing policy using J3")
+
+        opt.setObjFn("J3")
+        opt.Policy.setParams([0,0,0,0,0,0,0,0,0,0,0])
+        output_J3 = opt.optimizePolicy()
+        #print(output_J3[0])
+
         #now checking to ensure that the parameters returned appropriately
         J1_pass = False
         if (output_J1[0][1][1] > 9.9) and (output_J1[0][1][2] < -9.9):
@@ -284,6 +330,10 @@ class FireGirlTests:
         J2_pass = False
         if (output_J2[0][1][1] > 9.9) and (output_J2[0][1][2] < -9.9):
             J2_pass = True
+
+        J3_pass = False
+        if (output_J3[0][1][1] > 9.9) and (output_J3[0][1][2] < -9.9):
+            J3_pass = True
 
         if not self.SILENT:
             if self.PRINT_SUMMARIES or self.PRINT_DETAILS:
@@ -301,10 +351,17 @@ class FireGirlTests:
                     print("J2 Policy FAILED")
                     if self.PRINT_DETAILS:
                         print("-parameters: " + str(output_J2[0][1]))
+                
+                if J3_pass:
+                    print("J3 Policy Passed")
+                else:
+                    print("J3 Policy FAILED")
+                    if self.PRINT_DETAILS:
+                        print("-parameters: " + str(output_J3[0][1]))
 
 
         #return true only if both tests passed
-        return (J1_pass and J2_pass)
+        return (J1_pass and J2_pass and J3_pass)
 
     def monte_carlo_baselines(self, pathway_count=20, years=100, start_ID=2000):
         #This test will roll out N pathways using a let-burn, suppress-all, and coin-toss policies
@@ -928,15 +985,15 @@ if __name__ == "__main__":
     #running optimization tests
     opt1_passed = tests.optimization_test_1(20,50,0)
     if not opt1_passed:
-        print("FAILED: J1 FireGirlTests.optimization_test_1()")
-    opt1_passed = tests.optimization_test_1(20,50,0)
-    if not opt1_passed:
-        print("FAILED: J2 FireGirlTests.optimization_test_1()")
+        print("FAILED: FireGirlTests.optimization_test_1()")
 
-    tests.optimization_test_2()
+
+    opt2_passed = tests.optimization_test_2()
+    if not opt1_passed:
+        print("FAILED: FireGirlTests.optimization_test_2()")
 
     #running monte carlo tests, and ignoring results (at the moment)
-    tests.monte_carlo_baselines()
+    #tests.monte_carlo_baselines()
 
 
     #finished
