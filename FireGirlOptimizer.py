@@ -25,10 +25,12 @@ class FireGirlPolicyOptimizer:
 
         if USING_FIREGIRL_PATHWAYS == True:
             for i in range(11):
-                self.b_bounds.append([-10,10])
+                self.b_bounds.append([-10.0,10.0])
         else:
             #set FireWoman bounds appropriately
             pass
+        #and set the constant to be able to vary more freely
+        self.b_bounds[0] = [-1000.0, 1000.0]
 
 
         #Flag: Use log(probabilities)  -  If we want to force sums of log(probs), set to True
