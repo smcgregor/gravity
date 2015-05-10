@@ -280,18 +280,20 @@ def get_state(query):
 
 
     #finding the year that the snapshot is requested for
-    fuel_array = opt.pathway_set[0].fuel_load_history[event_number]
-    timber_array = opt.pathway_set[0].timber_value_history[event_number]
-    array_width = opt.pathway_set[0].width
-    array_height = opt.pathway_set[0].height
-
+    #fuel_array = opt.pathway_set[0].fuel_load_history[event_number]
+    #timber_array = opt.pathway_set[0].timber_value_history[event_number]
+    #array_width = opt.pathway_set[0].width
+    #array_height = opt.pathway_set[0].height
     #  ^^ these are lists of lists, indexed by x,y coordinates, so to call 
     # cell 4,10 would be timber_array[4][10], etc...
+
+    #saving an image of the landscape
+    opt.pathway_set[0].saveImage("imagefile.bmp","composite")
 
     return {"todo": "return summary statistics you may want for the state",
             "todo_continued": "in a dictionary you return here",
             "yet_more_todo": "sean will add references to files in this dictionary that will be",
-            "woah more todo": "displayed int he visualization"}
+            "woah more todo": "displayed in the visualization"}
 
 def get_optimize(query):
 
