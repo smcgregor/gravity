@@ -208,9 +208,10 @@ def get_rollouts(query):
     return return_list
 
 def get_state(query):
+
     # Hailey todo: return an object following the spec Sean Provides
     #remove this when needed
-    query = {
+    mocked_query = {
             "Event Number": 2,
             "Pathway Number": 0,
             "reward": {"Discount": 1,
@@ -234,8 +235,8 @@ def get_state(query):
                        "Fuel Load 24": 0}
             }
 
-    event_number = query["Event Number"]
-    pathway_number = query["Pathway Number"]
+    event_number = int(query["Event Number"])
+    pathway_number = int(query["Pathway Number"])
     dict_reward = query["reward"]
     dict_transition = query["transition"]
     dict_policy = query["policy"] 
@@ -287,11 +288,10 @@ def get_state(query):
     #  ^^ these are lists of lists, indexed by x,y coordinates, so to call 
     # cell 4,10 would be timber_array[4][10], etc...
 
-
-    #TODO: Post processing goes here?
-
-
-    return {'todo':'get_state'}
+    return {"todo": "return summary statistics you may want for the state",
+            "todo_continued": "in a dictionary you return here",
+            "yet_more_todo": "sean will add references to files in this dictionary that will be",
+            "woah more todo": "displayed int he visualization"}
 
 def get_optimize(query):
 
@@ -394,10 +394,13 @@ class Handler(BaseHTTPRequestHandler):
         parsedQuery = urlparse(self.path)
         queryObject = parse_qs(parsedQuery[4])
 
-        queryDict = {"reward":{}, "transition":{}, "policy":{}}
+        queryDict = {"reward":{}, "transition":{}, "policy":{}, "Event Number": -1, "Pathway Number": -1}
         for key in queryObject:
             cur = key.replace("]","[").split("[") # Quick and dirty hack
-            queryDict[cur[0]][cur[1]] = float(queryObject[key][0])
+            if len(cur) > 1:
+                queryDict[cur[0]][cur[1]] = float(queryObject[key][0])
+            else:
+                queryDict[cur[0]] = float(queryObject[key][0])
 
         path = parsedQuery[2]
         print("processing get request:" + path)
