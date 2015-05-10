@@ -2,6 +2,7 @@ import random, math
 from FireGirl_DS_alg import *
 from FireGirlPolicy import *
 from FireGirlPathwayLogbook import *
+from PIL import Image #for landscape snapshot creation
 
 class FireGirlPathway:
     #This class holds a single FireGirl pathway, and has all the necessary 
@@ -804,6 +805,99 @@ class FireGirlPathway:
         self.fuel_load_history.append(fuel_copy)
         self.timber_value_history.append(timber_copy)
 
+
+    def saveImage(self, filename=None, imagetype="composite"):
+        """Creates an image of the current landcape
+
+        Arguments
+        filename: the name of the image file to be saved
+        imagetype: the particular view of the landscape to be made
+        options are:
+        - "composite" which is the sum of fuel and timber
+        - "fuel" which shows only the fuel values
+        - "timber" which shows only the timber values
+
+        """
+
+        #use default filename as necessary
+        if filename == None:
+            filename = "image_output_" + str(imagetype) + str(self.ID_number) + "_" + str(self.year) + ".bmp"
+
+
+        image = Image.new("RGB",(self.width,self.height))
+        #choosing pixel color
+        #my lowest value is green: (0,  240,0)
+        #my middle value is yellow:(240,240,0)
+        #my high value is red:     (240,  0,0)
+
+        #lowest value is 0
+        #highest value is dependent on the type of image... 
+        #  for composite, it's around 200
+        #  for fuel or timber alone, it's around 100
+
+        #so if the value is below half, we'll hold green = 240 and vary red from 0-240
+        #   if the value is above half, we'll hold red = 240, and vary green from 240-0
+
+        #setting high value for the image. This will associate with RED colors
+        high_val = 100
+        mid_val = 50
+        if imagetype == "composite":
+            high_val = 200
+            mid_val = 100
+
+        current_pixel = 0
+        scaled_val = 0
+        green = 0
+        red = 0
+
+        for i in range(self.width):
+            for j in range(self.height):
+
+
+                #check the current value
+                if imagetype == "composite":
+                    current_pixel = self.fuel_load[i][j] + self.timber_value[i][j]
+
+                elif imagetype == "fuel":
+                    current_pixel = self.fuel_load[i][j]
+
+                else: #imagetype == "timber":
+                    current_pixel = self.timber_value[i][j]
+
+
+                #constraining excessively values (which are allowed in the simulator)
+                if current_pixel > high_val:
+                    current_pixel = high_val
+
+                #which half are we on?
+                if current_pixel < mid_val:
+                    #we're on the low half of the scale
+                    green = 240
+                    #setting red:
+                    #-current_pixel ranges from 0 - mid_val
+                    #-a value of 0 means a 0% (out of 240) value for red
+                    #-a value of mid_val means 100% (out of 240) value for red
+                    #-a value of 1/2 * mid_val means 50% (out of 240) value for red
+                    #etc...
+                    red = (current_pixel / mid_val) * 240
+
+                else:
+                    #we're on the high half of the scale
+                    red = 240
+                    #setting green...
+                    #-at mid_val, green starts at 240, and decreases linearly to 0
+                    #  once it current_val = high_val (or more)
+                    green = 240 * ((-1 * (current_pixel - high_val)) / mid_val)
+
+
+                #assign values
+                image.putpixel( (i,j), (int(red),int(green),0) )
+
+            #finished with this column, on to the next
+
+        #finished with all pixels
+
+        image.save(filename)
 
 
     def doFire(self, ignite_date, ignite_loc, ignite_wind, ignite_temp, suppress):
