@@ -1,4 +1,4 @@
-import random, math
+import random, math, tempfile
 from FireGirl_DS_alg import *
 from FireGirlPolicy import *
 from FireGirlPathwayLogbook import *
@@ -810,7 +810,7 @@ class FireGirlPathway:
         """Creates an image of the current landcape
 
         Arguments
-        filename: the name of the image file to be saved
+        filename: the name of the image file to be saved. This can be a file-like object as well
         imagetype: the particular view of the landscape to be made
         options are:
         - "composite" which is the sum of fuel and timber
@@ -897,7 +897,7 @@ class FireGirlPathway:
 
         #finished with all pixels
 
-        image.save(filename)
+        image.save(filename, "BMP")
 
 
     def doFire(self, ignite_date, ignite_loc, ignite_wind, ignite_temp, suppress):
