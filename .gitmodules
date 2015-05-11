@@ -1,0 +1,3 @@
+[submodule "FireVis"]
+	path = FireVis
+	url = git@github.com:OSU-Infovis/FireVis.git
