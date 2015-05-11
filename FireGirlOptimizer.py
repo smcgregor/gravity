@@ -798,8 +798,9 @@ class FireGirlPolicyOptimizer:
 
         #calculate and save current joint-probability weights
         # these are needed for J3 calculation
-
-        self.calcPathwayWeights()
+        #but firest make sure that there are actual years. In some tests, pathways are created with NO years/events
+        if years > 0:
+            self.calcPathwayWeights()
 
         #clear any old values
         self.pathway_weights_generation = []

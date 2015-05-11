@@ -344,7 +344,7 @@ def get_state(query):
               "Event Number": int(query["Event Number"]),
               "Pathway Number": int(query["Pathway Number"])
              },
-            "images": ["imagefile.bmp"]
+            "images": names
             }
 
     return returnObj
