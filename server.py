@@ -212,8 +212,10 @@ def get_state(query):
     # Hailey todo: return an object following the spec Sean Provides
     #remove this when needed
     mocked_query = {
-            "Event Number": 2,
+            "Event Number": 5,
             "Pathway Number": 0,
+            "Past Events to Show": 4,
+            "Past Events to Step Over": 0,
             "reward": {"Discount": 1,
                        "Suppression Fixed Cost": 500,
                        "Suppression Variable Cost": 500},
@@ -240,6 +242,17 @@ def get_state(query):
     dict_reward = query["reward"]
     dict_transition = query["transition"]
     dict_policy = query["policy"] 
+    
+    show_count = 1
+    step = 1
+    if "Past Events to Show" in query.keys():
+        show_count = 1 + int(query["Past Events to Show"])
+    if "Past Events to Step Over" in query.keys():
+        step = 1 + int(query["Past Events to Step Over"])
+
+    #sanitizing
+    if step < 1: step = 1
+    if show_count < 1: show_count = 1
 
 
     #creating optimization objects
@@ -274,22 +287,57 @@ def get_state(query):
 
     opt.SILENT = True
 
-    #creating pathways   
-    #NOTE: that pathway_count/futures should = 1
-    #      if it isn't, the rest will be ignored in the output anyway.
-    opt.createFireGirlPathways(1, event_number + 1, pathway_number)
+    #creating image name list
+    names = [[],[],[]]
+
+    #creating pathway with no years... this will generate the underlying landscape and set
+    #  all the model parameters that were assigned earlier.
+    opt.createFireGirlPathways(1, 0, pathway_number)
+
+    #now incrementing the years
+    #because we start with the final year, and then skip backward showing every few landscapes,
+    #we may have to skip over several of the first landscapes before we start showing any
+    start = event_number - (step * (show_count -1))
+
+    #checking for negative numbers, in case the users has specified too many past landscapes to show
+    while start < 0:
+        start += step
+
+    #manually telling the pathway to do the first set of years
+    opt.pathway_set[0].doYears(start)
+    #and save it's images
+    name0 = "image_" + str(random.randint(1,999999)) + ".bmp"
+    name1 = "image_" + str(random.randint(1,999999)) + ".bmp"
+    name2 = "image_" + str(random.randint(1,999999)) + ".bmp"
+    opt.pathway_set[0].saveImage(name0, "timber")
+    opt.pathway_set[0].saveImage(name1, "fuel")
+    opt.pathway_set[0].saveImage(name2, "composite")
+    #add these names to the lists
+    names[0].append(name0)
+    names[1].append(name1)
+    names[2].append(name2)
 
 
-    #finding the year that the snapshot is requested for
-    #fuel_array = opt.pathway_set[0].fuel_load_history[event_number]
-    #timber_array = opt.pathway_set[0].timber_value_history[event_number]
-    #array_width = opt.pathway_set[0].width
-    #array_height = opt.pathway_set[0].height
-    #  ^^ these are lists of lists, indexed by x,y coordinates, so to call 
-    # cell 4,10 would be timber_array[4][10], etc...
+    #now loop through the rest of the states
+    for i in range(start, event_number+1, step):
+        #do the next set of years
+        opt.pathway_set[0].doYears(step)
 
-    #saving an image of the landscape
-    opt.pathway_set[0].saveImage("imagefile.bmp","composite")
+        #create a new image filenames
+        name3 = "image_" + str(random.randint(1,999999)) + ".bmp"
+        name4 = "image_" + str(random.randint(1,999999)) + ".bmp"
+        name5 = "image_" + str(random.randint(1,999999)) + ".bmp"
+
+        #save the images
+        opt.pathway_set[0].saveImage(name3, "timber")
+        opt.pathway_set[0].saveImage(name4, "fuel")
+        opt.pathway_set[0].saveImage(name5, "composite")
+
+        #add these names to the lists
+        names[0].append(name3)
+        names[1].append(name4)
+        names[2].append(name5)
+
 
     returnObj = {
             "statistics": {
