@@ -1,4 +1,6 @@
 language: python
+git:
+    submodules: false
 python:
   - 2.7 
 # Setup anaconda
@@ -13,6 +15,6 @@ before_install:
   - sudo ln -s /run/shm /dev/shm
 # Install packages
 install:
-  - conda install --yes python=$TRAVIS_PYTHON_VERSION numpy scipy
+  - conda install --yes python=$TRAVIS_PYTHON_VERSION numpy scipy pil
 script:
   - python -m unittest discover --pattern=*tc_*.py
