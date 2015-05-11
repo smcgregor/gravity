@@ -373,3 +373,57 @@ def all_stats_by_year(pathway_set):
 
     return output
 
+def pathway_summary(pathway, summary_of="timber"):
+    """This function takes a FireGirlPathway and returns a list of descriptive statistics of one of it's features
+    Arguements:
+    pathway: any FireGirlPathway that has FireGirl-style data
+    summary_of: a string with any of the following options
+    -  "timber"  for descriptions of the current timber values on the landscape
+    -  "fuel"    for descriptions of the current fuel loads on the landscape
+
+    Returns: A list with the following elements:
+    -Element 0: the average value of the specified feature over the entire landscape in it's current state
+    -Element 1: the standard deviaion of element 0
+    -Element 2: the average value of the specified feature over just the center window of the current state
+    -Element 3: the standard deviation of element 2
+    """
+
+    #getting overall average and stdev
+    vals = []
+    cell_count = 0
+    for i in range(pathway.width):
+        for j in range(pathway.height):
+            cell_count += 1
+            if summary_of == "timber":
+                vals.append(pathway.timber_value[i][j])
+            elif summary_of == "fuel":
+                vals.append(pathway.fuel_load[i][j])
+
+    ave_timber_val = 0
+    std_timber_val = 0
+    if len(vals) > 0:
+        ave_timber_val = round(mean(vals), 2)
+        std_timber_val = round(std(vals), 2)
+
+
+    #getting middle-window average adn stdev
+    vals_middle = []
+    cell_count_middle = 0
+    start = int(pathway.width / 3)
+    end = 2*start
+    for i in range(start, end):
+        for j in range(start, end):
+            cell_count_middle += 1
+            if summary_of == "timber":
+                vals_middle.append(pathway.timber_value[i][j])
+            elif summary_of == "fuel":
+                vals_middle.append(pathway.fuel_load[i][j])
+
+    ave_timber_val_middle = 0
+    std_timber_val_middle = 0
+    if len(vals_middle) > 0:
+        ave_timber_val_middle = round(mean(vals_middle), 2)
+        std_timber_val_middle = round(std(vals_middle), 2)
+
+    return [ave_timber_val, std_timber_val, ave_timber_val_middle, std_timber_val_middle]
+
