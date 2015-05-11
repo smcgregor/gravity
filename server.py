@@ -269,7 +269,8 @@ def get_state(query):
     opt.setPolicy(pol)
 
     #Setting opt to tell it's pathway(s) to remember their histories
-    opt.PATHWAYS_RECORD_HISTORIES = True
+    #un-needed, since we're just re-creating the pathway of interest anyway
+    #opt.PATHWAYS_RECORD_HISTORIES = True 
 
     opt.SILENT = True
 
@@ -301,6 +302,9 @@ def get_state(query):
     return returnObj
 
 def get_optimize(query):
+    """ Based on query parameters, creates a set of pathways and runs LBGGS on them, returning the learned policy.
+
+    """
 
     #remove this when needed
     mocked_query = {
@@ -368,6 +372,10 @@ def get_optimize(query):
 
     #creating pathways
     opt.createFireGirlPathways(int(pathway_count),int(years))
+
+    #set desired objective function
+    if "Objective Function" in dict_transition.keys():
+        opt.setObjFn(dict_transition["Objective Function"])
 
     #doing one round of optimization
     opt.optimizePolicy()
