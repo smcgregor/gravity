@@ -290,10 +290,15 @@ def get_state(query):
     #saving an image of the landscape
     opt.pathway_set[0].saveImage("imagefile.bmp","composite")
 
-    return {"todo": "return summary statistics you may want for the state",
-            "todo_continued": "in a dictionary you return here",
-            "yet_more_todo": "sean will add references to files in this dictionary that will be",
-            "woah more todo": "displayed in the visualization"}
+    returnObj = {
+            "statistics": {
+              "Event Number": int(query["Event Number"]),
+              "Pathway Number": int(query["Pathway Number"])
+             },
+            "images": ["imagefile.bmp"]
+            }
+
+    return returnObj
 
 def get_optimize(query):
 
