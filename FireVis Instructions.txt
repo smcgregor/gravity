@@ -1,0 +1,12 @@
+Instructions for using the FireVis locally:
+
+cd gravity/FireVis
+
+git pull origin/v2
+
+cd gravity
+
+python server.py
+
+in a browser:
+http://localhost:8000/FireVis/index2.html
