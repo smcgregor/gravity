@@ -4,7 +4,7 @@ cd gravity/FireVis
 
 git pull origin/v2
 
-cd gravity
+cd back to gravity
 
 python server.py
 
