@@ -7,6 +7,7 @@ from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
 from os import curdir, sep
 from urlparse import urlparse, parse_qs
 from FireGirlOptimizer import *
+from FireGirlStats import *
 
 #
 # Return data
@@ -339,10 +340,22 @@ def get_state(query):
         names[2].append(name5)
 
 
+    timber_stats = pathway_summary(opt.pathway_set[0],"timber")
+    fuel_stats = pathway_summary(opt.pathway_set[0],"fuel")
+
+
     returnObj = {
             "statistics": {
               "Event Number": int(query["Event Number"]),
-              "Pathway Number": int(query["Pathway Number"])
+              "Pathway Number": int(query["Pathway Number"]),
+              "Average Timber Value": int(timber_stats[0]),
+              "Timber Value Std.Dev.": int(timber_stats[1]),
+              "Average Timber Value - Center": int(timber_stats[2]),
+              "Timber Value Std.Dev. - Center": int(timber_stats[3]),
+              "Average Fuel Load": int(fuel_stats[0]),
+              "Fuel Load Std.Dev.": int(fuel_stats[1]),
+              "Average Fuel Load - Center": int(fuel_stats[2]),
+              "Fuel Load Std.Dev. - Center": int(fuel_stats[3])
              },
             "images": names
             }
