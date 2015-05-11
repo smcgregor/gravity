@@ -2,7 +2,7 @@ Instructions for using the FireVis locally:
 
 cd gravity/FireVis
 
-git pull origin/v2
+git pull origin v2
 
 cd back to gravity
 
