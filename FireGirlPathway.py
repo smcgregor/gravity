@@ -751,6 +751,20 @@ class FireGirlPathway:
 
         return round(loss, 0)
 
+    def getTimberLossFrom(self, start_year, end_year):
+        """Returns the harvest values between the specified years
+        """
+        #santatizing inputs
+        if start_year < 0: start_year = 0
+        if end_year > len(self.ignition_events): end_year = len(self.ignition_events)
+
+        total = 0
+        for i in range(start_year, end_year):
+            outcomes = self.ignition_events[i].getOutcomes()
+            total += outcomes[0]
+
+        return round(total)
+
     def getHarvestTotal(self):
         """Returns the total harvest value to date that has occured in this pathway's history
         """
@@ -761,6 +775,19 @@ class FireGirlPathway:
             total += entry
 
         return round(total, 0)
+
+    def getHarvestFrom(self, start_year, end_year):
+        """Returns the harvest values between the specified years
+        """
+        #santatizing inputs
+        if start_year < 0: start_year = 0
+        if end_year > len(self.yearly_logging_totals): end_year = len(self.yearly_logging_totals)
+
+        total = 0
+        for i in range(start_year, end_year):
+            total += self.yearly_logging_totals[i]
+
+        return round(total)
 
     def getSuppressionTotal(self):
         """Returns the total suppression cost to date in this pathway's history
@@ -773,6 +800,19 @@ class FireGirlPathway:
 
         return round(total, 0)
 
+    def getSuppressionFrom(self, start_year, end_year):
+        """Returns the suppression costs between the specified years
+        """
+        #santatizing inputs
+        if start_year < 0: start_year = 0
+        if end_year > len(self.yearly_suppression_costs): end_year = len(self.yearly_suppression_costs)
+
+        total = 0
+        for i in range(start_year, end_year):
+            total += self.yearly_suppression_costs[i]
+
+        return round(total)
+
     def getGrowthTotal(self):
         """Returns the total timber growth to date in this pathway's history
         """
@@ -783,6 +823,19 @@ class FireGirlPathway:
             total += entry
 
         return round(total, 0)
+
+    def getGrowthFrom(self, start_year, end_year):
+        """Returns the total growth between the specified years
+        """
+        #santatizing inputs
+        if start_year < 0: start_year = 0
+        if end_year > len(self.yearly_growth_totals): end_year = len(self.yearly_growth_totals)
+
+        total = 0
+        for i in range(start_year, end_year):
+            total += self.yearly_growth_totals[i]
+
+        return round(total)
 
     def updateNetValue(self):
         #This function makes the pathway go through it's full history and add/subtract up 
