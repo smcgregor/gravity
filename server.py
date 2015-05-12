@@ -9,6 +9,13 @@ from urlparse import urlparse, parse_qs
 from FireGirlOptimizer import *
 from FireGirlStats import *
 
+# Keep track of file numbers so they don't repeat
+server_file_counter = 0
+def file_number_str():
+    global server_file_counter 
+    server_file_counter += 1
+    return server_file_counter
+
 #
 # Return data
 #
@@ -244,7 +251,7 @@ def get_state(query):
     dict_transition = query["transition"]
     dict_policy = query["policy"] 
     
-    show_count = 1
+    show_count = 50
     step = 1
     if "Past Events to Show" in query.keys():
         show_count = 1 + int(query["Past Events to Show"])
@@ -307,16 +314,16 @@ def get_state(query):
     #manually telling the pathway to do the first set of years
     opt.pathway_set[0].doYears(start)
     #and save it's images
-    name0 = "image_" + str(random.randint(1,999999)) + ".bmp"
-    name1 = "image_" + str(random.randint(1,999999)) + ".bmp"
-    name2 = "image_" + str(random.randint(1,999999)) + ".bmp"
-    opt.pathway_set[0].saveImage(name0, "timber")
-    opt.pathway_set[0].saveImage(name1, "fuel")
-    opt.pathway_set[0].saveImage(name2, "composite")
+    timber_name = "timber_" + str(file_number_str()) + ".bmp"
+    fuel_name = "fuel_" + str(file_number_str()) + ".bmp"
+    composite_name = "composite_" + str(file_number_str()) + ".bmp"
+    opt.pathway_set[0].saveImage(timber_name, "timber")
+    opt.pathway_set[0].saveImage(fuel_name, "fuel")
+    opt.pathway_set[0].saveImage(composite_name, "composite")
     #add these names to the lists
-    names[0].append(name0)
-    names[1].append(name1)
-    names[2].append(name2)
+    names[0].append(timber_name)
+    names[1].append(fuel_name)
+    names[2].append(composite_name)
 
 
     #now loop through the rest of the states
@@ -325,24 +332,22 @@ def get_state(query):
         opt.pathway_set[0].doYears(step)
 
         #create a new image filenames
-        name3 = "image_" + str(random.randint(1,999999)) + ".bmp"
-        name4 = "image_" + str(random.randint(1,999999)) + ".bmp"
-        name5 = "image_" + str(random.randint(1,999999)) + ".bmp"
+        timber_name = "timber_" + str(file_number_str()) + ".bmp"
+        fuel_name = "fuel_" + str(file_number_str()) + ".bmp"
+        composite_name = "composite_" + str(file_number_str()) + ".bmp"
 
         #save the images
-        opt.pathway_set[0].saveImage(name3, "timber")
-        opt.pathway_set[0].saveImage(name4, "fuel")
-        opt.pathway_set[0].saveImage(name5, "composite")
+        opt.pathway_set[0].saveImage(timber_name, "timber")
+        opt.pathway_set[0].saveImage(fuel_name, "fuel")
+        opt.pathway_set[0].saveImage(composite_name, "composite")
 
         #add these names to the lists
-        names[0].append(name3)
-        names[1].append(name4)
-        names[2].append(name5)
-
+        names[0].append(timber_name)
+        names[1].append(fuel_name)
+        names[2].append(composite_name)
 
     timber_stats = pathway_summary(opt.pathway_set[0],"timber")
     fuel_stats = pathway_summary(opt.pathway_set[0],"fuel")
-
 
     returnObj = {
             "statistics": {
@@ -495,8 +500,28 @@ class Handler(BaseHTTPRequestHandler):
         else:
             # Serve the visualization's files
             try:
-                f = open(curdir + sep + self.path)
+                content_type = ""
+                if self.path.endswith(".css"):
+                    content_type = "text/css"
+                    f = open(curdir + sep + self.path)
+                elif self.path.endswith(".html"):
+                    content_type = "text/html"
+                    f = open(curdir + sep + self.path)
+                elif self.path.endswith(".js"):
+                    content_type = "application/javascript"
+                    f = open(curdir + sep + self.path)
+                elif self.path.endswith(".woff2"):
+                    content_type = "application/font-woff2"
+                    f = open(curdir + sep + self.path)
+                elif self.path.endswith(".bmp"):
+                    content_type = "image/tmp"
+                    f = open(curdir + sep + self.path)
+                elif self.path.endswith(".map"):
+                    content_type = "application/javascript"
+                    f = open(curdir + sep + self.path)
+
                 self.send_response(200)
+                self.send_header("Content-type", content_type)
                 self.end_headers()
                 self.wfile.write(f.read())
                 f.close()
