@@ -806,16 +806,23 @@ class FireGirlPathway:
         self.timber_value_history.append(timber_copy)
 
 
-    def saveImage(self, filename=None, imagetype="composite"):
+    def saveImage(self, filename=None, imagetype="composite", showburns=0):
         """Creates an image of the current landcape
 
         Arguments
         filename: the name of the image file to be saved. This can be a file-like object as well
+        
         imagetype: the particular view of the landscape to be made
         options are:
         - "composite" which is the sum of fuel and timber
         - "fuel" which shows only the fuel values
         - "timber" which shows only the timber values
+        
+        showburns: an integer which indicates how may past burns (starting at the current year)
+         to overlay on the image.
+
+        Returns
+        Nothing
 
         """
 
@@ -824,11 +831,11 @@ class FireGirlPathway:
             filename = "image_output_" + str(imagetype) + str(self.ID_number) + "_" + str(self.year) + ".bmp"
 
 
-        image = Image.new("RGB",(self.width,self.height))
+        image = Image.new("RGBA",(self.width,self.height))
         #choosing pixel color
-        #my lowest value is green: (0,  240,0)
-        #my middle value is yellow:(240,240,0)
-        #my high value is red:     (240,  0,0)
+        #my lowest value is green: (0,  240,0, 255)
+        #my middle value is yellow:(240,240,0, 255)
+        #my high value is red:     (240,  0,0, 255)
 
         #lowest value is 0
         #highest value is dependent on the type of image... 
@@ -891,13 +898,40 @@ class FireGirlPathway:
 
 
                 #assign values
-                image.putpixel( (i,j), (int(red),int(green),0) )
+                image.putpixel( (i,j), (int(red),int(green),0, 255) )
 
             #finished with this column, on to the next
 
         #finished with all pixels
 
-        image.save(filename, "BMP")
+        #now draw burns, if requested
+        if showburns > 0:
+            opacity = 255
+
+            burn_image = Image.new("RGBA",(self.width,self.height))
+
+            #look at the FireLog entries for each desired year
+            for burn_year in range(self.year - showburns, self.year):
+                #choose the new opacity amount
+                opacity = 255 - int( (255/showburns) * (self.year - burn_year) )
+
+                # burn records have entries in the following format:
+                #[time, location, spread_rate, crown_burned, "ignition"]   
+
+                #look at each cell ignition in the current FireLog and draw that pixel
+                for burn_event in self.FireLog[burn_year].burn_events:
+                    loc = burn_event[1]
+                    #check location veracity
+                    if (loc[0] < 0) or (loc[1] < 0) or (loc[0] >= self.width) or (loc[1] >= self.height):
+                        print("burn location out of bounds: " + str(loc))
+                        continue
+                    burn_image.putpixel( (loc[0], loc[1]) , (0,0,0,opacity) )
+
+            #now blend the images
+            image = Image.alpha_composite(image, burn_image)        
+
+
+        image.save(filename, "PNG")
 
 
     def doFire(self, ignite_date, ignite_loc, ignite_wind, ignite_temp, suppress):
