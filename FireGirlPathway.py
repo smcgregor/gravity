@@ -749,25 +749,40 @@ class FireGirlPathway:
             #subtract timber loss
             loss += outcomes[0]
 
-        return loss
+        return round(loss, 0)
 
     def getHarvestTotal(self):
+        """Returns the total harvest value to date that has occured in this pathway's history
+        """
 
         total = 0
 
         for entry in self.yearly_logging_totals:
             total += entry
 
-        return total
+        return round(total, 0)
 
     def getSuppressionTotal(self):
+        """Returns the total suppression cost to date in this pathway's history
+        """
 
         total = 0
 
         for entry in self.yearly_suppression_costs:
             total += entry
 
-        return total
+        return round(total, 0)
+
+    def getGrowthTotal(self):
+        """Returns the total timber growth to date in this pathway's history
+        """
+
+        total = 0
+
+        for entry in self.yearly_growth_totals:
+            total += entry
+
+        return round(total, 0)
 
     def updateNetValue(self):
         #This function makes the pathway go through it's full history and add/subtract up 
