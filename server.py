@@ -203,6 +203,12 @@ def get_rollouts(query):
             # id number that a pathway uses to instantiate its random seed 
             features["Pathway Number"] = pw.ID_number
 
+            #adding cumulative measurements, from the start, up to this year
+            features["Cumulative Harvest Value"] = pw.getHarvestFrom(0, ign.year)
+            features["Cumulative Growth"] = pw.getGrowthFrom(0, ign.year)
+            features["Cumulative Timber Loss"] = pw.getTimberLossFrom(0, ign.year)
+            featuers["Cumulative Suppression Cost"] = pw.getSuppressionFrom(0, ign.year)
+
 
             #add this ignition event + year details to this pathway's list of dictionaries
             year_values.append(features)
@@ -358,6 +364,10 @@ def get_state(query):
 
     timber_stats = pathway_summary(opt.pathway_set[0],"timber")
     fuel_stats = pathway_summary(opt.pathway_set[0],"fuel")
+    total_growth = opt.pathway_set[0].getGrowthTotal()
+    total_suppression = opt.pathway_set[0].getSuppressionTotal()
+    total_harvest = opt.pathway_set[0].getHarvestTotal()
+    total_timber_loss = opt.pathway_set[0].getTimberLossTotal()
 
     returnObj = {
             "statistics": {
@@ -370,7 +380,11 @@ def get_state(query):
               "Average Fuel Load": int(fuel_stats[0]),
               "Fuel Load Std.Dev.": int(fuel_stats[1]),
               "Average Fuel Load - Center": int(fuel_stats[2]),
-              "Fuel Load Std.Dev. - Center": int(fuel_stats[3])
+              "Fuel Load Std.Dev. - Center": int(fuel_stats[3]),
+              "Cumulative Harvest":total_harvest,
+              "Cumulative Suppression Cost": total_suppression,
+              "Cumulative Timber Loss":total_timber_loss,
+              "Cumulative Timber Growth":total_growth,
              },
             "images": names
             }
