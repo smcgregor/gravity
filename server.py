@@ -514,7 +514,7 @@ class Handler(BaseHTTPRequestHandler):
                     content_type = "application/font-woff2"
                     f = open(curdir + sep + self.path)
                 elif self.path.endswith(".bmp"):
-                    content_type = "image/tmp"
+                    content_type = "image/bmp"
                     f = open(curdir + sep + self.path)
                 elif self.path.endswith(".map"):
                     content_type = "application/javascript"
