@@ -1,6 +1,9 @@
 # Hailey's ignored files
 *.fgl
 
+# Sean ignored files
+*.bmp
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
