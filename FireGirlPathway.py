@@ -912,6 +912,8 @@ class FireGirlPathway:
 
             #look at the FireLog entries for each desired year
             for burn_year in range(self.year - showburns, self.year):
+                if burn_year < 0: continue
+
                 #choose the new opacity amount
                 opacity = 255 - int( (255/showburns) * (self.year - burn_year) )
 

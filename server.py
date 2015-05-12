@@ -289,7 +289,7 @@ def get_state(query):
     opt.SILENT = True
 
     #creating image name list
-    names = [[],[],[]]
+    names = [[],[],[],[]]
 
     #creating pathway with no years... this will generate the underlying landscape and set
     #  all the model parameters that were assigned earlier.
@@ -307,16 +307,19 @@ def get_state(query):
     #manually telling the pathway to do the first set of years
     opt.pathway_set[0].doYears(start)
     #and save it's images
-    name0 = "image_" + str(random.randint(1,999999)) + ".bmp"
-    name1 = "image_" + str(random.randint(1,999999)) + ".bmp"
-    name2 = "image_" + str(random.randint(1,999999)) + ".bmp"
+    name0 = "image_" + str(random.randint(1,999999)) + ".png"
+    name1 = "image_" + str(random.randint(1,999999)) + ".png"
+    name2 = "image_" + str(random.randint(1,999999)) + ".png"
+    name3 = "image_" + str(random.randint(1,999999)) + ".png"
     opt.pathway_set[0].saveImage(name0, "timber")
     opt.pathway_set[0].saveImage(name1, "fuel")
     opt.pathway_set[0].saveImage(name2, "composite")
+    opt.pathway_set[0].saveImage(name3, "composite",10)
     #add these names to the lists
     names[0].append(name0)
     names[1].append(name1)
     names[2].append(name2)
+    names[3].append(name3)
 
 
     #now loop through the rest of the states
@@ -325,19 +328,22 @@ def get_state(query):
         opt.pathway_set[0].doYears(step)
 
         #create a new image filenames
-        name3 = "image_" + str(random.randint(1,999999)) + ".bmp"
-        name4 = "image_" + str(random.randint(1,999999)) + ".bmp"
-        name5 = "image_" + str(random.randint(1,999999)) + ".bmp"
+        name00 = "image_" + str(random.randint(1,999999)) + ".png"
+        name01 = "image_" + str(random.randint(1,999999)) + ".png"
+        name02 = "image_" + str(random.randint(1,999999)) + ".png"
+        name03 = "image_" + str(random.randint(1,999999)) + ".png"
 
         #save the images
-        opt.pathway_set[0].saveImage(name3, "timber")
-        opt.pathway_set[0].saveImage(name4, "fuel")
-        opt.pathway_set[0].saveImage(name5, "composite")
+        opt.pathway_set[0].saveImage(name00, "timber")
+        opt.pathway_set[0].saveImage(name01, "fuel")
+        opt.pathway_set[0].saveImage(name02, "composite")
+        opt.pathway_set[0].saveImage(name03, "composite",10)
 
         #add these names to the lists
-        names[0].append(name3)
-        names[1].append(name4)
-        names[2].append(name5)
+        names[0].append(name00)
+        names[1].append(name01)
+        names[2].append(name02)
+        names[3].append(name03)
 
 
     timber_stats = pathway_summary(opt.pathway_set[0],"timber")
