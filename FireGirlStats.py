@@ -426,4 +426,3 @@ def pathway_summary(pathway, summary_of="timber"):
         std_timber_val_middle = round(std(vals_middle), 2)
 
     return [ave_timber_val, std_timber_val, ave_timber_val_middle, std_timber_val_middle]
-
