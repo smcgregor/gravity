@@ -543,6 +543,15 @@ class Handler(BaseHTTPRequestHandler):
                 elif self.path.endswith(".png"):
                     content_type = "image/png"
                     f = open(curdir + sep + self.path)
+                elif self.path.endswith(".ttf"):
+                    content_type = "application/font-sfnt"
+                    f = open(curdir + sep + self.path)
+                elif self.path.endswith(".woff"):
+                    content_type = "application/font-woff"
+                    f = open(curdir + sep + self.path)
+                elif self.path.endswith(".wof"):
+                    content_type = "application/font-wof"
+                    f = open(curdir + sep + self.path)
                 elif self.path.endswith(".map"):
                     content_type = "application/javascript"
                     f = open(curdir + sep + self.path)
