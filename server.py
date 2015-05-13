@@ -555,6 +555,9 @@ class Handler(BaseHTTPRequestHandler):
                 elif self.path.endswith(".map"):
                     content_type = "application/javascript"
                     f = open(curdir + sep + self.path)
+                else:
+                    content_type = "nil"
+                    f = open("nil")
 
                 self.send_response(200)
                 self.send_header("Content-type", content_type)
