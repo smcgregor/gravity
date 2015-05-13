@@ -1,5 +1,6 @@
 from FireGirlOptimizer import *
 from FireGirlStats import *
+from server import *
 from numpy import mean
 import random
 
@@ -458,6 +459,40 @@ class FireGirlTests:
 
 
         return [ave_let_burn, ave_suppress_all, ave_coin_toss]
+
+    def server_test(self):
+        query = {
+            "Event Number": 5,
+            "Pathway Number": 0,
+            "Past Events to Show": 4,
+            "Past Events to Step Over": 0,
+            "reward": {"Discount": 1,
+                       "Suppression Fixed Cost": 500,
+                       "Suppression Variable Cost": 500},
+            "transition": {"Harvest Percent": 0.95,
+                           "Minimum Timber Value": 50,
+                           "Slash Remaning": 10,
+                           "Fuel Accumulation": 2,
+                           "Suppression Effect": 0.5,
+                           "Futures to simulate": 5,
+                           "Years to simulate": 5},
+            "policy": {"Constant": 0,
+                       "Date": 0,
+                       "Days Left": 0,
+                       "Temperature": 0,
+                       "Wind Speed": 0,
+                       "Timber Value": 0,
+                       "Timber Value 8": 0,
+                       "Timber Value 24": 0,
+                       "Fuel Load": 0,
+                       "Fuel Load 8": 0,
+                       "Fuel Load 24": 0}
+            }
+
+        results_rollouts = get_rollouts(query)
+        results_state = get_state(query)
+        results_optimize = get_optimize(query)
+
 
 class FireGirlTrials:
     """This class contains member functions that produce test data as outputs, replacing test scripts

@@ -207,7 +207,7 @@ def get_rollouts(query):
             features["Cumulative Harvest Value"] = pw.getHarvestFrom(0, ign.year)
             features["Cumulative Growth"] = pw.getGrowthFrom(0, ign.year)
             features["Cumulative Timber Loss"] = pw.getTimberLossFrom(0, ign.year)
-            featuers["Cumulative Suppression Cost"] = pw.getSuppressionFrom(0, ign.year)
+            features["Cumulative Suppression Cost"] = pw.getSuppressionFrom(0, ign.year)
 
 
             #add this ignition event + year details to this pathway's list of dictionaries
@@ -354,7 +354,7 @@ def get_state(query):
         opt.pathway_set[0].saveImage(timber_name, "timber")
         opt.pathway_set[0].saveImage(fuel_name, "fuel")
         opt.pathway_set[0].saveImage(composite_name, "composite")
-        opt.pathway_set[0].saveImage(burn_name, "composite")
+        opt.pathway_set[0].saveImage(burn_name, "timber", 10)
 
         #add these names to the lists
         names[0].append(timber_name)
