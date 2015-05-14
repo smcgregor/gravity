@@ -214,6 +214,11 @@ class FireGirlPathway:
             self.growth_timber_constant = 22.0
             self.growth_fuel_accumulation = 2
 
+            #a list to hold pre-calculated values for growth.
+            self.growth_precalcs = []
+
+            self.init_growth_precalcs()
+
             #a list to hold each year's total pathway growth amount
             self.yearly_growth_totals = []
 
@@ -1230,7 +1235,51 @@ class FireGirlPathway:
 
         #and finally, return the loss data
         return [timber_loss, cells_burned, sup_cost, end_time]
-                    
+
+    def init_growth_precalcs(self):
+        """This function populates the pathway's list of precalculated timber values
+        """
+
+        self.growth_precalcs = []
+
+        #model v0
+        for i in range(1,300):
+            self.growth_precalcs.append(self.growth_timber_constant * math.log(i))
+
+                   
+    def getNextTimberValue(self,current_value):
+        """Given a current timber value, this function returns what the value will be in the following year.
+
+        Note: A finite list of precalculated values is made, so any argument value that is not in the list 
+        is rounded down to the closest included value.
+        """
+        next_val = -1
+
+        #sanitizing:
+        if current_value < 1: current_value = 1
+
+        for i in range(len(self.growth_precalcs)):
+            #keep looking until we find where current_value fits
+            if current_value < self.growth_precalcs[i]:
+                continue
+            else:
+                if i < len(self.growth_precalcs) - 1:
+                    #return the next value...
+                    next_val = self.growth_precalcs[i+1]
+                else:
+                    #unless this is the last value... then just return the last value
+                    next_val = self.growth_precalcs[i]
+                break
+
+        #it is possible that the input argument is higher than anything in the precalcs list, so check
+        # if it's been assigned
+        if next_val == -1:
+            #it hasn't been assigned, so just assign it to the last value in the list
+            next_val = self.growth_precalcs[len(self.growth_precalcs) - 1]
+
+        return next_val
+
+
     def doGrowth(self):
         #This function applies the timber and fuel load growth models to all cells on the landscape,
         #  including those outside of the window of interest.
@@ -1256,23 +1305,26 @@ class FireGirlPathway:
         for i in range(self.width):
             for j in range(self.height):
 
-                # 1) Apply timber growth equation:
+                # # 1) Apply timber growth equation:
 
-                #calculate current age
-                age = math.exp(self.timber_value[i][j] / self.growth_timber_constant)
-                #and apply the timber value for the new age
-                old_val = self.timber_value[i][j]
-                new_val = self.growth_timber_constant * math.log(age + 1)
-                self.timber_value[i][j] = new_val
+                # #calculate current age
+                # age = math.exp(self.timber_value[i][j] / self.growth_timber_constant)
+                # #and apply the timber value for the new age
+                # old_val = self.timber_value[i][j]
+                # new_val = self.growth_timber_constant * math.log(age + 1)
+                # self.timber_value[i][j] = new_val
 
-                #and record this growth as part of the year's total growth, but only for
-                #  the window of interest
-                if (i >= 43) and (i < 86) and (j >= 43) and (j < 86):
-                    total_growth += (new_val - old_val)
+                # #and record this growth as part of the year's total growth, but only for
+                # #  the window of interest
+                # if (i >= 43) and (i < 86) and (j >= 43) and (j < 86):
+                #     total_growth += (new_val - old_val)
 
 
-                # 2) Apply fuel accumulation model:
-                self.fuel_load[i][j] += self.growth_fuel_accumulation
+                # # 2) Apply fuel accumulation model:
+                # self.fuel_load[i][j] += self.growth_fuel_accumulation
+
+
+                self.fuel_load[i][j] = self.getNextTimberValue(self.fuel_load[i][j])
 
 
 
