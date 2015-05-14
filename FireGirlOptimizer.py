@@ -254,7 +254,7 @@ class FireGirlPolicyOptimizer:
         if len(self.pathway_weights_generation) > 0:
             for i in range(len(self.pathway_weights)):
                 #checking for very low values:
-                if self.pathway_weights_generation[i] < 0.0001: self.pathway_weights_generation[i] = 0.0001
+                #if self.pathway_weights_generation[i] < 0.0001: self.pathway_weights_generation[i] = 0.0001
 
                 #assigning weights
                 self.pathway_weights_importance_sampling.append(self.pathway_weights[i] / self.pathway_weights_generation[i])
