@@ -1305,26 +1305,26 @@ class FireGirlPathway:
         for i in range(self.width):
             for j in range(self.height):
 
-                # # 1) Apply timber growth equation:
+                # 1) Apply timber growth equation:
 
-                # #calculate current age
-                # age = math.exp(self.timber_value[i][j] / self.growth_timber_constant)
-                # #and apply the timber value for the new age
-                # old_val = self.timber_value[i][j]
-                # new_val = self.growth_timber_constant * math.log(age + 1)
-                # self.timber_value[i][j] = new_val
+                #calculate current age
+                age = math.exp(self.timber_value[i][j] / self.growth_timber_constant)
+                #and apply the timber value for the new age
+                old_val = self.timber_value[i][j]
+                new_val = self.growth_timber_constant * math.log(age + 1)
+                self.timber_value[i][j] = new_val
 
-                # #and record this growth as part of the year's total growth, but only for
-                # #  the window of interest
-                # if (i >= 43) and (i < 86) and (j >= 43) and (j < 86):
-                #     total_growth += (new_val - old_val)
-
-
-                # # 2) Apply fuel accumulation model:
-                # self.fuel_load[i][j] += self.growth_fuel_accumulation
+                #and record this growth as part of the year's total growth, but only for
+                #  the window of interest
+                if (i >= 43) and (i < 86) and (j >= 43) and (j < 86):
+                    total_growth += (new_val - old_val)
 
 
-                self.fuel_load[i][j] = self.getNextTimberValue(self.fuel_load[i][j])
+                # 2) Apply fuel accumulation model:
+                self.fuel_load[i][j] += self.growth_fuel_accumulation
+
+
+                #self.fuel_load[i][j] = self.getNextTimberValue(self.fuel_load[i][j])
 
 
 
