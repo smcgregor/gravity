@@ -1125,10 +1125,22 @@ class FireGirlPathway:
             #   calcCrownFireRisk() function.  This function will return
             #   a probability of crownfire, and we'll roll a uniform
             #   number against it.
-            roll = random.uniform(0,1)
-            if roll < self.calcCrownFireRisk(self.fuel_load[xloc][yloc]):
+            
+            #TODO: FIX THIS HACK
+            #because crownfire is stochaistic as originally implemented and is ALSO effected by policies:
+            # it's changing the random number draw counts, and making otherwise identical pathways with
+            # separate policies to have different weather. This isn't good. So I'm hacking in a deterministic
+            # version of crownfirerisk for now...
+            
+            #original model call
+            #roll = random.uniform(0,1)
+            #if roll < self.calcCrownFireRisk(self.fuel_load[xloc][yloc]):
+            #    crown_burned[xloc][yloc] = True
+               
+            #HACK
+            hack_val = (fuel_ld * 2) + (spreadrate * 2)
+            if hack_val > self.timber_value[xloc][yloc]:
                 crown_burned[xloc][yloc] = True
-
 
             #if the fire spreadrate of this fire is 0, then don't bother checking
             #   for neighbors and calculating arrival times... there won't be any
