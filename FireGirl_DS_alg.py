@@ -1,7 +1,7 @@
 import random
 
 def FireGirl_DS_alg(seedValue, min_val, max_val, roughness=0.5):
-    #This function creates a new 129x129 grid of values. It will return a list
+    """#This function creates a new 129x129 grid of values. It will return a list
     #  containing two elements, the first is a nested list for the timber_value
     #  grid, and the second is a nested list for the fuel_load grid
     #
@@ -17,6 +17,7 @@ def FireGirl_DS_alg(seedValue, min_val, max_val, roughness=0.5):
     #              DS algorithm will allow variation up to half the range between
     #              min_val and max_val. Subsquent iterations will multiply this
     #              range by the roughness value of the previous iteration.
+    """
     
     #Creating the timber_value and fuel_load grids
     timber_val = []
@@ -55,6 +56,7 @@ def FireGirl_DS_alg(seedValue, min_val, max_val, roughness=0.5):
     for i in range(0,129,16):
         for j in range(0,129,16):
             timber_val[i][j] = random.uniform(min_val, max_val)
+            fuel_load[i][j] = random.uniform(min_val, max_val)
             
     #TESTING
     #print("Step 1 results, 0-17")

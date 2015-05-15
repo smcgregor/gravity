@@ -140,7 +140,12 @@ class FireGirlFireLog:
         
         #records of overall fire results
         self.cells_burned = 0
+        self.cells_crowned = 0
         self.timber_loss = 0
+
+        #burn maps (booleans)
+        self.map_burned = []
+        self.map_crowned = []
     
     
     def addIgnitionEvent(self, time, location, spread_rate, crown_burned):
@@ -150,8 +155,9 @@ class FireGirlFireLog:
         this_event = [time, location, spread_rate, crown_burned, "ignition"]
         self.burn_events.append(this_event)
     
-    def updateResults(self, timber_loss, cells_burned):
+    def updateResults(self, timber_loss, cells_burned, cells_crowned):
         self.cells_burned = cells_burned
+        self.cells_crowned = cells_crowned
         self.timber_loss = timber_loss
         
     def printBasicInfo(self):

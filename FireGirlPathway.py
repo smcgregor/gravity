@@ -486,8 +486,14 @@ class FireGirlPathway:
         #I'm only allowing fires to start from within the center 43x43 block,
         #   so that there's plenty of buffer around the edges for big fires to
         #   burn into.
-        xloc = random.randint(43,86)
-        yloc = random.randint(43,86)
+        #xloc = random.randint(43,86)
+        #yloc = random.randint(43,86)
+
+        #lets try it with fires anywhere:
+        #setting a buffer of 2 makes sure that fuelave24 and timberave24 won't fail
+        xloc = random.randint(2,self.width-2)
+        yloc = random.randint(2,self.height-2)
+
         return [xloc,yloc]
     
     def tempMean(self, date):
@@ -1010,19 +1016,20 @@ class FireGirlPathway:
 
 
     def doFire(self, ignite_date, ignite_loc, ignite_wind, ignite_temp, suppress):
-        #This function is the fire model. Given the input arguments, it will
-        #  conduct the process of spreading a fire accross the landscape
+        """This function is the fire model. Given the input arguments, it will
+        conduct the process of spreading a fire accross the landscape
         
-        #Steps:
-        #   1) Determine how much "time" to simulate, based on
-        #       a) suppress or let-burn
-        #       b) severity of the weather
-        #       c) local forest conditions
-        #       d) some randomness (exponential?)
-        #   2) Start the priority queue by calculating ignition times from the
-        #       first cell to it's neigbors.
-        #       a) as each cell burns, record the timber value lost
-        #   3) Do the Priority queue until the alloted time is finished
+        Steps:
+           1) Determine how much "time" to simulate, based on
+               a) suppress or let-burn
+               b) severity of the weather
+               c) local forest conditions
+               d) some randomness (exponential?)
+           2) Start the priority queue by calculating ignition times from the
+               first cell to it's neigbors.
+               a) as each cell burns, record the timber value lost
+           3) Do the Priority queue until the alloted time is finished
+        """
     
         xloc = ignite_loc[0]
         yloc = ignite_loc[1]
@@ -1147,8 +1154,14 @@ class FireGirlPathway:
             dist = 0
             arrival_time = 0
             
-            for i in range(xloc-reach, xloc+reach):
-                for j in range(yloc-reach, yloc+reach):
+            for i in range(xloc-reach, xloc+reach+1):
+                for j in range(yloc-reach, yloc+reach+1):
+
+                    #check bounds
+                    if (i < 0) or (j < 0):
+                        continue
+                    if (i > self.width - 1) or (j > self.height - 1):
+                        continue
                     
                     #don't calculate time to the current cell
                     if not (xloc == i and yloc == j):
@@ -1199,6 +1212,7 @@ class FireGirlPathway:
         #Also, record losses
         timber_loss = 0
         cells_burned = 0
+        cells_crowned = 0
         
         for i in range(129):
             for j in range(129):
@@ -1213,12 +1227,17 @@ class FireGirlPathway:
                     if crown_burned[i][j] == True:  #this was set when spreadrate was calculated earlier
                         #the crown burned, so record the loss and set it to zero
                         timber_loss += self.timber_value[i][j]
+                        cells_crowned += 1
                         self.timber_value[i][j] = 0
         
         
         
         #Adding the final results to the fire_log_item
-        fire_log_item.updateResults(timber_loss, cells_burned)
+        fire_log_item.updateResults(timber_loss, cells_burned, cells_crowned)
+
+        #Adding the lists (maps) as well
+        fire_log_item.map_burned = burned
+        fire_log_item.map_crowned = crown_burned
         
         #add the FireLog item to the pathway's list (it's just an ordinary list)
         self.FireLog.append(fire_log_item)
@@ -1234,7 +1253,7 @@ class FireGirlPathway:
         
 
         #and finally, return the loss data
-        return [timber_loss, cells_burned, sup_cost, end_time]
+        return [timber_loss, cells_burned, sup_cost, end_time, cells_crowned]
 
     def init_growth_precalcs(self):
         """This function populates the pathway's list of precalculated timber values
@@ -1519,16 +1538,17 @@ class FireGirlPathway:
             #there is an ignition, so:
             
             # Invoke the fire model and record it's return value, which is in the
-            # form:  [timber_loss, cells_burned, sup_cost, end_time]
+            # form:  [timber_loss, cells_burned, sup_cost, end_time, cells_crowned]
             fireresults = self.doFire(ignite_date, ignite_loc, ignite_wind, ignite_temp, suppress_decision)
             timber_loss = fireresults[0]
             cells_burned = fireresults[1]
             sup_cost = fireresults[2]
             end_time = round(fireresults[3], 3)
+            cells_crowned = fireresults[4]
             
             #recording outcomes in new object type
-            firerecord_new.setOutcomes([timber_loss, cells_burned, sup_cost, end_time])
-            firerecord_new.setOutcomeLabels(["Timber Loss", "Cells Burned", "Suppression Cost", "Burn Time"])
+            firerecord_new.setOutcomes([timber_loss, cells_burned, sup_cost, end_time, cells_crowned])
+            firerecord_new.setOutcomeLabels(["Timber Loss", "Cells Burned", "Suppression Cost", "Burn Time", "Cells Crowned"])
         
                 
         #################################
