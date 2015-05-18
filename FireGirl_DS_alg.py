@@ -1,6 +1,6 @@
 import random
 
-def FireGirl_DS_alg(seedValue, min_val, max_val, roughness=0.5):
+def FireGirl_DS_alg(seedValue, min_val, max_val, roughness=0.5, USE_FUEL_BUG=False):
     """#This function creates a new 129x129 grid of values. It will return a list
     #  containing two elements, the first is a nested list for the timber_value
     #  grid, and the second is a nested list for the fuel_load grid
@@ -56,7 +56,9 @@ def FireGirl_DS_alg(seedValue, min_val, max_val, roughness=0.5):
     for i in range(0,129,16):
         for j in range(0,129,16):
             timber_val[i][j] = random.uniform(min_val, max_val)
-            fuel_load[i][j] = random.uniform(min_val, max_val)
+            if not USE_FUEL_BUG:
+                #this line had been ommitted in the bugged version
+                fuel_load[i][j] = random.uniform(min_val, max_val)
             
     #TESTING
     #print("Step 1 results, 0-17")
