@@ -124,25 +124,36 @@ class FireGirlPathway:
             self.fuel_load_history = []
             
             #Creating a rectangular array to hold timber values for each cell
-            self.timber_value = []
-            for i in range(self.width):
-                self.timber_value.append([])
-                for j in range(self.height):
-                    self.timber_value[i].append(0)
+            # self.timber_value = []
+            # for i in range(self.width):
+                # self.timber_value.append([])
+                # for j in range(self.height):
+                    # self.timber_value[i].append(0)
+            self.timber_value = [[0]*self.height]*self.width
             
             #Creating a rectangular array to hold fuel-load values for each cell
-            self.fuel_load = []
-            for i in range(self.width):
-                self.fuel_load.append([])
-                for j in range(self.height):
-                    self.fuel_load[i].append(0)
+            # self.fuel_load = []
+            # for i in range(self.width):
+                # self.fuel_load.append([])
+                # for j in range(self.height):
+                    # self.fuel_load[i].append(0)
+            self.fuel_load = [[0]*self.height]*self.width
             
             #Creating a rectangular array to hold the stand age of the cell
-            self.stand_age = []
-            for i in range(self.width):
-                self.stand_age.append([])
-                for j in range(self.height):
-                    self.stand_age[i].append(0)
+            # self.stand_age = []
+            # for i in range(self.width):
+                # self.stand_age.append([])
+                # for j in range(self.height):
+                    # self.stand_age[i].append(0)
+            self.stand_age = [[0]*self.height]*self.width
+            
+            #Creating an array to hold fuel age
+            # self.fuel_age = []
+            # for i in range(self.width):
+                # self.fuel_age.append([])
+                # for j in range(self.height):
+                    # self.fuel_age[i].append(0)
+            self.fuel_age = [[0]*self.height]*self.width
             
             # ignition probability: the likelihood of there being an important fire on
             #   any given year
@@ -596,13 +607,14 @@ class FireGirlPathway:
                 self.stand_age[i][j] = val
         
         #assign timber values
-        for i in range(self.width):
-            for j in range(self.height):
+        #for i in range(self.width):
+        #    for j in range(self.height):
                 #now assign growth values
-                if self.using_growth_model == 1:
-                    self.timber_value[i][j] = self.growth_model_1[self.stand_age[i][j]]
-                else:
-                    self.timber_value[i][j] = self.growth_model_2[self.stand_age[i][j]]
+                
+        #        if self.using_growth_model == 1:
+        #            self.timber_value[i][j] = self.growth_model_1[self.stand_age[i][j]]
+        #        else:
+        #            self.timber_value[i][j] = self.growth_model_2[self.stand_age[i][j]]
                 
         
     def calcFuelAve8(self, xloc, yloc):
@@ -629,7 +641,7 @@ class FireGirlPathway:
             for j in range(yloc-1, yloc+1):
                 #don't count the actual cell... just the adjacent 8 cells
                 if not (i == xloc and j == yloc):
-                    total_timber8 += self.timber_value[i][j]
+                    total_timber8 += self.getPresentTimberValue(i,j) #self.timber_value[i][j]
                     
         timber_ave8 = total_timber8 / 8
         
@@ -659,7 +671,7 @@ class FireGirlPathway:
             for j in range(yloc-2, yloc+2):
                 #don't count the actual cell... just the adjacent 24 cells
                 if not (i == xloc and j == yloc):
-                    total_timber24 += self.timber_value[i][j]
+                    total_timber24 += self.getPresentTimberValue(i,j) #self.timber_value[i][j]
                     
         timber_ave24 = total_timber24 / 24
         
@@ -685,7 +697,8 @@ class FireGirlPathway:
         yloc = ignite_loc[1]
         
         #the easy ones:
-        timber_val = self.timber_value[xloc][yloc]
+        #SPEED
+        timber_val = self.getPresentTimberValue(xloc, yloc) #self.timber_value[xloc][yloc]
         fuel = self.fuel_load[xloc][yloc]
         
         #in the following four calculations, we don't have to worry about checking 
@@ -899,23 +912,25 @@ class FireGirlPathway:
         """
 
         #making arrays to hold the copied information
-        fuel_copy = []
-        timber_copy = []
+        #fuel_copy = []
+        #timber_copy = []
 
         #copying values
-        for i in range(len(self.fuel_load)):
-            #append a new column in each list
-            fuel_copy.append([])
-            timber_copy.append([])
-            for j in range(len(self.fuel_load[0])):
-                #add this element to the most recently added column
-                #using +1-1 to ensure copy-by-value instead of copy-by-reference
-                fuel_copy[i].append(self.fuel_load[i][j] + 1.0 - 1.0)
-                timber_copy[i].append(self.timber_value[i][j] + 1.0 - 1.0)
-
-        self.fuel_load_history.append(fuel_copy)
-        self.timber_value_history.append(timber_copy)
-
+        # for i in range(len(self.fuel_load)):
+        #    append a new column in each list
+            # fuel_copy.append([])
+            # timber_copy.append([])
+            # for j in range(len(self.fuel_load[0])):
+        #        add this element to the most recently added column
+         #       using +1-1 to ensure copy-by-value instead of copy-by-reference
+                # fuel_copy[i].append(self.fuel_load[i][j] + 1.0 - 1.0)
+        #        timber_copy[i].append(self.timber_value[i][j] + 1.0 - 1.0)
+                # timber_copy[i].apppend(self.getPresentTimberValue(i,j))
+                
+        #self.fuel_load_history.append(fuel_copy)
+        #self.timber_value_history.append(timber_copy)
+        
+        pass
 
     def saveImage(self, filename=None, imagetype="composite", showburns=0):
         """Creates an image of the current landcape
@@ -974,13 +989,13 @@ class FireGirlPathway:
 
                 #check the current value
                 if imagetype == "composite":
-                    current_pixel = self.fuel_load[i][j] + self.timber_value[i][j]
+                    current_pixel = self.fuel_load[i][j] + self.getPresentTimberValue(i,j) #self.timber_value[i][j]
 
                 elif imagetype == "fuel":
                     current_pixel = self.fuel_load[i][j]
 
                 else: #imagetype == "timber":
-                    current_pixel = self.timber_value[i][j]
+                    current_pixel = self.getPresentTimberValue(i,j) #self.timber_value[i][j]
 
 
                 #constraining excessively values (which are allowed in the simulator)
@@ -1083,18 +1098,19 @@ class FireGirlPathway:
         next_ign = 1000
         
         #set up an array to mark which cells have already been burned over
-        burned = []
-        for i in range(129):
-            burned.append([])
-            for j in range(129):
-                burned[i].append(False)
+        #SPEED
+        burned = [[False]*self.height]*self.width
+        #for i in range(129):
+        #    burned.append([])
+        #    for j in range(129):
+        #        burned[i].append(False)
         
         #set up an array to mark which cells have their crowns' burned
-        crown_burned = []
-        for i in range(129):
-            crown_burned.append([])
-            for j in range(129):
-                crown_burned[i].append(False)
+        crown_burned = [[False]*self.height]*self.width
+        #for i in range(129):
+        #    crown_burned.append([])
+        #    for j in range(129):
+        #        crown_burned[i].append(False)
                 
         #start the queue loop
         iter_cap = 5000
@@ -1144,7 +1160,8 @@ class FireGirlPathway:
             
             
             #Calculating this cell's fire spreadrate, which needs it's fuel load, too
-            fuel_ld = self.fuel_load[xloc][yloc]
+            #SPEED
+            fuel_ld = self.fuel_load[xloc][yloc] + (self.growth_fuel_accumulation * self.stand_age[xloc][yloc])
             spreadrate = self.calcFireSpreadRate(ignite_wind, ignite_temp, fuel_ld)
 
             #add the effects of suppression
@@ -1167,12 +1184,14 @@ class FireGirlPathway:
             #original model call
             if self.USE_BUGS:
                 roll = random.uniform(0,1)
-                if roll < self.calcCrownFireRisk(self.fuel_load[xloc][yloc]):
+                #SPEED
+                if roll < self.calcCrownFireRisk(fuel_ld):
                     crown_burned[xloc][yloc] = True
             else:   
                 #HACK
                 hack_val = (fuel_ld * 2) + (spreadrate * 2)
-                if hack_val > self.timber_value[xloc][yloc]:
+                #SPEED
+                if hack_val > self.getPresentTimberValue(xloc,yloc): # self.timber_value[xloc][yloc]:
                     crown_burned[xloc][yloc] = True
                     
 
@@ -1280,13 +1299,20 @@ class FireGirlPathway:
                     #this cell was burned, so set the fuel_load to zero, and apply
                     #  the crown-burning model to the timber_value
                     self.fuel_load[i][j] = 0
+                    #SPEED
+                    
                     
                     #adding up timber loss 
                     if crown_burned[i][j] == True:  #this was set when spreadrate was calculated earlier
                         #the crown burned, so record the loss and set it to zero
-                        timber_loss += self.timber_value[i][j]
+                        
+                        #SPEED
+                        ####BOTH Lines are modified for self.getPresentTimberValue(i,j)###########
+                        timber_loss += self.getPresentTimberValue(i,j) #self.timber_value[i][j]
+                        #self.timber_value[i][j] = 0
+                        ####################
+                        
                         cells_crowned += 1
-                        self.timber_value[i][j] = 0
                         
                         #and reset the age so that self.year + self.stand_age = 0
                         self.stand_age[i][j] = -1 * self.year
@@ -1360,7 +1386,10 @@ class FireGirlPathway:
         return next_val
     
     def getPresentTimberValue(self,x,y):
-        timber_index = self.stand_age[i][j] + self.year
+        """ Uses the stand_age at the given coordinates to return the timber value given the current year
+        """
+        
+        timber_index = self.stand_age[x][y] + self.year
 
         #sanatizing, just in case
         if timber_index > 299: timber_index = 299
@@ -1397,7 +1426,8 @@ class FireGirlPathway:
             for j in range(self.height):
 
                 #For summation purposes, record current value
-                old_val = self.timber_value[i][j]
+                #old_val = self.timber_value[i][j]
+                old_val = self.getPresentTimberValue(i,j)
                 
                 # 1) Apply timber growth equation:
                 # #calculate current age
@@ -1417,17 +1447,18 @@ class FireGirlPathway:
                 timber_index = self.stand_age[i][j] + self.year
 
                 #sanatizing, just in case
-                if timber_index > 299: timber_index = 299
-                if timber_index < 0: timber_index = 0
+                #if timber_index > 299: timber_index = 299
+                #if timber_index < 0: timber_index = 0
                 
-                if self.using_growth_model == 1:
-                    self.timber_value[i][j] = self.growth_model_1[timber_index]
-                else: #elif self.using_growth_model == 2:
-                    self.timber_value[i][j] = self.growth_model_2[timber_index]
+                
+                #if self.using_growth_model == 1:
+                #    self.timber_value[i][j] = self.growth_model_1[timber_index]
+                #else: #elif self.using_growth_model == 2:
+                #    self.timber_value[i][j] = self.growth_model_2[timber_index]
                     
                     
                 #for summation purposes, record the new value
-                new_val = self.timber_value[i][j]
+                new_val = self.getPresentTimberValue(i,j) #self.timber_value[i][j]
                     
                 #and record this growth as part of the year's total growth, but only for
                 #  the window of interest
@@ -1473,11 +1504,14 @@ class FireGirlPathway:
                 if done_cutting == True: break
 
                 #check if this stand is at least the minimum value
-                if self.timber_value[i][j] >= self.logging_min_value:
+                #if self.timber_value[i][j] >= self.logging_min_value:
+                if self.getPresentTimberValue(i,j) >= self.logging_min_value:
                     
+                    ########BOTH lines have been changed!!!######
                     #this stand is eligible to be cut, so do it, and record the total
-                    total_cut += self.timber_value[i][j]
-                    self.timber_value[i][j] = 0
+                    total_cut += self.getPresentTimberValue(i,j) #self.timber_value[i][j]
+                    #self.timber_value[i][j] = 0
+                    ############################################
                     
                     #and reset the stand age so that self.year + stand_age[i][j] = 0
                     self.stand_age[i][j] = -1 * self.year
@@ -1599,8 +1633,9 @@ class FireGirlPathway:
             
        
             #recording in the new ignition object type
+            #SPEED
             features = [1, ignite_date, (ignite_date*ignite_date), ignite_temp, ignite_wind,
-                        self.timber_value[x][y], self.calcTimberAve8(x,y), self.calcTimberAve24(x,y),
+                        self.getPresentTimberValue(x,y), self.calcTimberAve8(x,y), self.calcTimberAve24(x,y),
                         self.fuel_load[x][y], self.calcFuelAve8(x,y), self.calcFuelAve24(x,y)]
             f_labels = ["CONSTANT", "date", "date squared", "temperature", "wind speed", 
                         "timber value", "timber value, ave8", "timber value, ave24", 
