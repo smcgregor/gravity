@@ -80,7 +80,13 @@ def get_initialize(query):
                           "current_value": 2, "max":9999, "min": 0, "units": "-"},
                          {"name": "Suppression Effect",
                           "description": "the reduction in fire spread rate as the result of suppression",
-                          "current_value": 0.5, "max":1, "min": 0, "units": "%"}
+                          "current_value": 0.5, "max":1, "min": 0, "units": "%"},
+                         {"name": "Use Original Bugs",
+                          "description": "set to 0 to use original bugs. 1 (or non-zero) to use the patches.",
+                          "current_value": 0, "max":1, "min": 0, "units": "-"},
+                         {"name": "Growth Model",
+                          "description": "set to 1 to use original model; or 2 for updated model.",
+                          "current_value": 1, "max":2, "min": 1, "units": "-"}
                          ],
             "policy": [
                         {"name": "Constant",

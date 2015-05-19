@@ -742,6 +742,17 @@ class FireGirlPolicyOptimizer:
             for pw in self.pathway_set:
                 pw.fire_suppression_rate = self.custom_transition_params["Suppression Effect"]
 
+        if "Growth Model" in self.custom_transition_params.keys():
+            for pw in self.pathway_set:
+                pw.setGrowthModel(self.custom_transition_params["Growth Model"])
+
+        if "Use Original Bugs" in self.custom_transition_params.keys():
+            for pw in self.pathway_set:
+                if self.custom_transition_params["Use Original Bugs"] == 0:
+                    pw.USE_BUGS = True
+                else:
+                    pw.USE_BUGS = False 
+
     def createFireGirlPathways(self, pathway_count, years, start_at_ID=0, policy=None):
         #This function creates a new set of FireGirl-style pathways (deleting all current
         #    pathway data)
