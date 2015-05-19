@@ -271,6 +271,8 @@ class FireGirlPathway:
             self.logging_slash_remaining = 10
             #the logging model will cut this percent of the years total timber growth
             self.logging_percentOfIncrement = 0.95
+            #how many cuts can be made in the search for this years timber allowance?
+            self.logging_max_cuts = 10
 
 
 
@@ -1435,11 +1437,11 @@ class FireGirlPathway:
                 #and record this growth as part of the year's total growth, but only for
                 #  the window of interest
                 #TODO: update to fix timber harvest in the whole landscape
-                #if self.USE_BUGS:
-                if (i >= 43) and (i < 86) and (j >= 43) and (j < 86):
+                if self.USE_BUGS:
+                    if (i >= 43) and (i < 86) and (j >= 43) and (j < 86):
+                        total_growth += (new_val - old_val)
+                else:
                     total_growth += (new_val - old_val)
-                #else:
-                #    total_growth += (new_val - old_val)
 
                 ######################################
                 # 2) Apply fuel accumulation model:  #
@@ -1527,22 +1529,42 @@ class FireGirlPathway:
 
         tries = 0
 
-        while True:
-            if total_cut >= max_cut: break
-            if tries >= 10: break
+        #generate enough random numbers for the whole cuttng sequence. This avoids different
+        # numbers of random number draws based on timber availability
+        x_locs = []
+        y_locs = []
+        if self.USE_BUGS:
+            for i in range(self.logging_max_cuts):
+                x_locs.append(random.randint(43, 86-self.logging_block_width ))
+                y_locs.append(random.randint(43, 86-self.logging_block_width ))
+        else:
+            for i in range(self.logging_max_cuts):
+                x_locs.append(random.randint(0, self.width  - self.logging_block_width ))
+                y_locs.append(random.randint(0, self.height - self.logging_block_width ))
 
-            # Select a logging block such that the whole block will fit within the window
-            #     of interest
-            #TODO: Fix this so that logging happens everywhere
-            x = random.randint(43, 86-self.logging_block_width )
-            y = random.randint(43, 86-self.logging_block_width )
+
+        # while True:
+        #     if total_cut >= max_cut: break
+        #     if tries >= self.logging_max_cuts: break
+
+        #     # Select a logging block such that the whole block will fit within the window
+        #     #     of interest
+        #     #TODO: Fix this so that logging happens everywhere
+        #     x = random.randint(43, 86-self.logging_block_width )
+        #     y = random.randint(43, 86-self.logging_block_width )
+
+        #     #cut a new block, allowing whatever remains of our current logging limit to be cut
+        #     total_cut += self.doLogging_one_block( x, y, (max_cut - total_cut) )
+        #     #print("while loop, total_cut = " + str(total_cut))
+        #     #print("max cut = " + str(max_cut))
+
+        #     tries += 1
+
+        for i in range(self.logging_max_cuts):
+            if total_cut >= max_cut: break
 
             #cut a new block, allowing whatever remains of our current logging limit to be cut
-            total_cut += self.doLogging_one_block( x, y, (max_cut - total_cut) )
-            #print("while loop, total_cut = " + str(total_cut))
-            #print("max cut = " + str(max_cut))
-
-            tries += 1
+            total_cut += self.doLogging_one_block( x_locs[i], y_locs[i], (max_cut - total_cut) )
 
 
         # Report logging results
