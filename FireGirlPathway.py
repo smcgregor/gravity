@@ -237,13 +237,12 @@ class FireGirlPathway:
             self.growth_fuel_accumulation = 2
 
             #a list to hold pre-calculated values for growth.
-            #self.growth_precalcs = []
             self.growth_model_1 = growth_models.growth_model_1
             self.growth_model_2 = growth_models.growth_model_2
             #this is numeric switch, to define which growth model is used by this pathway
             self.using_growth_model = 2 
+            self.growth_model = self.growth_model_2
 
-            self.init_growth_precalcs()
 
             #a list to hold each year's total pathway growth amount
             self.yearly_growth_totals = []
@@ -509,16 +508,16 @@ class FireGirlPathway:
         #This function chooses a random location on the landscape and returns
         #  it as a two-element list
         
-        #I'm only allowing fires to start from within the center 43x43 block,
-        #   so that there's plenty of buffer around the edges for big fires to
-        #   burn into.
-        #xloc = random.randint(43,86)
-        #yloc = random.randint(43,86)
-
         #lets try it with fires anywhere:
         #setting a buffer of 2 makes sure that fuelave24 and timberave24 won't fail
         xloc = random.randint(2,self.width-2)
         yloc = random.randint(2,self.height-2)
+
+        #original code with bug: Fires would only start in the central window
+        #  i think it was intentional at first, but it was shortsighted
+        if self.USE_BUGS:
+            xloc = random.randint(43,86)
+            yloc = random.randint(43,86)
 
         return [xloc,yloc]
     
@@ -603,8 +602,8 @@ class FireGirlPathway:
         #cast DS_algs floats to ints, for stand age
         for i in range(self.width):
             for j in range(self.height):
-                val = int(round(self.stand_age[i][j]))
-                self.stand_age[i][j] = val
+                #val = int(self.stand_age[i][j])
+                self.stand_age[i][j] = int(self.stand_age[i][j])
         
         #assign timber values
         #for i in range(self.width):
@@ -1160,7 +1159,7 @@ class FireGirlPathway:
             
             
             #Calculating this cell's fire spreadrate, which needs it's fuel load, too
-            #SPEED
+            #SPEED#
             fuel_ld = self.fuel_load[xloc][yloc] + (self.growth_fuel_accumulation * self.stand_age[xloc][yloc])
             spreadrate = self.calcFireSpreadRate(ignite_wind, ignite_temp, fuel_ld)
 
@@ -1342,63 +1341,31 @@ class FireGirlPathway:
         #and finally, return the loss data
         return [timber_loss, cells_burned, sup_cost, end_time, cells_crowned]
 
-    def init_growth_precalcs(self):
-        """This function populates the pathway's list of precalculated timber values
-        """
-
-        self.growth_precalcs = []
-
-        #model v0
-        for i in range(1,300):
-            self.growth_precalcs.append(self.growth_timber_constant * math.log(i))
-
-                   
-    def getNextTimberValue(self,current_value):
-        """Given a current timber value, this function returns what the value will be in the following year.
-
-        Note: A finite list of precalculated values is made, so any argument value that is not in the list 
-        is rounded down to the closest included value.
-        """
-        next_val = -1
-
-        #sanitizing:
-        if current_value < 1: current_value = 1
-
-        for i in range(len(self.growth_precalcs)):
-            #keep looking until we find where current_value fits
-            if current_value < self.growth_precalcs[i]:
-                continue
-            else:
-                if i < len(self.growth_precalcs) - 1:
-                    #return the next value...
-                    next_val = self.growth_precalcs[i+1]
-                else:
-                    #unless this is the last value... then just return the last value
-                    next_val = self.growth_precalcs[i]
-                break
-
-        #it is possible that the input argument is higher than anything in the precalcs list, so check
-        # if it's been assigned
-        if next_val == -1:
-            #it hasn't been assigned, so just assign it to the last value in the list
-            next_val = self.growth_precalcs[len(self.growth_precalcs) - 1]
-
-        return next_val
     
+    def setGrowthModel(self, model_number):
+        if model_number == 1:
+            self.growth_model = self.growth_model_1
+        elif model_number == 2:
+            self.growth_model = self.growth_model_2
+        else:
+            pass
+
     def getPresentTimberValue(self,x,y):
         """ Uses the stand_age at the given coordinates to return the timber value given the current year
         """
         
-        timber_index = self.stand_age[x][y] + self.year
+        #timber_index = self.stand_age[x][y] + self.year
 
         #sanatizing, just in case
-        if timber_index > 299: timber_index = 299
-        if timber_index < 0: timber_index = 0
+        #if timber_index > 299: timber_index = 299
+        #if timber_index < 0: timber_index = 0
         
-        if self.using_growth_model == 1:
-            return self.growth_model_1[timber_index]
-        else: #elif self.using_growth_model == 2:
-            return self.growth_model_2[timber_index]
+        #if self.using_growth_model == 1:
+        #    return self.growth_model_1[timber_index]
+        #else: #elif self.using_growth_model == 2:
+        #    return self.growth_model_2[timber_index]
+
+        return self.growth_model[self.stand_age[x][y] + self.year]
 
     def doGrowth(self):
         #This function applies the timber and fuel load growth models to all cells on the landscape,
@@ -1425,9 +1392,11 @@ class FireGirlPathway:
         for i in range(self.width):
             for j in range(self.height):
 
+
+                ##########################################################
+                # TIME INTENSIVE METHOD
                 #For summation purposes, record current value
                 #old_val = self.timber_value[i][j]
-                old_val = self.getPresentTimberValue(i,j)
                 
                 # 1) Apply timber growth equation:
                 # #calculate current age
@@ -1436,29 +1405,16 @@ class FireGirlPathway:
                 # old_val = self.timber_value[i][j]
                 # new_val = self.growth_timber_constant * math.log(age + 1)
                 # self.timber_value[i][j] = new_val
+                ###########################################################
+                             
                 
-                #self.fuel_load[i][j] = self.getNextTimberValue(self.fuel_load[i][j])
-                
-                #determining which timber value to assign
                 #NOTE: to save simulation time, stand ages are not incremented each year.
                 #  Instead, the current year is incremented and just added to the last age recorded.
                 #  When a fire burns or timber is cut, the stand age is set to -1 * self.year, so that
-                #  when you add self.year to self.stand_age[x][y], you get 0, which is the new ACTUAL stand age.
-                timber_index = self.stand_age[i][j] + self.year
-
-                #sanatizing, just in case
-                #if timber_index > 299: timber_index = 299
-                #if timber_index < 0: timber_index = 0
+                ##  when you add self.year to self.stand_age[x][y], you get 0, which is the new ACTUAL stand age.
                 
-                
-                #if self.using_growth_model == 1:
-                #    self.timber_value[i][j] = self.growth_model_1[timber_index]
-                #else: #elif self.using_growth_model == 2:
-                #    self.timber_value[i][j] = self.growth_model_2[timber_index]
-                    
-                    
-                #for summation purposes, record the new value
-                new_val = self.getPresentTimberValue(i,j) #self.timber_value[i][j]
+                old_val = self.growth_model[self.stand_age[i][j] + self.year]
+                new_val = self.growth_model[self.stand_age[i][j] + self.year + 1]
                     
                 #and record this growth as part of the year's total growth, but only for
                 #  the window of interest
@@ -1473,10 +1429,6 @@ class FireGirlPathway:
                 # 2) Apply fuel accumulation model:  #
                 ######################################
                 self.fuel_load[i][j] += self.growth_fuel_accumulation
-
-
-                
-
 
 
         #record this year's yearly growth total
