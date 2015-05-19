@@ -1159,8 +1159,7 @@ class FireGirlPathway:
             
             
             #Calculating this cell's fire spreadrate, which needs it's fuel load, too
-            #SPEED#
-            fuel_ld = self.fuel_load[xloc][yloc] + (self.growth_fuel_accumulation * self.stand_age[xloc][yloc])
+            fuel_ld = self.fuel_load[xloc][yloc] 
             spreadrate = self.calcFireSpreadRate(ignite_wind, ignite_temp, fuel_ld)
 
             #add the effects of suppression
@@ -1228,19 +1227,19 @@ class FireGirlPathway:
             if self.USE_BUGS:
                 x_high = xloc+reach
                 y_high = yloc+reach
+
+            #checking bounds
+            if (x_low < 0): x_low = 0
+            if (y_low < 0): y_low = 0
+            if (x_high >= self.width): x_high = self.width - 1
+            if (y_high >= self.height): y_high = self.height - 1
             
             
             for i in range(x_low, x_high):
                 for j in range(y_low, y_high):
 
-                    #check bounds
-                    if (i < 0) or (j < 0):
-                        continue
-                    if (i > self.width - 1) or (j > self.height - 1):
-                        continue
-                    
                     #don't calculate time to the current cell
-                    if not (xloc == i and yloc == j):
+                    if not ((xloc == i) and (yloc == j)):
                         
                         #we're checking each neighbor within the reach range, so
                         #  first, we need to check whether it's already been
@@ -1290,15 +1289,15 @@ class FireGirlPathway:
         cells_burned = 0
         cells_crowned = 0
         
-        for i in range(129):
-            for j in range(129):
+        for i in range(self.width):
+            for j in range(self.height):
                 if burned[i][j] == True:
                     cells_burned += 1
                                         
                     #this cell was burned, so set the fuel_load to zero, and apply
                     #  the crown-burning model to the timber_value
                     self.fuel_load[i][j] = 0
-                    #SPEED
+                    
                     
                     
                     #adding up timber loss 
