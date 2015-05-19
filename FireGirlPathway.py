@@ -129,7 +129,7 @@ class FireGirlPathway:
                 # self.timber_value.append([])
                 # for j in range(self.height):
                     # self.timber_value[i].append(0)
-            self.timber_value = [[0]*self.height]*self.width
+            #self.timber_value = [[0]*self.height]*self.width
             
             #Creating a rectangular array to hold fuel-load values for each cell
             # self.fuel_load = []
@@ -137,7 +137,17 @@ class FireGirlPathway:
                 # self.fuel_load.append([])
                 # for j in range(self.height):
                     # self.fuel_load[i].append(0)
-            self.fuel_load = [[0]*self.height]*self.width
+            #self.fuel_load = [[0]*self.height]*self.width
+
+            self.timber_value = [None]*self.width
+            self.fuel_load = [None]*self.width
+            self.stand_age = [None]*self.width
+            self.fuel_age = [None]*self.width
+            for i in range(self.width):
+                self.timber_value[i] = [0]*self.height
+                self.fuel_load[i] = [0]*self.height
+                self.stand_age[i] = [0]*self.height
+                self.fuel_age[i] = [0]*self.height
             
             #Creating a rectangular array to hold the stand age of the cell
             # self.stand_age = []
@@ -145,7 +155,7 @@ class FireGirlPathway:
                 # self.stand_age.append([])
                 # for j in range(self.height):
                     # self.stand_age[i].append(0)
-            self.stand_age = [[0]*self.height]*self.width
+            #self.stand_age = [[0]*self.height]*self.width
             
             #Creating an array to hold fuel age
             # self.fuel_age = []
@@ -153,7 +163,7 @@ class FireGirlPathway:
                 # self.fuel_age.append([])
                 # for j in range(self.height):
                     # self.fuel_age[i].append(0)
-            self.fuel_age = [[0]*self.height]*self.width
+            #self.fuel_age = [[0]*self.height]*self.width
             
             # ignition probability: the likelihood of there being an important fire on
             #   any given year
@@ -1098,18 +1108,25 @@ class FireGirlPathway:
         
         #set up an array to mark which cells have already been burned over
         #SPEED
-        burned = [[False]*self.height]*self.width
+        #burned = [[False]*self.height]*self.width
         #for i in range(129):
         #    burned.append([])
         #    for j in range(129):
         #        burned[i].append(False)
         
         #set up an array to mark which cells have their crowns' burned
-        crown_burned = [[False]*self.height]*self.width
+        #crown_burned = [[False]*self.height]*self.width
         #for i in range(129):
         #    crown_burned.append([])
         #    for j in range(129):
         #        crown_burned[i].append(False)
+
+        burned = [None]*self.width
+        crown_burned = [None]*self.width
+        for i in range(self.height):
+            burned[i] = [False]*self.height
+            crown_burned[i] = [False]*self.height
+
                 
         #start the queue loop
         iter_cap = 5000

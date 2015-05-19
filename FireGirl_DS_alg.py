@@ -20,15 +20,19 @@ def FireGirl_DS_alg(seedValue, min_val, max_val, roughness=0.5, USE_FUEL_BUG=Fal
     """
     
     #Creating the timber_value and fuel_load grids
-    timber_val = []
-    fuel_load = []
+    # timber_val = []
+    # fuel_load = []
+    # for i in range(129):
+    #     timber_val.append([])
+    #     fuel_load.append([])
+    #     for j in range(129):
+    #         timber_val[i].append(0)
+    #         fuel_load[i].append(0)
+    timber_val = [None]*129
+    fuel_load = [None]*129
     for i in range(129):
-        timber_val.append([])
-        fuel_load.append([])
-        for j in range(129):
-            timber_val[i].append(0)
-            fuel_load[i].append(0)
-            
+        timber_val[i] = [0]*129
+        fuel_load[i] = [0]*129
             
     #setting seed value
     if seedValue == -1:
