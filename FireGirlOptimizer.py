@@ -216,26 +216,12 @@ class FireGirlPolicyOptimizer:
             p2 = pw.calcAveProb()               #J2 weights - averaged probabilities
             
                 
-                
-            # # pw.DEBUG = True
-            # p = 0.0
-            # if self.USE_AVE_PROB:
-                # # TESTING - USING Average Probability instead of total probability
-                # p = pw.calcAveProb()
-            # # pw.DEBUG = False
-            # else:
-                # p = pw.calcTotalProb()
-            
-            
-            # # Doing J1.1 probability normalization step
-            # if self.USE_NORMALIZATION:
-                # p = p / pw.calcSumOfProbs()
-           
+  
             self.pathway_weights.append(p1)                  #J1 weights
             self.pathway_weights_averaged.append(p2)         #J2 weights
         
                     
-        #calculate sum of ALL weights
+        #calculate sum of ALL weights for J1.1
         weight_sum = 0.0
         for w in self.pathway_weights:
             weight_sum += w
@@ -817,16 +803,19 @@ class FireGirlPolicyOptimizer:
 
         #calculate and save current joint-probability weights
         # these are needed for J3 calculation
-        #but firest make sure that there are actual years. In some tests, pathways are created with NO years/events
+        #but first make sure that there are actual years. In some tests, pathways are created with NO years/events
+        #weights cannot be calculated if there are no years, because there are no probablities of suppression, etc...
         if years > 0:
+
+            #clear any old values
+            self.pathway_weights_generation = []
+            
             self.calcPathwayWeights()
 
-        #clear any old values
-        self.pathway_weights_generation = []
-
-        #copy values:
-        for w in self.pathway_weights:
-            self.pathway_weights_generation.append(w + 1.0 - 1.0)
+            #copy values from pathway_weights, because at this moment, the weights ARE from original landscape generation
+            self.pathway_weights_generation = self.pathway_weights[:]
+            #for w in self.pathway_weights:
+            #    self.pathway_weights_generation.append(w + 1.0 - 1.0)
         
  
     ###################
