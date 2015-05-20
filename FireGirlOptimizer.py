@@ -751,7 +751,11 @@ class FireGirlPolicyOptimizer:
                 if self.custom_transition_params["Use Original Bugs"] == 0:
                     pw.USE_BUGS = True
                 else:
-                    pw.USE_BUGS = False 
+                    pw.USE_BUGS = False
+
+        if "Landscape Size" in self.custom_transition_params.keys():
+            for pw in self.pathway_set:
+                pw.setLandscapeSize(int(self.custom_transition_params["Growth Model"]))
 
     def createFireGirlPathways(self, pathway_count, years, start_at_ID=0, policy=None):
         #This function creates a new set of FireGirl-style pathways (deleting all current

@@ -118,6 +118,10 @@ class FireGirlPathway:
             self.width = 129
             self.height = 129
 
+            #defining variable window-of-interest sizes
+            self.window_NW = 43
+            self.window_SE = 86 
+
             #lists to remember past fuel load and timber value grids
             self.SAVE_HISTORY = False
             self.timber_value_history = []
@@ -499,6 +503,35 @@ class FireGirlPathway:
     # FireGirl-specific Functions #
     ###############################
 
+    def setLandscapeSize(self,size):
+        """Sets the usable landscape size to the given dimensions.
+        Note: The diamond-square algorithm still creates the full 129x129 grid, 
+        but all simulations will only use the NW subset of that (still a square)
+
+        Note: This function will also set the "window of interest" to be ~1/3 of the size 
+        of the whole, centered (with rounding) in the middle.
+
+        Arguements
+        size: integer: accepts vals betwen 9 and 129. Anything larger or smaller will be corrected. 
+        -  both landscape width AND height will be set to this value.
+        """
+        #constaining input values
+        if size < 9: size = 9
+        if size > 129: size = 129
+
+        #setting window of interest
+        wind_nw = int(round(0.3333 * size))
+        wind_se = int(round(0.6666 * size))
+
+        #setting values
+        self.width = size
+        self.height = size
+        self.window_NW = wind_nw
+        self.window_SE = wind_se
+
+        #correcting logging values, if neccessary
+        if self.logging_block_width > self.window_NW: self.logging_block_width = self.window_NW
+
     
     def drawIgnitionDay(self):
         #This function draws a random day to simulate an ignition. 
@@ -528,8 +561,8 @@ class FireGirlPathway:
         #original code with bug: Fires would only start in the central window
         #  i think it was intentional at first, but it was shortsighted
         if self.USE_BUGS:
-            xloc = random.randint(43,86)
-            yloc = random.randint(43,86)
+            xloc = random.randint(self.window_NW, self.window_SE)
+            yloc = random.randint(self.window_NW, self.window_SE)
 
         return [xloc,yloc]
     
@@ -1438,7 +1471,7 @@ class FireGirlPathway:
                 #  the window of interest
                 #TODO: update to fix timber harvest in the whole landscape
                 if self.USE_BUGS:
-                    if (i >= 43) and (i < 86) and (j >= 43) and (j < 86):
+                    if (i >= self.window_NW) and (i < self.window_SE) and (j >= self.window_NW) and (j < self.window_SE):
                         total_growth += (new_val - old_val)
                 else:
                     total_growth += (new_val - old_val)
@@ -1535,8 +1568,8 @@ class FireGirlPathway:
         y_locs = []
         if self.USE_BUGS:
             for i in range(self.logging_max_cuts):
-                x_locs.append(random.randint(43, 86-self.logging_block_width ))
-                y_locs.append(random.randint(43, 86-self.logging_block_width ))
+                x_locs.append(random.randint(self.window_NW, self.window_SE - self.logging_block_width ))
+                y_locs.append(random.randint(self.window_NW, self.window_SE - self.logging_block_width ))
         else:
             for i in range(self.logging_max_cuts):
                 x_locs.append(random.randint(0, self.width  - self.logging_block_width ))
