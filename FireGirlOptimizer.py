@@ -142,9 +142,7 @@ class FireGirlPolicyOptimizer:
         feature_norm_mag = []
         for f in range(len(feature_max)):
             feature_norm_mag.append(  (feature_max[f] - feature_mean[f]) / rng )
-        if not self.SILENT:
-            #print(str(feature_norm_mag))
-            pass
+
 
         #now normalize each feature value to fall between "max" and "min"
         #in every pathway
@@ -170,17 +168,14 @@ class FireGirlPolicyOptimizer:
                     else:
                         ig.features[f] = ig.features[f] / feature_norm_mag[f]
 
-        #if desired, print the max, min, mean, and norm values
-        if not self.SILENT:
-            print("Feature Descriptions before normalization")
-            print("Max values:")
-            print(str(feature_max))
-            print("Ave values:")
-            print(str(feature_mean))
-            print("Min values:")
-            print(str(feature_min))
-            print("Normalization Magnitude:")
-            print(str(feature_norm_mag))
+        #in case it's desired, pass back the max, min, mean, and norm values
+        return_dict = {}
+        return_dict.append["Max Values"] = feature_max
+        return_dict.append["Ave Values"] = feature_mean
+        return_dict.append["Min Values"] = feature_min
+        return_dict.append["Normalization Magnitude"] = feature_norm_mag
+        
+        return return_dict
 
     def calcPathwayWeights(self, USE_SELF_POLICY=True):
         #This function looks through each fire of a given pathway and applies the current

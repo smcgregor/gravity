@@ -1,6 +1,7 @@
 from FireGirlOptimizer import *
+import os
 
-def optimize_ML(self, starting_policy, objective_fn="J3"):
+def optimize_ML(starting_policy, objective_fn="J3"):
     """This function repeats short gradient decents until new pathways need to be generated.
 
 
@@ -8,8 +9,9 @@ def optimize_ML(self, starting_policy, objective_fn="J3"):
     """
     
     #Load the two pathway sets
-    holdout_set = self.load_holdout_set()
-    training_set = self.load_training_set()
+    print("Loading training and holdout sets...")
+    holdout_set = load_pathway_set("ML_holdout_set")
+    training_set = load_training_set("ML_training_set")
 
     #when evaluating each new policy against the holdout set, some dissimprovement can be allowed
     #this amount will be added (a disimprovement) to the previous best value. New values must fall
@@ -26,35 +28,48 @@ def optimize_ML(self, starting_policy, objective_fn="J3"):
     #iterations need to be counted
     iter_count = 0
 
-    ML_pol = self.load_policy()
+    ML_pol = load_policy("starting_pol.policy","ML_training_set")
 
-    #This is a minimization routine, so high values are bad
-    best_holdout_val = objfn(holdout_set)
-    best_opt_val = 99999999999
-
-
+    print("Creating optimizer objects and normalizing feature values...")
     #create a FireGirlPolicyOptimizer object and load up the info it needs
     opt = FireGirlPolicyOptimizer()
     opt.pathway_set = training_set
+    opt.normalizeAllFeatures()
     opt.setPolicy(ML_pol)
-    opt.setObjFn("J3")
+    #because we never called opt.createFireGirlPathways, the initial "generation weights" were never calculated, so do it here
+    opt.calcPathwayWeights()
+    opt.setObjFn(objective_fn)
 
     #create a second optimizer object 
     opt_holdout = FireGirlPolicyOptimizer()
     opt_holdout.pathway_set = training_set
-    opt.setObjFn("J3")
-
-
+    opt_holdout.normalizeAllFeatures()
+    opt_holdout.setPolicy(ML_pol)
+    #because we never called opt.createFireGirlPathways, the initial "generation weights" were never calculated, so do it here
+    opt_holdout.calcPathwayWeights()
+    opt_holdout.setObjFn(objective_fn)
+    
+    #Get the current values against the given policy
+    best_holdout_val = opt_holdout.calcObjFn()
+    best_opt_val = opt.calcObjFn()
+    
+    #how many gradient decent steps to allow?
+    descent_steps = 2
+    
+    print("Initial training set obj.fn. val: " + str(round(best_opt_val)) )
+    print("Initial holdout set obj.fn. val:  " + str(round(best_holdout_val)) )
+    
     #Begining Machine Learning Loop
+    print("Beginning ML loop...")
     while True:
         #checking failsafe, to avoid infinite loops
         iter_count += 1
         if iter_count > fail_safe_count:
             print("optimize_ML() has reached its failsafe limit on iterations, and is exiting")
             break
-
-
-        opt_result = opt.optimizePolicy(iter_count)
+        
+        print("  l-bfgs-b pass #" + str(iter_count))
+        opt_result = opt.optimizePolicy(descent_steps)
 
         #TODO once opt.optimizePolicy() has a new return value structure, update code below:
         #pulling out individual results
@@ -96,18 +111,48 @@ def optimize_ML(self, starting_policy, objective_fn="J3"):
     if holdout_fail:
         print("the final policy did not improve the expectation on the holdout set")
 
+    #print final values
+    print("Final training set obj.fn. val: " + str(round(best_opt_val)) )
+    print("Final holdout set obj.fn. val:  " + str(round(best_holdout_val)) )
 
 
 
+def load_pathway_set(self,subfolder):
+    """Loads a saved set of pathways from current_directory/subfolder
+    """
+    
+    pathway_set = []
+    
+    #look at every *.pathways file in the training set folder
+    for f in os.listdir(os.getcwd() + os.sep + subfolder):
+        if f.endswith(".pathways"): 
+            pkl_file = open(f, 'rb')
+            this_set = pickle.load(pkl_file)
+            pkl_file.close()
+            
+            #force each pathway to update their values
+            for pw in this_set:
+                pw.updateNetValue()
+                
+            #and add these to the training set
+            pathway_set = pathway_set + this_set           
+                
+    return pathway_set
 
 
-def load_holdout_set(self):
-    pass
-
-def load_training_set(self):
-    pass
-
-def load_policy(self):
-    pass
+def load_policy(self, filename, subfolder=None):
+    """Loads a policy from the given folder"""
+    f_name = os.getcwd() + os.sep
+    if not subfolder == None:
+        f_name = f_name + subfolder + os.sep + filename
+    else:
+        f_name = f_name + filename
+        
+    pkl_file = open(f_name, 'rb')
+    pol = pickle.load(pkl_file)
+    pkl_file.close()
+    
+    return pol
+    
 
 
