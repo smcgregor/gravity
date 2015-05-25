@@ -30,7 +30,7 @@ def initialize():
                               "current_value": 10, "max": 150, "min": 0, "units": "Y"},
                              {"name": "Futures to simulate",
                               "description": "how many stochastic futures to generate",
-                              "current_value": 10, "max": 1000, "min": 0, "units": "-"},
+                              "current_value": 25, "max": 1000, "min": 0, "units": "-"},
                              {"name": "Landscape Size",
                               "description": "how many cells wide and tall should the landscape be. Min:9, Max:129",
                               "current_value": 21, "max": 129, "min": 9, "units": "cells"},
