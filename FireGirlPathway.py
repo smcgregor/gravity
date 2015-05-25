@@ -37,7 +37,7 @@ class FireGirlPathway:
         self.DEBUG = False
         
         #A flag for using 5-15-15 bugs for the FIREvis paper
-        self.USE_BUGS = True
+        self.USE_BUGS = False
 
         #Flag: if True, suppress all print statements
         self.SILENT = False
