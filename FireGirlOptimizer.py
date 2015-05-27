@@ -58,6 +58,9 @@ class FireGirlPolicyOptimizer:
         #Flag: Should Pathways remember their state histories
         self.PATHWAYS_RECORD_HISTORIES = False
 
+        #Flag: Should FireGirlPathways use their previously discovered bugs
+        self.PATHWAYS_USE_BUGS = False
+
         #Flag: Custom Model Parameters. If the optimizer has recieved custom model parameters,
         # this flag warns createFireGirlPathways, and the parameters are assigned appropriately
         self.CUSTOM_MODEL_PARAMETERS = False
@@ -170,10 +173,10 @@ class FireGirlPolicyOptimizer:
 
         #in case it's desired, pass back the max, min, mean, and norm values
         return_dict = {}
-        return_dict.append["Max Values"] = feature_max
-        return_dict.append["Ave Values"] = feature_mean
-        return_dict.append["Min Values"] = feature_min
-        return_dict.append["Normalization Magnitude"] = feature_norm_mag
+        return_dict["Max Values"] = feature_max
+        return_dict["Ave Values"] = feature_mean
+        return_dict["Min Values"] = feature_min
+        return_dict["Normalization Magnitude"] = feature_norm_mag
         
         return return_dict
 
@@ -798,7 +801,13 @@ class FireGirlPolicyOptimizer:
                 pw.SAVE_HISTORY = True
             else:
                 pw.SAVE_HISTORY = False
-            
+
+            #setting the newest tree growth model
+            pw.setGrowthModel(2)
+
+            #setting pathways to use their previously discovered bugs (or not)
+            pw.USE_BUGS = self.PATHWAYS_USE_BUGS
+
             #have each pathway create timber/fuel data for itself
             pw.generateNewLandscape()
 
