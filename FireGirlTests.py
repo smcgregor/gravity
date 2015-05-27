@@ -519,7 +519,7 @@ class FireGirlTests:
         opt_FG.calcPathwayWeights()
         opt_FG.pathway_weights_generation = opt_FG.pathway_weights[:]
         opt_MDP.calc_pathway_weights()
-        opt_MDP.pathway_weights_generation = opt_MDP.pathway_weights[:]
+        #opt_MDP.pathway_weights_generation = opt_MDP.pathway_weights[:]
         
         #normalizing pathways
         opt_FG.normalizeAllFeatures()

@@ -1,6 +1,7 @@
 import math, scipy, pickle
 from scipy.optimize import *
 import MDP
+from FireGirlPathway import *
 
 class MDP_PolicyOptimizer:
     def __init__(self,policy_length):
@@ -17,7 +18,7 @@ class MDP_PolicyOptimizer:
         self.pathway_weights_normalized = []            #J1.1 weights
         self.pathway_weights_averaged = []              #J2 weights
         self.pathway_weights_importance_sampling = []   #J3 weights
-        self.pathway_weights_generation = []   #denominators for J3 weights
+        #self.pathway_weights_generation = []   #denominators for J3 weights
 
         
         #Boundaries for what the parameters can be set to during scipy's optimization routine:
@@ -271,8 +272,6 @@ class MDP_PolicyOptimizer:
         #if generation weights have not been otherwised assigned, they will be equal to 1, 
         #   and therefore J3 weights will be identical to J1.0 weights
         for i in range(pw_count):
-            #checking for very low values:
-            #if self.pathway_weights_generation[i] < 0.0001: self.pathway_weights_generation[i] = 0.0001
 
             #assigning weights
             self.pathway_weights_importance_sampling[i] = self.pathway_weights[i] / self.pathway_set[i].generation_joint_prob
@@ -626,9 +625,29 @@ class MDP_PolicyOptimizer:
     ###################
     # Other Functions #
     ###################
+    
+    def create_and_convert_firegirl_pathways(self, pathway_count, years, start_ID):
+        """Creates a set of FireGirl pathways, and then converts them into MDP pathways for use in the optimizer"""
+        
+        #setting up initial lists
+        fg_pathways = [None] * pathway_count
+        self.pathway_set = [None] * pathway_count
+        
+        for i in range(pathway_count):
+            fg_pathways[i] = FireGirlPathway(i+start_ID)
+            fg_pathways[i].generateNewLandscape()
+            fg_pathways[i].doYears(years)
+            fg_pathways[i].updateNetValue()
+            self.pathway_set[i] = MDP.convert_firegirl_pathway_to_MDP_pathway(fg_pathways[i])
+        
+        #normalizing pathways
+        self.normalize_all_features()
 
-
-    def savePathways(self, filename):
+        #populate initial weights
+        self.calc_pathway_weights()
+        
+        
+    def save_pathways(self, filename):
         output = open(filename, 'wb')
 
         # Pickle dictionary using default protocol 0.
@@ -636,7 +655,7 @@ class MDP_PolicyOptimizer:
 
         output.close()
 
-    def loadPathways(self, filename):
+    def load_pathways(self, filename):
         #This function loads a saved set of FireGirl pathways
 
         pkl_file = open(filename, 'rb')
@@ -646,18 +665,27 @@ class MDP_PolicyOptimizer:
 
         pkl_file.close()
 
-        #and do the post-processing
-        
-        #force each pathway to update their values
-        for ls in self.pathway_set:
-            ls.updateNetValue()
 
 
-    def resetPolicy(self, policy_length):
+    def reset_policy(self, policy_length):
         #This function resets the policy to a 50/50 coin-toss
         self.Policy = MDP.MDP_Policy(policy_length)
 
-    def loadPolicy(self, filename):
-        #This function loads a saved policy and assigns it to this optimization object
-        pass
+    def save_policy(self, filename):
+        """Saves the current policy object"""
+        output = open(filename, 'wb')
+
+        # Pickle dictionary using default protocol 0.
+        pickle.dump(self.Policy, output)
+
+        output.close()
+        
+    def load_policy(self, filename):
+        """Loads a saved policy and assigns it to this optimization object"""
+
+        pkl_file = open(filename, 'rb')
+
+        self.Policy = pickle.load(pkl_file)
+
+        pkl_file.close()
     
