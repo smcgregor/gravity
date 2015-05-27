@@ -635,6 +635,7 @@ class MDP_PolicyOptimizer:
         
         for i in range(pathway_count):
             fg_pathways[i] = FireGirlPathway(i+start_ID)
+            fg_pathways[i].Policy.b = self.Policy.b[:]
             fg_pathways[i].generateNewLandscape()
             fg_pathways[i].doYears(years)
             fg_pathways[i].updateNetValue()
