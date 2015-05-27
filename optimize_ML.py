@@ -1,4 +1,5 @@
-from FireGirlOptimizer import *
+from MDP_PolicyOptimizer import *
+import MDP
 import os
 
 def optimize_ML(starting_policy, objective_fn="J3"):
@@ -28,30 +29,34 @@ def optimize_ML(starting_policy, objective_fn="J3"):
     #iterations need to be counted
     iter_count = 0
 
-    ML_pol = load_policy("starting_pol.policy","ML_training_set")
+    #creating policy objects. 
+    ML_pol = load_policy("starting_pol.policy","ML_saved_policies")
+    holdout_pol = MDP.MDP_Policy(len(ML_pol.get_params()))
+    #copying values from ML_pol to holdout_pol without self-references
+    holdout_pol.set_params(ML_pol.get_params()[:])
 
     print("Creating optimizer objects and normalizing feature values...")
     #create a FireGirlPolicyOptimizer object and load up the info it needs
-    opt = FireGirlPolicyOptimizer()
+    opt = MDP_PolicyOptimizer()
     opt.pathway_set = training_set
-    opt.normalizeAllFeatures()
-    opt.setPolicy(ML_pol)
+    opt.normalize_all_features()
+    opt.Policy = ML_pol
     #because we never called opt.createFireGirlPathways, the initial "generation weights" were never calculated, so do it here
-    opt.calcPathwayWeights()
-    opt.setObjFn(objective_fn)
+    opt.calc_pathway_weights()
+    opt.set_obj_fn(objective_fn)
 
     #create a second optimizer object 
-    opt_holdout = FireGirlPolicyOptimizer()
-    opt_holdout.pathway_set = training_set
-    opt_holdout.normalizeAllFeatures()
-    opt_holdout.setPolicy(ML_pol)
+    opt_holdout = MDP_PolicyOptimizer()
+    opt_holdout.pathway_set = holdout_set
+    opt_holdout.normalize_all_features()
+    opt_holdout.Policy = holdout_pol
     #because we never called opt.createFireGirlPathways, the initial "generation weights" were never calculated, so do it here
-    opt_holdout.calcPathwayWeights()
-    opt_holdout.setObjFn(objective_fn)
+    opt_holdout.calc_pathway_weights()
+    opt_holdout.set_obj_fn(objective_fn)
     
     #Get the current values against the given policy
-    best_holdout_val = opt_holdout.calcObjFn()
-    best_opt_val = opt.calcObjFn()
+    best_holdout_val = opt_holdout.calc_obj_fn()
+    best_opt_val = opt.calc_obj_fn()
     
     #how many gradient decent steps to allow?
     descent_steps = 2
@@ -69,10 +74,10 @@ def optimize_ML(starting_policy, objective_fn="J3"):
             break
         
         print("  l-bfgs-b pass #" + str(iter_count))
-        opt_result = opt.optimizePolicy(descent_steps)
+        opt_result = opt.optimize_policy(descent_steps)
 
-        #TODO once opt.optimizePolicy() has a new return value structure, update code below:
         #pulling out individual results
+        #(ignoring the original values and just pulling the resultant values)
         opt_result_b = opt_result[0][1]
         opt_result_val = opt_result[1][1]
         opt_result_dict = opt_result[2]
@@ -87,9 +92,12 @@ def optimize_ML(starting_policy, objective_fn="J3"):
             opt_fail = True
 
         #checking for improvements gained against the holdout set
-        if objfn(holdout_set, ML_pol) <= best_holdout_val + holdout_wiggle:
+        #setting params to the new ones
+        opt_holdout.Policy.set_params(opt_result_b[:])
+        new_holdout_val = opt_holdout.calc_obj_fn()
+        if new_holdout_val <= best_holdout_val + holdout_wiggle:
             #improvement was found, so record it
-            best_holdout_val = objfn(holdout_set, ML_pol)
+            best_holdout_val = new_holdout_val
         else:
             #no improvement was found, so exit the loop
             holdout_fail = True
@@ -97,7 +105,7 @@ def optimize_ML(starting_policy, objective_fn="J3"):
         #if improvements were found in BOTH the training AND the holdout set, record the new policy and continue
         if (not opt_fail) and (not holdout_fail):
             #improvements in both, so record the policy for the next iteration
-            ML_pol.setParams(opt_result_b)
+            ML_pol.setParams(opt_result_b[:])
         else:
             #one of the two failed, so exit the loop
             break

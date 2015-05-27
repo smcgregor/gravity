@@ -1,0 +1,663 @@
+import math, scipy, pickle
+from scipy.optimize import *
+import MDP
+
+class MDP_PolicyOptimizer:
+    def __init__(self,policy_length):
+        """
+        Arguements
+        policy_length: integer: how many elements are in each state/policy for this MDP
+        """
+
+        #A list to hold all the pathways in a data set
+        self.pathway_set = []
+                
+        #A list to hold the "probability weights" of each pathway
+        self.pathway_weights = []                       #J1 weights
+        self.pathway_weights_normalized = []            #J1.1 weights
+        self.pathway_weights_averaged = []              #J2 weights
+        self.pathway_weights_importance_sampling = []   #J3 weights
+        self.pathway_weights_generation = []   #denominators for J3 weights
+
+        
+        #Boundaries for what the parameters can be set to during scipy's optimization routine:
+        self.b_bounds = [[-10,10]] * policy_length
+
+        #and set the constant to be able to vary more freely
+        self.b_bounds[0] = [-1000.0, 1000.0]
+
+
+        #Flag: Use log(probabilities)  -  If we want to force sums of log(probs), set to True
+        #                                 To just multiply probabilities, set to False
+        self.USE_LOG_PROB = False
+        
+        #Flag: use normalized weights for the objective function
+        self.NORMALIZED_WEIGHTS_OBJ_FN = False
+        #Flag: use normalized weights for F prime
+        self.NORMALIZED_WEIGHTS_F_PRIME = False
+        #Flag: use averaged weights for the objective function
+        self.AVERAGED_WEIGHTS_OBJ_FN = False
+        #Flag: use averaged weights for F prime
+        self.AVERAGED_WEIGHTS_F_PRIME = False
+
+        #Flag: Use importance sampling weights (J3)
+        self.IMPORTANCE_SAMPLING = True
+
+
+        #Flag: Suppress all outputs that originate from this object
+        self.SILENT = False
+        #Flag: Suppress all outputs that originate from pathways this object creates/uses
+        self.MUTE_PATHWAYS = True
+
+
+        #The policy that is controlling each pathway's actions
+        self.Policy = MDP.MDP_Policy(policy_length)
+        self.policy_length = policy_length
+
+
+    ##########################
+    # Optimization Functions #
+    ##########################
+
+    def normalize_all_features(self, rng=5.0):
+        #This function normalizes each state(feature) variable of each event in each pathway to fall
+        #  between its rng and -rng arguments.
+
+        #arrays to hold the max and min of each feature over ALL ignitions in ALL pathways
+        feature_max = [float("-inf")] * self.policy_length
+        feature_min = [float("inf") ] * self.policy_length
+
+        #look in every pathway
+        for pw in self.pathway_set:
+            #look in every event in this pathway
+            for ev in pw.events:
+                #look at each feature in this ignition
+                for f in range(ev.state_length):
+
+                    #if this feature is higher than the previously found max, remember it
+                    if ev.state[f] > feature_max[f]:
+                        feature_max[f] = ev.state[f]
+                    #if this feature is lower than the previously found min, remember it
+                    if ev.state[f] < feature_min[f]:
+                        feature_min[f] = ev.state[f]
+
+        #calculate means
+        feature_mean = []
+        for f in range(len(feature_max)):
+            feature_mean.append(   (feature_max[f] + feature_min[f]) / 2.0   )
+
+        #calculate normalization magnitude
+        #this is the value that we'll divide each feature by, once its been recentered around
+        # a mean of zero
+        feature_norm_mag = []
+        for f in range(len(feature_max)):
+            feature_norm_mag.append(  (feature_max[f] - feature_mean[f]) / rng )
+
+
+        #now normalize each feature value to fall between "max" and "min"
+        #in every pathway
+        for pw in self.pathway_set:
+            #in every ignition in this pathway
+            for ev in pw.events:
+                #look at each feature in this ignition
+                for f in range(ev.state_length):
+
+                    #normalize step 1: shift the mean to zero
+                    ev.state[f] -= feature_mean[f]
+
+                    #normalize step 2: change magnitude to be within +/- rng
+                    #but check for 0's:  Any feature that is absolutely constant (like the constant) will 
+                    # have a feature_norm_mag value of zero. When that's the case, just set the feature
+                    # to one (rather than zero, because a one will allow the constant parameter to actually
+                    #     do something)
+                    if feature_norm_mag[f] == 0:
+                        ev.state[f] = 1.0
+                    else:
+                        ev.state[f] = ev.state[f] / feature_norm_mag[f]
+
+            #record normalization values, in case the pathway ever needs to convert back to original values
+            pw.normalized = True
+            pw.normalization_mags = feature_norm_mag
+            pw.normalization_means = feature_mean
+
+
+        #in case it's desired, pass back the max, min, mean, and norm values
+        return_dict = {}
+        return_dict["Max Values"] = feature_max
+        return_dict["Ave Values"] = feature_mean
+        return_dict["Min Values"] = feature_min
+        return_dict["Normalization Magnitude"] = feature_norm_mag
+        
+        return return_dict
+
+    def calc_pathway_joint_prob(self, pathway, USE_LOG_PROB=False):
+        """Calculates the joint probability of events in an MDP_Pathway object
+
+        #This function looks through each ignition event and computes the 
+        #   product of all the action probabilities.  If the
+        #   USE_LOG_PROB flag is set, it will sum the logged probabilities.
+        """
+
+        total_prob = 0
+        #variables for use within the loop (so as not to instantiate them repeatedly)
+        action_prob = 0
+        product = 1
+        summation = 0
+        break_loop = False
+
+        if USE_LOG_PROB == False:
+            #according to the flag, we're not using sum(log(probs)) so just
+            #  compute the product
+
+            #reseting values for a new loop iteration
+            product = 1.0
+            break_loop = False
+                
+            for ev in pathway.events:
+                try:
+                    #use the current policy to calculate a new probability with the original features
+                    #   of each event
+                    action_prob = self.Policy.calc_action_prob(ev)
+                        
+                    product *= action_prob
+                    
+                except (TypeError):
+                    print("FGPathway.calcTotalProb() encountered a TypeError:")
+                    print(" ignition.getProb() returns: " + str(ign.getProb()))
+                    print(" ignition.features are:")
+                    print(ign.features)
+                except (ArithmeticError):
+                    #it is possible that a long series of multiplications over fractions
+                    #  could result in an underflow conidtion. Here I'm assuming that is
+                    #  the type of ArithmeticError that we've run into.
+
+                    #since the value underflowed, it is clearly VERY small, so just
+                    # set it to zero
+                    product = 0.0
+
+                    #and report it
+                    print("a FireGirlPathway object reports an underflow condition during a PRODUCT calculation")
+
+                    #and don't bother with any more multiplications
+                    break_loop = True
+
+                if break_loop == True: break 
+
+            total_prob = product
+
+        else:
+            #according to the flag, we ARE using sum(log(probs)) so do so:
+            
+            #resetting values for a new loop iteration
+            summation = 0.0
+
+            for ev in pathway.events:
+                #use the current policy to calculate a new probability with the original features
+                #   of each ignition
+                action_prob = self.Policy.calc_action_prob(ev)
+                    
+                summation += math.ln(action_prob)
+
+            try:
+                total_prob = math.exp(summation)
+            except (ArithmeticError):
+                #I'm assuming here that an underflow condition is the only type of
+                #  arithmeticError I'm likely to find...
+
+                #If it underflows, the probability total is very small, so just set
+                #  it to zero
+                total_prob = 0.0
+
+                #and report it
+                print("a FireGirlPathway object reports an underflow condition during a SUMMATION calculation")
+
+
+        return total_prob
+
+    def calc_pathway_average_prob(self, pathway):
+        """Returns the average probability this pathway's actions, given the current policy"""
+        
+        sum_of_probs = 0
+        
+        for ev in pathway.events:
+            #use the current policy to calculate a new probability with the original features
+            sum_of_probs += self.Policy.calc_action_prob(ev)
+        
+        #now that we've summed all the probabilities, divide by the total number of events
+        ave_prob = sum_of_probs / len(pathway.events)
+        
+        return ave_prob
+
+
+    def calc_pathway_weights(self):
+        """This function looks through each event of a given pathway and applies the current
+        #  policy to the features of each one. 
+
+        The resulting 'probability' from the policy 
+        #  function is either multiplied or 'log-summed' be the others to produce the final 
+        #  weighting value. This is done for every pathway in the pathway_set, and each
+        #  weight is assigned to pathway_weights[] at the same index as their pathway in 
+        #  the pathway_set list
+        """
+
+        #clearing old weights
+        pw_count = len(self.pathway_set)
+        self.pathway_weights = [None] * pw_count                       #J1 weights
+        self.pathway_weights_normalized = [None] * pw_count            #J1.1 weights
+        self.pathway_weights_averaged = [None] * pw_count              #J2 weights
+        self.pathway_weights_importance_sampling = [None] * pw_count   #J3 weights
+
+        #iterating over each pathway and appending each new weigh to the list
+        for i in range(pw_count):
+            
+            #calculate all three weighting regimes
+            p1 = self.calc_pathway_joint_prob(self.pathway_set[i])     #J1 weights - "joint probability"
+            p2 = self.calc_pathway_average_prob(self.pathway_set[i])   #J2 weights - averaged probabilities
+            
+            self.pathway_weights[i] = p1                  #J1 weights
+            self.pathway_weights_averaged[i] = p2         #J2 weights
+        
+                    
+        #calculate sum of ALL weights for J1.1
+        weight_sum = 0.0
+        for w in self.pathway_weights:
+            weight_sum += w
+        
+        #computing normalization of each pathway weight over the sum of ALL pathway weights
+        for i in range(pw_count):
+            self.pathway_weights_normalized[i] = self.pathway_weights[i] / weight_sum  #J1.1 weights
+
+        #calculating J3 weights
+        #if generation weights have not been otherwised assigned, they will be equal to 1, 
+        #   and therefore J3 weights will be identical to J1.0 weights
+        for i in range(pw_count):
+            #checking for very low values:
+            #if self.pathway_weights_generation[i] < 0.0001: self.pathway_weights_generation[i] = 0.0001
+
+            #assigning weights
+            self.pathway_weights_importance_sampling[i] = self.pathway_weights[i] / self.pathway_set[i].generation_joint_prob
+                    
+    def calc_obj_fn(self, b=None):
+        #This function contains the optimization objective function. It operates
+        #  on the current list of pathways. If any values for 'b' are passed in,
+        #  (most likely by scipy.optimize.fmin_l_bfgs_b(), then they are assigned
+        #  to the current HKBFire_Policy object so that subsequent function calls
+        #  will use the correct ones.
+
+
+        #variable to hold the final value
+        obj_fn_val = 0    
+        
+        # checking for new beta parameters (which will be set by scipy.fmin.l_bfgs_b)
+        if not b == None:
+            self.Policy.set_params(b)
+
+        #Note: self.calcPathwayWeights will assign this policy to each pathway
+
+        # Calculate the weights... these will use the current Policy
+        #    rather than whatever policy the pathways used during simulation.
+        self.calc_pathway_weights()
+        
+        #a variable to hold the sum of ALL the probability-weighted pathway values
+        total_value = 0
+
+        #loop over all the values/weights and sum them
+        for i in range(len(self.pathway_set)):
+        
+            #check which weights to use:
+            #Importance Sampling (J3) supercedes Normalization (J1.1)
+            if self.IMPORTANCE_SAMPLING:
+                #using J3 weights
+                #TODO: Verfiy that this is how to do this???
+                total_value += self.pathway_set[i].net_value * self.pathway_weights_importance_sampling[i]
+
+            #Normalization (J1.1) supercedes averaging (J2)
+            elif self.NORMALIZED_WEIGHTS_OBJ_FN:
+                #using J1.1 normalized weights
+                total_value += self.pathway_set[i].net_value * self.pathway_weights_normalized[i]
+            else:
+                #using "un-normalized" weights... check averaging...
+                if self.AVERAGED_WEIGHTS_OBJ_FN:
+                    #using J2 averaged weights
+                    total_value += self.pathway_set[i].net_value * self.pathway_weights_averaged[i]
+                else:
+                    #using straight J1.0 "joint probability weights"
+                    total_value += self.pathway_set[i].net_value * self.pathway_weights[i]
+
+
+        #NOTE:
+        #any final checks/modifications to total_val can go here:
+
+        #since scipy fmin... is a minimization routine, return the negative
+        obj_fn_val = -1.0 * total_value    
+        
+        
+        return obj_fn_val
+
+    def FP_delta_prob(self, beta, pw, evnt):
+        #this function calculates the inner "delta_prob" value for each calculation of the derivitive.
+        # caclObjFPrime() loops over it repeatedly, and passes in which parameter (beta), pathway (pw) and
+        # event (evnt) to calculate value, which is then summed in caclObjFPrime()
+        
+        #get the action choice of this pathway at this event
+        action = self.pathway_set[pw].events[evnt].action
+        
+        #get the feature of this pathway and this event for this beta
+        flik = self.pathway_set[pw].events[evnt].state[beta]
+
+        prob = self.Policy.calc_prob(self.pathway_set[pw].events[evnt].state)
+        delta_lgstc = flik * prob * (1-prob)
+
+        delta_prob = delta_lgstc
+        if action:
+            #action was taken, so leave it alone
+            pass
+        else:
+            #action was not taken, so:
+            delta_prob *= -1
+
+
+        return delta_prob
+    
+    def calc_obj_FPrime(self, betas=None):
+        #This function returns the gradient of the objective function
+
+        #The scipy documentation describes the fprime arguement as:
+        #fprime : callable fprime(x,*args)
+        #The gradient of func. If None, then func returns the function value and the 
+        #  gradient (f, g = func(x, *args)), unless approx_grad is True in which case func returns only f.
+
+        #The return value should probably just be a list of the derivitive values with respect to each 
+        #   b-parameter in the policy
+
+        #  d Obj()/d b_k value is 
+        #
+        #   Sum over pathways [ val_l * product over ignitions [ prob_i ] * sum over ignitions [d wrt prob / prob] ]
+        #
+        #   where d wrt prob =  sup_i * d(logistic(b*f)) + (1 - sup_i)(-1) (d(logistic(b*f)))
+        #
+        #   and where d(logistic(b*f)) = f_l,i,k * logistic(f_l,i,k * b_k) * (1 - logistic(f_l,i,k * b_k))
+
+        #Assign values to b. I don't think this function will ever be called
+        #  outside of the l_bfgs function, but if so, handle it:
+        b = None
+        if betas == None:
+            b = self.Policy.get_params()
+        else:
+            b = betas
+
+        # list to hold the final values, one per parameter
+        d_obj_d_bk = []
+        for i in range(len(b)):
+            d_obj_d_bk.append(0.0)
+            
+        #get the weight (total or ave) for each pathway decision sequence using the 
+        #   current policy (which is possibly being varied by l_bfgs, etc...)
+        
+        self.calc_pathway_weights()
+
+        #variables for use within the loop
+        prob = 1.0
+        delta_prob = 0.0
+        sum_delta_prob = 0.0
+        sum_delta_prob_AVE = 0.0
+        action = False
+        sup = 0
+        
+        #iterate over each beta and evaluate the gradient along it
+        for beta in range(len(b)):
+
+            #SEE MATHEMATICS DOCUMENTATION FOR A DETAILED EXPLANATION OF ALL THAT FOLLOWS
+
+            for pw in range(len(self.pathway_set)):
+
+                #reset value for this pathway
+                sum_delta_prob = 0.0
+                sum_delta_prob_AVE = 0.0
+
+                for evnt in range(len(self.pathway_set[pw].events)):
+
+                    #get the action choice of this pathway at this event
+                    action = self.pathway_set[pw].events[evnt].action
+
+                    #get the probability of actually making this action in this event
+                    prob = self.pathway_set[pw].events[evnt].decision_prob
+
+                    #checking for unreasonably small probabilities
+                    if prob == 0: prob = 0.00001
+
+                    delta_prob = self.FP_delta_prob(beta, pw, evnt)
+
+                    sum_delta_prob_AVE += delta_prob #for use in the J2 "averaged" calculation
+                    sum_delta_prob += delta_prob / prob #for use in J1 "standard" and J1.1 "normalized"
+
+                
+                #finished adding up sum_delta_prob for all the ignitions in this pathway, so
+                # calculate the d/dx value:
+                
+                
+                #check which weights to use, and to the derivative appropriately
+                if self.IMPORTANCE_SAMPLING:
+                    #using J3 Importance Sampling Weights
+                    d_obj_d_bk[beta] += self.pathway_set[pw].net_value * self.pathway_weights_importance_sampling[pw] * sum_delta_prob
+                elif self.NORMALIZED_WEIGHTS_F_PRIME:
+                    #using normalized weights inside the derivative calculation (J1.1)
+                    d_obj_d_bk[beta] += self.pathway_set[pw].net_value * self.pathway_weights_normalized[pw] * sum_delta_prob
+                else:
+                    if self.AVERAGED_WEIGHTS_F_PRIME:
+                        #doing average-weight calculation (J2)
+                        invI = (1.0 / self.pathway_set[pw].getIgnitionCount())
+                        d_obj_d_bk[beta] += self.pathway_set[pw].net_value * invI * sum_delta_prob_AVE                            
+                    else:
+                        #using standard joint-probability math (J1.0)
+                        d_obj_d_bk[beta] += self.pathway_set[pw].net_value * self.pathway_weights[pw] * sum_delta_prob
+                    
+                    
+
+                #going on to the next pathway
+
+            #going on to the next beta
+
+        #finished with all betas
+
+        #because this is a minimization routine, and the objective function is being flipped, so too
+        #  should be the derivatives
+        for b in range(len(d_obj_d_bk)):
+            d_obj_d_bk[b] *= -1.0
+
+
+        # And Finally, return the list
+        return scipy.array(d_obj_d_bk)
+   
+    def optimize_policy(self, max_iterations=15000):
+        """Does a single l_bfgs_b gradient decent on the current pathway set.
+
+        Arguements:
+        max_iterations: the total number of steps to let scipy.fmin_l_bfgs_b to take
+
+        Returns
+        TODO: fix calling functions to re-work the return values
+        A list containing two elements
+        -Element 1: A list of the policy parameters used in each iteration 
+        -Element 2: A list of the optimized objective function value for each iteration
+
+        Note: there are no "iterations" anymore. A single pass is made, so only one two elements
+        are present in each list: the starting parameters/value, and the resulting parameters/value.
+        """
+        
+        #record the first 'optimization value' which is really just a placeholder 
+        #  to keep indices even
+        start_val = self.calc_obj_fn()
+        #record the first parameter set
+        start_params = self.Policy.get_params()
+        
+        #tell scipy to optimize our objective function (calcObjectiveFn())
+        #  given a certain set of parameters...
+        
+        #running the scipy gradient descent method
+        #signature is:
+        #scipy.optimize.fmin_l_bfgs_b(func, x0, fprime=None, args=(), approx_grad=0, bounds=None, m=10, 
+        #                             factr=10000000.0, pgtol=1e-05, epsilon=1e-08, iprint=-1, maxfun=15000,
+        #                             maxiter=15000, disp=None, callback=None)
+        # func is a function name, at is referenceing the objective function that it will use
+        # x0 is the starting parameters that fmin_l_bfgs_b() will use
+        # fprime="None" is telling fmin...() that we are not passing in a function to calculate derivitave values
+        # args=() is asking for any input arguments needed for the objective function, other than the beta parameters
+        # approx_grad is telling fmin...() to approximate it's own derivatives, or to use some other gradient
+        # bounds should be a list of upper and lower bound pairs. See scipy.optimize.fmin_l_bfgs_b documentation.
+        # m is the maximum number of variable metric corrections used to define the limited memory matrix. 
+        #     (The limited memory BFGS method does not store the full hessian but uses this many terms in an 
+        #      approximation to it.)
+        # factr is the iteration stopping point. When (f^k - f^{k+1})/max{|f^k|,|f^{k+1}|,1} <= factr * eps, where eps 
+        #      is the machine precision, which is automatically generated by the code. Typical values for factr are: 
+        #      1e12 for low accuracy; 1e7 for moderate accuracy; 10.0 for extremely high accuracy.
+        # The rest of the arguments are left as defaults.
+        
+
+        #setting x0 to the initial guess, which can just be whatever our current policy parameters are.
+        #converting to numpy arrays
+
+        x0 = scipy.array(self.Policy.get_params())
+
+        #DEBUG
+        if not (len(self.b_bounds) == len(x0)):
+            print("error in MDP_PolicyOptimizer.optimizePolicy...")
+            print("x0 = " + str(x0))
+            print("bounds = " + str(self.b_bounds))
+
+
+
+        #                                                   arg names:                
+        output_policy = fmin_l_bfgs_b(self.calc_obj_fn,       #func
+                                      x0,                   #x0
+                                      self.calc_obj_FPrime,   #fprime
+                                      args=[],              #args
+                                      approx_grad=False,    #approx_grad
+                                      bounds=self.b_bounds, #bounds
+                                      factr=1,              #factr
+                                      maxiter=max_iterations)#maxiter
+        
+        #the output of fmin_l_bfgs_b() has the following structure: [x, f, d], where:
+        #   x : array_like
+        #       Estimated position of the minimum.
+        #   f : float
+        #       Value of func at the minimum.
+        #   d : dict
+        #       Information dictionary.
+        
+        
+        #record the new parameter set
+        end_params = output_policy[0]
+        
+        #record the final objective function value
+        end_val = output_policy[1]
+        
+        output_dict = output_policy[2]
+        
+      
+        #take the new parameter set and assign them back to the policy
+        self.Policy.set_params(output_policy[0])
+        
+
+        return [[start_params, end_params], [start_val, end_val], output_dict]
+    
+    def set_obj_fn(self, objfn):
+        """Sets the optimizer's flags to set it up for the given objective function type.
+
+        Arguements
+        objfn: a string indicating which objective function to use.
+        --options are:
+        -- "J1" for the J1.1 objective function (original joint-probability method with normalization)
+        -- "J2" for the J2 objective function (Hailey's averaging method)
+        -- (J1.0 is ineffective, so it is not represented here)
+        """
+
+        if objfn == "J1":
+            #set flags for J1.1
+            self.IMPORTANCE_SAMPLING = False
+            self.NORMALIZED_WEIGHTS_OBJ_FN = True
+            self.NORMALIZED_WEIGHTS_F_PRIME = True
+            self.AVERAGED_WEIGHTS_OBJ_FN = False
+            self.AVERAGED_WEIGHTS_F_PRIME = False
+        elif objfn == "J2":
+            #set flags for J2
+            self.IMPORTANCE_SAMPLING = False
+            self.NORMALIZED_WEIGHTS_OBJ_FN = False
+            self.NORMALIZED_WEIGHTS_F_PRIME = False
+            self.AVERAGED_WEIGHTS_OBJ_FN = True
+            self.AVERAGED_WEIGHTS_F_PRIME = True
+        elif objfn == "J3":
+            self.IMPORTANCE_SAMPLING = True
+            self.NORMALIZED_WEIGHTS_OBJ_FN = False
+            self.NORMALIZED_WEIGHTS_F_PRIME = False
+            self.AVERAGED_WEIGHTS_OBJ_FN = False
+            self.AVERAGED_WEIGHTS_F_PRIME = False
+
+        else:
+            #undefined behavior... default to J1.10
+            print("Undefined objective function: " + str(objfn) + "   Setting J1.0 by default")
+            self.IMPORTANCE_SAMPLING = False
+            self.NORMALIZED_WEIGHTS_OBJ_FN = False
+            self.NORMALIZED_WEIGHTS_F_PRIME = False
+            self.AVERAGED_WEIGHTS_OBJ_FN = False
+            self.AVERAGED_WEIGHTS_F_PRIME = False
+
+    def print_opt_output(self, output):
+        #takes the outputs from the optimize() function and prints them in a nicer way
+        params = output[0]
+        obj_vals = output[1]
+        
+        print("         ObjFn Val,     Params.....")
+        print("                        CONS   date    date2    temp   wind   timb   timb8  timb24  fuel  fuel8  fuel24")
+        for v in range(len(obj_vals)):
+            if v == 0:
+                print("before: "),
+            else:
+                print("after:  "),
+            print(str(round(obj_vals[v],10)) + "  "),
+            
+            for p in range(len(params[v])):
+                print(" " + str(round(params[v][p],5))),
+            
+            print("") #to end the line
+                
+    
+ 
+    ###################
+    # Other Functions #
+    ###################
+
+
+    def savePathways(self, filename):
+        output = open(filename, 'wb')
+
+        # Pickle dictionary using default protocol 0.
+        pickle.dump(self.pathway_set, output)
+
+        output.close()
+
+    def loadPathways(self, filename):
+        #This function loads a saved set of FireGirl pathways
+
+        pkl_file = open(filename, 'rb')
+
+        self.pathway_set = []
+        self.pathway_set = pickle.load(pkl_file)
+
+        pkl_file.close()
+
+        #and do the post-processing
+        
+        #force each pathway to update their values
+        for ls in self.pathway_set:
+            ls.updateNetValue()
+
+
+    def resetPolicy(self, policy_length):
+        #This function resets the policy to a 50/50 coin-toss
+        self.Policy = MDP.MDP_Policy(policy_length)
+
+    def loadPolicy(self, filename):
+        #This function loads a saved policy and assigns it to this optimization object
+        pass
+    
