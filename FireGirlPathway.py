@@ -1171,8 +1171,9 @@ class FireGirlPathway:
             iter_count += 1
             if iter_count > iter_cap:
                 if not self.SILENT:
-                    #print("self.SILENT equals" + str(self.SILENT))
-                    print("WARNING: Firespread priority queue has failed to exit.  Current_time is: " + str( round(current_time,3) )    )
+                    print("A very large fire has occured... Pathway: " + str(self.ID_number) + 
+                          "  Year: " + str(self.year) + 
+                          "  Burn Time: " + str( round(current_time,3) )    )
                 break
                 
             #check to make sure that there is at least one queued arrival
