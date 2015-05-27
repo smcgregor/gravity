@@ -2,6 +2,9 @@ from FireGirlOptimizer import *
 from FireGirlStats import *
 from server import *
 from numpy import mean
+import MDP
+from MDP_PolicyOptimizer import *
+
 import random
 
 class FireGirlTests:
@@ -493,6 +496,49 @@ class FireGirlTests:
         results_state = get_state(query)
         results_optimize = get_optimize(query)
 
+    def MDP_vs_FG_1(self):
+        #create a set of FG pathways for both optimizers to use and making a duplicate list of MDP-style pathways
+        pathway_list = [None]*20
+        MDP_list = [None]*20
+        for i in range(20):
+            pathway_list[i] = FireGirlPathway(i)
+            pathway_list[i].generateNewLandscape()
+            pathway_list[i].doYears(50)
+            pathway_list[i].updateNetValue()
+            MDP_list[i] = MDP.convert_firegirl_pathway_to_MDP_pathway(pathway_list[i])
+        
+        #creating optimizers
+        opt_FG = FireGirlPolicyOptimizer()
+        opt_MDP = MDP_PolicyOptimizer(11)
+        
+        #setting pathway lists
+        opt_FG.pathway_set = pathway_list[:]
+        opt_MDP.pathway_set = MDP_list[:]
+        
+        #populate initial weights
+        opt_FG.calcPathwayWeights()
+        opt_FG.pathway_weights_generation = opt_FG.pathway_weights[:]
+        opt_MDP.calc_pathway_weights()
+        opt_MDP.pathway_weights_generation = opt_MDP.pathway_weights[:]
+        
+        #normalizing pathways
+        opt_FG.normalizeAllFeatures()
+        opt_MDP.normalize_all_features()
+        
+        #optimizing
+        FG_output = opt_FG.optimizePolicy()
+        MDP_output = opt_MDP.optimize_policy()
+        
+        print("FireGirl Optimizer Output:")
+        print(FG_output)
+        
+        print("")
+        print("")
+        print("MDP Optimizer Output:")
+        print(MDP_output)
+        
+        
+        
 
 class FireGirlTrials:
     """This class contains member functions that produce test data as outputs, replacing test scripts
