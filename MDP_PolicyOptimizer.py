@@ -445,7 +445,7 @@ class MDP_PolicyOptimizer:
                 else:
                     if self.AVERAGED_WEIGHTS_F_PRIME:
                         #doing average-weight calculation (J2)
-                        invI = (1.0 / self.pathway_set[pw].getIgnitionCount())
+                        invI = (1.0 / len(self.pathway_set[pw].events) )
                         d_obj_d_bk[beta] += self.pathway_set[pw].net_value * invI * sum_delta_prob_AVE                            
                     else:
                         #using standard joint-probability math (J1.0)

@@ -2,7 +2,7 @@ from FireGirlOptimizer import *
 from FireGirlStats import *
 from server import *
 from numpy import mean
-import MDP
+import MDP, random
 from MDP_PolicyOptimizer import *
 
 import random
@@ -494,49 +494,7 @@ class FireGirlTests:
 
         results_rollouts = get_rollouts(query)
         results_state = get_state(query)
-        results_optimize = get_optimize(query)
-
-    def MDP_vs_FG_1(self):
-        #create a set of FG pathways for both optimizers to use and making a duplicate list of MDP-style pathways
-        pathway_list = [None]*20
-        MDP_list = [None]*20
-        for i in range(20):
-            pathway_list[i] = FireGirlPathway(i)
-            pathway_list[i].generateNewLandscape()
-            pathway_list[i].doYears(50)
-            pathway_list[i].updateNetValue()
-            MDP_list[i] = MDP.convert_firegirl_pathway_to_MDP_pathway(pathway_list[i])
-        
-        #creating optimizers
-        opt_FG = FireGirlPolicyOptimizer()
-        opt_MDP = MDP_PolicyOptimizer(11)
-        
-        #setting pathway lists
-        opt_FG.pathway_set = pathway_list[:]
-        opt_MDP.pathway_set = MDP_list[:]
-        
-        #populate initial weights
-        opt_FG.calcPathwayWeights()
-        opt_FG.pathway_weights_generation = opt_FG.pathway_weights[:]
-        opt_MDP.calc_pathway_weights()
-        #opt_MDP.pathway_weights_generation = opt_MDP.pathway_weights[:]
-        
-        #normalizing pathways
-        opt_FG.normalizeAllFeatures()
-        opt_MDP.normalize_all_features()
-        
-        #optimizing
-        FG_output = opt_FG.optimizePolicy()
-        MDP_output = opt_MDP.optimize_policy()
-        
-        print("FireGirl Optimizer Output:")
-        print(FG_output)
-        
-        print("")
-        print("")
-        print("MDP Optimizer Output:")
-        print(MDP_output)
-        
+        results_optimize = get_optimize(query)    
         
         
 
@@ -1048,8 +1006,70 @@ class FireGirlTrials:
         for i in range(len(ave_suppress_decisions)):
             print(str(i*step) + "," + str(ave_suppress_decisions[i]) + "," + str(ave_net_values[i]))
 
+    def MDP_vs_FG_1(self):
+        #create a set of FG pathways for both optimizers to use and making a duplicate list of MDP-style pathways
+        pathway_list = [None]*20
+        MDP_list = [None]*20
+        for i in range(20):
+            pathway_list[i] = FireGirlPathway(i)
+            pathway_list[i].generateNewLandscape()
+            pathway_list[i].doYears(50)
+            pathway_list[i].updateNetValue()
+            MDP_list[i] = MDP.convert_firegirl_pathway_to_MDP_pathway(pathway_list[i])
+        
+        #creating optimizers
+        opt_FG = FireGirlPolicyOptimizer()
+        opt_MDP = MDP_PolicyOptimizer(11)
+        
+        #setting pathway lists
+        opt_FG.pathway_set = pathway_list[:]
+        opt_MDP.pathway_set = MDP_list[:]
+        
+        #populate initial weights
+        opt_FG.calcPathwayWeights()
+        opt_FG.pathway_weights_generation = opt_FG.pathway_weights[:]
+        opt_MDP.calc_pathway_weights()
+        #opt_MDP.pathway_weights_generation = opt_MDP.pathway_weights[:]
+        
+        #normalizing pathways
+        opt_FG.normalizeAllFeatures()
+        opt_MDP.normalize_all_features()
+        
+        #optimizing
+        FG_output = opt_FG.optimizePolicy()
+        MDP_output = opt_MDP.optimize_policy()
+        
+        print("FireGirl Optimizer Output:")
+        print(FG_output)
+        
+        print("")
+        print("")
+        print("MDP Optimizer Output:")
+        print(MDP_output)
+    
+    def MDP_random_start_policies(self, pathway_count=75, years=100, start_ID=0, supp_var_cost=300, supp_fixed_cost=0):
+        """Creates and returns a set of MDP pathways which were each generated with random policies"""
 
+        pathways = [None]*pathway_count
+        for i in range(pathway_count):
+            pathways[i] = FireGirlPathway(i+start_ID)
+            
+            #setting suppression costs
+            pathways[i].fire_suppression_cost_per_day = supp_fixed_cost
+            pathways[i].fire_suppression_cost_per_cell = supp_var_cost
 
+            #creating a random policy (skipping first one: leaving constant parameter = 0)
+            for p in range(1, len(pathways[i].Policy.b)):
+                pathways[i].Policy.b[p] = round(random.uniform(-1,1), 2)
+
+            #generating landscape, running pathway simulations, and converting to MDP_pathway object
+            pathways[i].generateNewLandscape()
+            pathways[i].doYears(years)
+            pathways[i].updateNetValue()
+            pathways[i] = MDP.convert_firegirl_pathway_to_MDP_pathway(pathways[i])
+
+        #return the pathways
+        return pathways
 
 
 
