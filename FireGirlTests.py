@@ -1100,6 +1100,41 @@ class FireGirlTrials:
         #return the pathways
         return pathways
 
+    def MDP_lb_vs_sa(self, pathway_count=100, years=100, start_ID=0, supp_var_cost=0, supp_fixed_cost=0):
+        """Creates and runs l_bfgs_b on two sets of identical pathways using either let-burn, and suppress policies """
+
+        pol_lb = FireGirlPolicy()
+        pol_lb.b = [-100,0,0,0,0,0,0,0,0,0,0]
+        pol_sa = FireGirlPolicy()
+        pol_sa.b = [100,0,0,0,0,0,0,0,0,0,0]
+
+        pathways_lb = self.MDP_standard(pathway_count, years, start_ID, pol_lb, supp_var_cost, supp_fixed_cost)
+        pathways_sa = self.MDP_standard(pathway_count, years, start_ID, pol_sa, supp_var_cost, supp_fixed_cost)
+
+        #doing six different passes through l_bfgs_b
+        opt = MDP_PolicyOptimizer(11)
+        opt.pathway_set = pathways_lb[:]
+        opt.Policy.b = pol_lb.b[:]
+        output_lb_J3 = opt.optimize_policy()
+        opt.Policy.b = pol_lb.b[:]
+        opt.set_obj_fn("J2")
+        output_lb_J2 = opt.optimize_policy()
+        opt.Policy.b = pol_lb.b[:]
+        opt.set_obj_fn("J1")
+        output_lb_J1 = opt.optimize_policy()
+
+
+        opt.pathway_set = pathways_sa[:]
+        opt.Policy.b = pol_sa.b[:]
+        output_sa_J3 = opt.optimize_policy()
+        opt.Policy.b = pol_sa.b[:]
+        opt.set_obj_fn("J2")
+        output_sa_J2 = opt.optimize_policy()
+        opt.Policy.b = pol_sa.b[:]
+        opt.set_obj_fn("J1")
+        output_sa_J1 = opt.optimize_policy()
+
+
 
 
 #setting up service-style tests. This will activate if you issue: "python FireGirlTests.py" at a command line, but
