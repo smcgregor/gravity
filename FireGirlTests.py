@@ -1071,6 +1071,35 @@ class FireGirlTrials:
         #return the pathways
         return pathways
 
+    def MDP_standard(self, pathway_count=100, years=100, start_ID=0, policy=None, supp_var_cost=0, supp_fixed_cost=0):
+        """Creates and returns a set of MDP pathways which were each generated with a given policy (default=coin-toss)"""
+
+        pathways = [None]*pathway_count
+
+        #set up coin-toss policy if one isn't passed in
+        if policy == None:
+            policy = FireGirlPolicy()
+            policy.b = [0,0,0,0,0,0,0,0,0,0,0]
+
+        for i in range(pathway_count):
+            pathways[i] = FireGirlPathway(i+start_ID)
+            
+            #setting suppression costs
+            pathways[i].fire_suppression_cost_per_day = supp_fixed_cost
+            pathways[i].fire_suppression_cost_per_cell = supp_var_cost
+
+            #creating a random policy (skipping first one: leaving constant parameter = 0)
+            pathways[i].Policy = policy
+
+            #generating landscape, running pathway simulations, and converting to MDP_pathway object
+            pathways[i].generateNewLandscape()
+            pathways[i].doYears(years)
+            pathways[i].updateNetValue()
+            pathways[i] = MDP.convert_firegirl_pathway_to_MDP_pathway(pathways[i])
+
+        #return the pathways
+        return pathways
+
 
 
 #setting up service-style tests. This will activate if you issue: "python FireGirlTests.py" at a command line, but

@@ -276,7 +276,7 @@ class FireGirlPathway:
             #the logging model will cut this percent of the years total timber growth
             self.logging_percentOfIncrement = 0.95
             #how many cuts can be made in the search for this years timber allowance?
-            self.logging_max_cuts = 10
+            self.logging_max_cuts = 30
 
 
 
