@@ -752,7 +752,7 @@ class FireGirlPolicyOptimizer:
 
         if "Landscape Size" in self.custom_transition_params.keys():
             for pw in self.pathway_set:
-                pw.setLandscapeSize(int(self.custom_transition_params["Growth Model"]))
+                pw.setLandscapeSize(int(self.custom_transition_params["Landscape Size"]))
 
     def createFireGirlPathways(self, pathway_count, years, start_at_ID=0, policy=None):
         #This function creates a new set of FireGirl-style pathways (deleting all current
