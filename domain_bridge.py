@@ -1,113 +1,171 @@
 from FireGirlOptimizer import *
 from FireGirlStats import *
-
-# Keep track of file numbers so they don't repeat
-server_file_counter = 0
-def file_number_str():
-    global server_file_counter 
-    server_file_counter += 1
-    return server_file_counter
+import os.path
+import time
 
 def initialize():
     """
     Return the initialization object for the FireGirl domain.
     """
-    return {
-                "reward": [
-                            {"name": "Discount",
-                             "description":"The per-year discount",
-                             "current_value": 1, "max": 1, "min": 0, "units": "~"},
-                            {"name": "Suppression Fixed Cost",
-                             "description":"cost per day of suppression",
-                             "current_value": 500, "max": 999999, "min": 0, "units": "$"},
-                            {"name": "Suppression Variable Cost",
-                             "description":"cost per hectare of suppression",
-                             "current_value": 500, "max": 999999, "min": 0, "units": "$"}
-                            ],
-                "transition": [
-                             {"name": "Years to simulate",
-                              "description": "how far to look into the future",
-                              "current_value": 10, "max": 150, "min": 0, "units": "Y"},
-                             {"name": "Futures to simulate",
-                              "description": "how many stochastic futures to generate",
-                              "current_value": 25, "max": 1000, "min": 0, "units": "#"},
-                             {"name": "Landscape Size",
-                              "description": "how many cells wide and tall should the landscape be. Min:9, Max:129",
-                              "current_value": 21, "max": 129, "min": 9, "units": "#"},
-                             {"name": "Harvest Percent",
-                              "description": "timber harvest rate as a percent of annual increment",
-                              "current_value": 0.95, "max": 1, "min": 0, "units": "%"},
-                             {"name": "Minimum Timber Value",
-                              "description":"the minimum timber value required before harvest is allowed",
-                              "current_value": 50, "max":9999, "min": 0, "units": "$"},
-                             {"name": "Slash Remaning",
-                              "description": "the amount of fuel load (slash) left after a harvest",
-                              "current_value": 10, "max":9999, "min": 0, "units": "#"},
-                             {"name": "Fuel Accumulation",
-                              "description": "the amount of fuel load that accumulates each year",
-                              "current_value": 2, "max":9999, "min": 0, "units": "#"},
-                             {"name": "Suppression Effect",
-                              "description": "the reduction in fire spread rate as the result of suppression",
-                              "current_value": 0.5, "max":1, "min": 0, "units": "%"},
-                              {"name": "Use Original Bugs",
-                               "description": "set to 0 to use original bugs. 1 (or non-zero) to use the patches.",
-                               "current_value": 0, "max":1, "min": 0, "units": "~"},
-                              {"name": "Growth Model",
-                               "description": "set to 1 to use original model; or 2 for updated model.",
-                               "current_value": 1, "max":2, "min": 1, "units": "~"}
-                             ],
-                "policy": [
-                            {"name": "Constant",
+    mdpvis_initialization_object = {
+
+        # The settings to apply at initialization time
+        "mdpvis_settings": {
+            "domain_instructions": "todo",
+            "domain_cover_image": "todo",
+            "saved states": [
+                {
+                    "description": "A set of interesting queries",
+                    "href": "todo"
+                }
+            ]
+        },
+
+        # The control panels that appear at the top of the screen
+        "parameter_collections": [
+            {
+                "panel_title": "Reward",
+                "panel_icon": "glyphicon-king",
+                "panel_description": "Define the parameters of the optimization algorithm.",
+                "default_rendering": "parallel",
+                "quantitative": [  # Real valued parameters
+                                   {
+                                       "name": "Discount",
+                                       "description": "The per-year discount",
+                                       "current_value": 1,
+                                       "max": 1,
+                                       "min": 0,
+                                       "step": 1,
+                                       "units": "Unitless"
+                                   },
+                                   {
+                                      "name": "Suppression Fixed Cost",
+                                      "description": "cost per day of suppression",
+                                      "current_value": 500,
+                                      "max": 999999,
+                                      "min": 0,
+                                      "step": 10,
+                                      "units": "$"
+                                   },
+                                   {
+                                      "name": "Suppression Variable Cost",
+                                      "description": "cost per hectare of suppression",
+                                      "current_value": 500,
+                                      "max": 999999,
+                                      "min": 0,
+                                      "step": 10,
+                                      "units": "$"
+                                  }
+                ]
+            },
+            {
+                "panel_title": "Policy",
+                "panel_icon": "glyphicon-random",
+                "panel_description": "Define the parameters of the policies used to generate trajectories.",
+                "default_rendering": "parallel", # Default to a parallel plot.
+                "quantitative": [  # Real valued parameters
+                           {"name": "Constant",
                              "description":"for the intercept",
-                             "current_value": 0, "max": 10, "min":-10, "units": ""},
+                             "current_value": 0, "max": 10, "min":-10, "units": "",
+                             "step": 1},
                             {"name": "Date",
                              "description":"for each day of the year",
-                             "current_value": 0, "max": 10, "min":-10, "units": ""},
+                             "current_value": 0, "max": 10, "min":-10, "units": "",
+                             "step": 1},
                             {"name": "Days Left",
                              "description":"for each day left in the year",
-                             "current_value": 0, "max": 10, "min":-10, "units": ""},
+                             "current_value": 0, "max": 10, "min":-10, "units": "",
+                             "step": 1},
                             {"name":"Temperature",
                              "description":"for air temperature at the time of an ignition",
-                             "current_value": 0, "max": 10, "min":-10, "units": ""},
+                             "current_value": 0, "max": 10, "min":-10, "units": "",
+                             "step": 1},
                             {"name": "Wind Speed",
                              "description":"for wind speed at the time of an ignition",
-                             "current_value": 0, "max": 10, "min":-10, "units": ""},
+                             "current_value": 0, "max": 10, "min":-10, "units": "",
+                             "step": 1},
                             {"name": "Timber Value",
                              "description":"for the timber value at an ignition location",
-                             "current_value": 0, "max": 10, "min":-10, "units": ""},
+                             "current_value": 0, "max": 10, "min":-10, "units": "",
+                             "step": 1},
                             {"name": "Timber Value 8",
                              "description":"for the average timber value in the 8 neighboring stands",
-                             "current_value": 0, "max": 10, "min":-10, "units": ""},
+                             "current_value": 0, "max": 10, "min":-10, "units": "",
+                             "step": 1},
                             {"name": "Timber Value 24",
                              "description":"for the average timber value in the 24 neighboring stands",
-                             "current_value": 0, "max": 10, "min":-10, "units": ""},
+                             "current_value": 0, "max": 10, "min":-10, "units": "",
+                             "step": 1},
                             {"name": "Fuel Load",
                              "description":"for the fuel load at an ignition location",
-                             "current_value": 0, "max": 10, "min":-10, "units": ""},
+                             "current_value": 0, "max": 10, "min":-10, "units": "",
+                              "step": 1},
                             {"name": "Fuel Load 8",
                              "description":"for the average fuel load in the 8 neighboring stands",
-                             "current_value": 0, "max": 10, "min":-10, "units": ""},
+                             "current_value": 0, "max": 10, "min":-10, "units": "",
+                             "step": 1},
                             {"name": "Fuel Load 24",
                              "description":"for the average fuel load in the 24 neighboring stands",
-                             "current_value": 0, "max": 10, "min":-10, "units": ""}
-
-                          ]
-                    }
+                             "current_value": 0, "max": 10, "min":-10, "units": "",
+                             "step": 1}
+                ]
+            },
+            {
+                "panel_title": "Transition Function",
+                "panel_icon": "glyphicon-retweet",
+                "panel_description": "Define the MDP transition function and sampling effort.",
+                "default_rendering": "parallel", # Default to a radar plot. User can switch to input elements.
+                "quantitative": [  # Real valued parameters
+                                    {"name": "Harvest Percent",
+                                     "description": "timber harvest rate as a percent of annual increment",
+                                     "current_value": 0.95, "max": 1, "min": 0, "units": "%", "step": 1},
+                                    {"name": "Minimum Timber Value",
+                                     "description":"the minimum timber value required before harvest is allowed",
+                                     "current_value": 50, "max":9999, "min": 0, "units": "$", "step": 1},
+                                    {"name": "Slash Remaning",
+                                     "description": "the amount of fuel load (slash) left after a harvest",
+                                     "current_value": 10, "max":9999, "min": 0, "units": "#", "step": 1},
+                                    {"name": "Fuel Accumulation",
+                                     "description": "the amount of fuel load that accumulates each year",
+                                     "current_value": 2, "max":9999, "min": 0, "units": "#", "step": 1},
+                                    {"name": "Suppression Effect",
+                                     "description": "the reduction in fire spread rate as the result of suppression",
+                                     "current_value": 0.5, "max":1, "min": 0, "units": "%", "step": 1},
+                                     {"name": "Use Original Bugs",
+                                      "description": "set to 0 to use original bugs. 1 (or non-zero) to use the patches.",
+                                      "current_value": 0, "max":1, "min": 0, "units": "~", "step": 1},
+                                     {"name": "Growth Model",
+                                      "description": "set to 1 to use original model; or 2 for updated model.",
+                                      "current_value": 1, "max":2, "min": 1, "units": "~", "step": 1}
+                ]
+            },
+            {
+                "panel_title": "Sampling Effort",
+                "panel_icon": "glyphicon-th-list",
+                "panel_description": "Define how much you want to sample.",
+                "default_rendering": "parallel", # Default to a parallel plot. User can switch to input elements.
+                "quantitative": [  # Real valued parameters
+                                    {"name": "Years to simulate",
+                                     "description": "how far to look into the future",
+                                     "current_value": 10, "max": 150, "min": 0, "units": "Y", "step": 1},
+                                    {"name": "Futures to simulate",
+                                     "description": "how many stochastic futures to generate",
+                                     "current_value": 25, "max": 1000, "min": 0, "units": "#", "step": 1},
+                                    {"name": "Landscape Size",
+                                     "description": "how many cells wide and tall should the landscape be. Min:9, Max:129",
+                                     "current_value": 21, "max": 129, "min": 9, "units": "#", "step": 1}
+                ]
+            }
+        ]
+    }
+    return mdpvis_initialization_object
 
 def optimize(query):
     """
     Return a newly optimized query.
     """
-    dict_reward = query["reward"]
-    dict_transition = query["transition"]
-    dict_policy = query["policy"]
-
-    #some variables
-    #pathway_count = 5 #how many pathways to use in the optimization
-    #years = 5  #how many years to simulate for each pathway
-
-    pathway_count = dict_transition["Futures to simulate"]
-    years = dict_transition["Years to simulate"]
+    pathway_count = query["Futures to simulate"]
+    years = query["Years to simulate"]
 
 
     #creating optimization objects
@@ -115,23 +173,25 @@ def optimize(query):
 
     #giving the simulation parameters to opt, so that it can pass
     # them on to it's pathways as it creates them
-    opt.setFireGirlModelParameters(dict_transition, dict_reward)
+    mungedQuery = {}
+    for k in query.keys():
+        mungedQuery[k] = float(query[k])
+    opt.setFireGirlModelParameters(mungedQuery)
 
     #setting policy as well
-    #TODO make this robust to FireWoman policies
     pol = FireGirlPolicy()
-    pol.setParams([dict_policy["Constant"],
-                  dict_policy["Date"],
-                  dict_policy["Days Left"],
-                  dict_policy["Temperature"],
-                  dict_policy["Wind Speed"],
-                  dict_policy["Timber Value"],
-                  dict_policy["Timber Value 8"],
-                  dict_policy["Timber Value 24"],
-                  dict_policy["Fuel Load"],
-                  dict_policy["Fuel Load 8"],
-                  dict_policy["Fuel Load 24"],
-                 ])
+    pol.setParams([float(i) for i in [query["Constant"],
+                   query["Date"],
+                   query["Days Left"],
+                   query["Temperature"],
+                   query["Wind Speed"],
+                   query["Timber Value"],
+                   query["Timber Value 8"],
+                   query["Timber Value 24"],
+                   query["Fuel Load"],
+                   query["Fuel Load 8"],
+                   query["Fuel Load 24"],
+                  ]])
 
     #assigning the policy to opt, so that it can use it in simulations.
     opt.setPolicy(pol)
@@ -141,8 +201,8 @@ def optimize(query):
     opt.createFireGirlPathways(int(pathway_count),int(years))
 
     #set desired objective function
-    if "Objective Function" in dict_transition.keys():
-        opt.setObjFn(dict_transition["Objective Function"])
+    if "Objective Function" in query.keys():
+        opt.setObjFn(query["Objective Function"])
 
     #doing one round of optimization
     opt.optimizePolicy()
@@ -164,19 +224,15 @@ def optimize(query):
     dict_new_pol["Fuel Load 8"] = learned_params[9]
     dict_new_pol["Fuel Load 24"] = learned_params[10]
 
-
     return dict_new_pol
 
 def rollouts(query):
     """
     Return a set of rollouts for the given parameters.
     """
-    dict_reward = query["reward"]
-    dict_transition = query["transition"]
-    dict_policy = query["policy"] 
 
-    pathway_count = int(dict_transition["Futures to simulate"])
-    years = int(dict_transition["Years to simulate"])
+    pathway_count = int(query["Futures to simulate"])
+    years = int(query["Years to simulate"])
     start_ID = 0
 
     #generate 100 rollouts
@@ -184,29 +240,62 @@ def rollouts(query):
     opt.setObjFn("J1")
     #opt.setObjFn("J2")
     opt.SILENT = True
-    
+
+    mungedQuery = {}
+    for k in query.keys():
+        mungedQuery[k] = float(query[k])
+
     #setting policy...
     #This is brittle, and will not work directly with FireWoman data... or with future versions
     # of FireGirl if new features get added...
     pol = FireGirlPolicy()
-    pol.setParams([dict_policy["Constant"],
-                   dict_policy["Date"],
-                   dict_policy["Days Left"],
-                   dict_policy["Temperature"],
-                   dict_policy["Wind Speed"],
-                   dict_policy["Timber Value"],
-                   dict_policy["Timber Value 8"],
-                   dict_policy["Timber Value 24"],
-                   dict_policy["Fuel Load"],
-                   dict_policy["Fuel Load 8"],
-                   dict_policy["Fuel Load 24"],
+    pol.setParams([mungedQuery["Constant"],
+                   mungedQuery["Date"],
+                   mungedQuery["Days Left"],
+                   mungedQuery["Temperature"],
+                   mungedQuery["Wind Speed"],
+                   mungedQuery["Timber Value"],
+                   mungedQuery["Timber Value 8"],
+                   mungedQuery["Timber Value 24"],
+                   mungedQuery["Fuel Load"],
+                   mungedQuery["Fuel Load 8"],
+                   mungedQuery["Fuel Load 24"],
                   ])
 
     #setting the policy in the optimizer, which will pass it to each created pathway
     opt.setPolicy(pol)
 
     #giving the optimizer custom model parameters
-    opt.setFireGirlModelParameters(dict_transition,dict_reward)
+    opt.setFireGirlModelParameters(mungedQuery)
+
+    event_number = -1
+    pathway_number = -1
+    layer = -1
+    def file_name(max_steps=years, event_number=event_number, pathway_number=pathway_number, layer=layer, constant=mungedQuery["Constant"], date=mungedQuery["Date"],\
+        days=mungedQuery["Days Left"], temp=mungedQuery["Temperature"], wind=mungedQuery["Wind Speed"],\
+        timberv=mungedQuery["Timber Value"], timberv8=mungedQuery["Timber Value 8"], timberv24=mungedQuery["Timber Value 24"], fuel=mungedQuery["Fuel Load"],\
+        fuel8=mungedQuery["Fuel Load 8"], fuel24=mungedQuery["Fuel Load 24"],
+        Discount=mungedQuery["Discount"],
+        SuppressionFixedCost=mungedQuery["Suppression Fixed Cost"],
+        SuppressionVariableCost=mungedQuery["Suppression Variable Cost"],
+        HarvestPercent=mungedQuery["Harvest Percent"],
+        MinimumTimberValue=mungedQuery["Minimum Timber Value"],
+        SlashRemaning=mungedQuery["Slash Remaning"],
+        FuelAccumulation=mungedQuery["Fuel Accumulation"],
+        SuppressionEffect=mungedQuery["Suppression Effect"]
+        ):
+        return "static/a-{}-{}-{}-{}-{}-{}-{}-{}-{}-{}-{}-{}-{}-{}-{}-{}-{}-{}-{}-{}-{}-{}-{}-.png".format(
+            max_steps, event_number, pathway_number, layer, constant, date,\
+            days, temp, wind, timberv, timberv8, timberv24, fuel, fuel8, fuel24,
+            Discount,
+            SuppressionFixedCost,
+            SuppressionVariableCost,
+            HarvestPercent,
+            MinimumTimberValue,
+            SlashRemaning,
+            FuelAccumulation,
+            SuppressionEffect
+            )
 
     #creating landscapes. The function will enforce the custom model parameters
     opt.createFireGirlPathways(pathway_count,years,start_ID)
@@ -228,6 +317,11 @@ def rollouts(query):
             #features["Suppression Cost"] = pw.getSuppressionCost(ign.year) #already reported in ign.getDictionary()
             features["Growth"] = pw.getGrowth(ign.year)
 
+            features["image row"] = [file_name(layer="timber", event_number=ign.year, pathway_number=pw.ID_number),
+                                     file_name(layer="fuel", event_number=ign.year, pathway_number=pw.ID_number),
+                                     file_name(layer="composite", event_number=ign.year, pathway_number=pw.ID_number),
+                                     file_name(layer="timber10", event_number=ign.year, pathway_number=pw.ID_number)]
+
             #TODO - Fix for Discount Rate
             features["Discounted Reward"] = features["Harvest Value"] - features["Suppression Cost"]
 
@@ -242,7 +336,10 @@ def rollouts(query):
             features["Cumulative Growth"] = pw.getGrowthFrom(0, ign.year)
             features["Cumulative Timber Loss"] = pw.getTimberLossFrom(0, ign.year)
             features["Cumulative Suppression Cost"] = pw.getSuppressionFrom(0, ign.year)
-
+            if features["Suppression Choice"]:
+                features["Suppression Choice"] = 1
+            else:
+                features["Suppression Choice"] = 0
 
             #add this ignition event + year details to this pathway's list of dictionaries
             year_values.append(features)
@@ -254,50 +351,72 @@ def rollouts(query):
 
     return return_list
 
-def state(query):
-    """
-    Return a series of images up to the requested event number.
-    """
-    event_number = int(query["Event Number"])
-    pathway_number = int(query["Pathway Number"])
-    dict_reward = query["reward"]
-    dict_transition = query["transition"]
-    dict_policy = query["policy"] 
-    
-    show_count = 50
-    step = 1
-    if "Past Events to Show" in query.keys():
-        show_count = 1 + int(query["Past Events to Show"])
-    if "Past Events to Step Over" in query.keys():
-        step = 1 + int(query["Past Events to Step Over"])
+# Used to ensure the images are not generated for every image requested in a trajectory
+generatingImages = False
 
-    #sanitizing
-    if step < 1: step = 1
-    if show_count < 1: show_count = 1
+def generate_state_images(image_file_name):
+    """
+    Save the state images to the static folder if they have been requested, then start returning images
+    """
+    global generatingImages # hack
+    if generatingImages:
+        print "sleeping"
+        time.sleep(2)
+        return generate_state_images(image_file_name)
 
+    if os.path.isfile(image_file_name):
+        return
+    else:
+        generatingImages = True
+
+    _, max_steps, event_number, pathway_number, layer, constant, date,\
+    days, temp, wind, timberv, timberv8, timberv24, fuel,\
+    fuel8, fuel24,\
+    Discount,\
+    SuppressionFixedCost,\
+    SuppressionVariableCost,\
+    HarvestPercent,\
+    MinimumTimberValue,\
+    SlashRemaning,\
+    FuelAccumulation,\
+    SuppressionEffect, _ = image_file_name.split("-")
+
+    max_steps = int(max_steps)
+    event_number = int(event_number)
+    pathway_number = int(pathway_number)
 
     #creating optimization objects
     opt = FireGirlPolicyOptimizer()
 
     #giving the simulation parameters to opt, so that it can pass
     # them on to it's pathways as it creates them
-    opt.setFireGirlModelParameters(dict_transition, dict_reward)
+    opt.setFireGirlModelParameters(
+      {
+        "Discount": float(Discount),
+        "Suppression Fixed Cost": float(SuppressionFixedCost), 
+        "Suppression Variable Cost": float(SuppressionVariableCost),
+        "Harvest Percent": float(HarvestPercent),
+        "Minimum Timber Value": float(MinimumTimberValue),
+        "Slash Remaning": float(SlashRemaning),
+        "Fuel Accumulation": float(FuelAccumulation),
+        "Suppression Effect": float(SuppressionEffect)
+      }
+    )
 
     #setting policy as well
-    #TODO make this robust to FireWoman policies
     pol = FireGirlPolicy()
-    pol.setParams([dict_policy["Constant"],
-                   dict_policy["Date"],
-                   dict_policy["Days Left"],
-                   dict_policy["Temperature"],
-                   dict_policy["Wind Speed"],
-                   dict_policy["Timber Value"],
-                   dict_policy["Timber Value 8"],
-                   dict_policy["Timber Value 24"],
-                   dict_policy["Fuel Load"],
-                   dict_policy["Fuel Load 8"],
-                   dict_policy["Fuel Load 24"],
-                  ])
+    pol.setParams([float(i) for i in [constant,
+                   date,
+                   days,
+                   temp,
+                   wind,
+                   timberv,
+                   timberv8,
+                   timberv24,
+                   fuel,
+                   fuel8,
+                   fuel24
+                  ]])
 
     #assigning the policy to opt, so that it can use it in simulations.
     opt.setPolicy(pol)
@@ -308,9 +427,6 @@ def state(query):
 
     opt.SILENT = True
 
-    #creating image name list
-    names = [[],[],[],[]]
-
     #creating pathway with no years... this will generate the underlying landscape and set
     #  all the model parameters that were assigned earlier.
     opt.createFireGirlPathways(1, 0, pathway_number)
@@ -318,81 +434,63 @@ def state(query):
     #now incrementing the years
     #because we start with the final year, and then skip backward showing every few landscapes,
     #we may have to skip over several of the first landscapes before we start showing any
-    start = event_number - (step * (show_count -1))
-
-    #checking for negative numbers, in case the users has specified too many past landscapes to show
-    while start < 0:
-        start += step
+    start = event_number
 
     #manually telling the pathway to do the first set of years
     opt.pathway_set[0].doYears(start)
 
-    #get new names
-    timber_name = "static/timber_" + str(file_number_str()) + ".png"
-    fuel_name = "static/fuel_" + str(file_number_str()) + ".png"
-    composite_name = "static/composite_" + str(file_number_str()) + ".png"
-    burn_name = "static/burn_" + str(file_number_str()) + ".png"
+    def file_name(event_number=event_number, pathway_number=pathway_number, layer=layer, constant=constant, date=date,\
+        days=days, temp=temp, wind=wind, timberv=timberv, timberv8=timberv8, timberv24=timberv24, fuel=fuel,\
+        fuel8=fuel8, fuel24=fuel24,
+        Discount=Discount,
+        SuppressionFixedCost=SuppressionFixedCost,
+        SuppressionVariableCost=SuppressionVariableCost,
+        HarvestPercent=HarvestPercent,
+        MinimumTimberValue=MinimumTimberValue,
+        SlashRemaning=SlashRemaning,
+        FuelAccumulation=FuelAccumulation,
+        SuppressionEffect=SuppressionEffect):
+        return "static/a-{}-{}-{}-{}-{}-{}-{}-{}-{}-{}-{}-{}-{}-{}-{}-{}-{}-{}-{}-{}-{}-{}-{}-.png".format(
+            max_steps, event_number, pathway_number, layer, constant, date,\
+            days, temp, wind, timberv, timberv8, timberv24, fuel, fuel8, fuel24,
+            Discount,
+            SuppressionFixedCost,
+            SuppressionVariableCost,
+            HarvestPercent,
+            MinimumTimberValue,
+            SlashRemaning,
+            FuelAccumulation,
+            SuppressionEffect
+            )
 
     #and save it's images
-    opt.pathway_set[0].saveImage(timber_name, "timber")
-    opt.pathway_set[0].saveImage(fuel_name, "fuel")
-    opt.pathway_set[0].saveImage(composite_name, "composite")
-    opt.pathway_set[0].saveImage(burn_name, "timber", 10)
-
-    #add these names to the lists
-    names[0].append(timber_name)
-    names[1].append(fuel_name)
-    names[2].append(composite_name)
-    names[3].append(burn_name)
-
+    opt.pathway_set[0].saveImage(file_name(layer="timber", event_number=0, pathway_number=pathway_number), "timber")
+    opt.pathway_set[0].saveImage(file_name(layer="fuel", event_number=0, pathway_number=pathway_number), "fuel")
+    opt.pathway_set[0].saveImage(file_name(layer="composite", event_number=0, pathway_number=pathway_number), "composite")
+    opt.pathway_set[0].saveImage(file_name(layer="timber10", event_number=0, pathway_number=pathway_number), "timber", 10)
 
     #now loop through the rest of the states
-    for i in range(start, event_number+1, step):
+    for i in range(0, max_steps+1):
         #do the next set of years
-        opt.pathway_set[0].doYears(step)
-
-        #create a new image filenames
-        timber_name = "static/timber_" + str(file_number_str()) + ".png"
-        fuel_name = "static/fuel_" + str(file_number_str()) + ".png"
-        composite_name = "static/composite_" + str(file_number_str()) + ".png"
-        burn_name = "static/burn_" + str(file_number_str()) + ".png"
+        opt.pathway_set[0].doYears(1)
 
         #save the images
-        opt.pathway_set[0].saveImage(timber_name, "timber")
-        opt.pathway_set[0].saveImage(fuel_name, "fuel")
-        opt.pathway_set[0].saveImage(composite_name, "composite")
-        opt.pathway_set[0].saveImage(burn_name, "timber", 10)
+        opt.pathway_set[0].saveImage(file_name(layer="timber", event_number=i, pathway_number=pathway_number), "timber")
+        opt.pathway_set[0].saveImage(file_name(layer="fuel", event_number=i, pathway_number=pathway_number), "fuel")
+        opt.pathway_set[0].saveImage(file_name(layer="composite", event_number=i, pathway_number=pathway_number), "composite")
+        opt.pathway_set[0].saveImage(file_name(layer="timber10", event_number=i, pathway_number=pathway_number), "timber", 10)
 
-        #add these names to the lists
-        names[0].append(timber_name)
-        names[1].append(fuel_name)
-        names[2].append(composite_name)
-        names[3].append(burn_name)
+    generatingImages = False # Completed generation
+    
 
-    timber_stats = pathway_summary(opt.pathway_set[0],"timber")
-    fuel_stats = pathway_summary(opt.pathway_set[0],"fuel")
-    total_growth = opt.pathway_set[0].getGrowthTotal()
-    total_suppression = opt.pathway_set[0].getSuppressionTotal()
-    total_harvest = opt.pathway_set[0].getHarvestTotal()
-    total_timber_loss = opt.pathway_set[0].getTimberLossTotal()
-
-    returnObj = {
-            "statistics": {
-              "Event Number": int(query["Event Number"]),
-              "Pathway Number": int(query["Pathway Number"]),
-              "Average Timber Value": int(timber_stats[0]),
-              "Timber Value Std.Dev.": int(timber_stats[1]),
-              "Average Timber Value - Center": int(timber_stats[2]),
-              "Timber Value Std.Dev. - Center": int(timber_stats[3]),
-              "Average Fuel Load": int(fuel_stats[0]),
-              "Fuel Load Std.Dev.": int(fuel_stats[1]),
-              "Average Fuel Load - Center": int(fuel_stats[2]),
-              "Fuel Load Std.Dev. - Center": int(fuel_stats[3]),
-              "Cumulative Harvest":total_harvest,
-              "Cumulative Suppression Cost": total_suppression,
-              "Cumulative Timber Loss":total_timber_loss,
-              "Cumulative Timber Growth":total_growth,
-             },
-            "images": names
-            }
-    return returnObj
+def state(query):
+    """
+    Return a series of images up to the requested event number.
+    """
+    
+    # get the image identifier information
+    
+    image_file_name = query["image"]
+    print "generating %s" % image_file_name
+    generate_state_images(image_file_name)
+    return image_file_name

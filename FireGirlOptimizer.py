@@ -656,27 +656,25 @@ class FireGirlPolicyOptimizer:
     # FireGirl-specific Functions #
     ###############################
 
-    def setFireGirlModelParameters(self,transition_dictionary,reward_dictionary):
+    def setFireGirlModelParameters(self, params):
         """Takes two dictionaries containing model parameters. Subsequent pathways will use these values.
 
-        Arguemnts have the following key:value pairs
+        Arguments have the following key:value pairs
 
-        reward =  {"Discount": 1,
+        params =  {"Discount": 1,
                     "Suppression Fixed Cost": 500, 
                     "Suppression Variable Cost": 500
+                    "Harvest Percent": 0.95,
+                    "Minimum Timber Value": 50,
+                    "Slash Remaning": 10,
+                    "Fuel Accumulation": 2,
+                    "Suppression Effect": 0.5
                    }
-                        
-        transition = { "Harvest Percent": 0.95,
-                        "Minimum Timber Value": 50,
-                        "Slash Remaning": 10,
-                        "Fuel Accumulation": 2,
-                        "Suppression Effect": 0.5
-                      }
         """
 
         self.CUSTOM_MODEL_PARAMETERS = True
-        self.custom_reward_params = reward_dictionary
-        self.custom_transition_params = transition_dictionary
+        self.custom_reward_params = params
+        self.custom_transition_params = params
     
     def clearFireGirlModelParameters(self):
         self.CUSTOM_MODEL_PARAMETERS = False
